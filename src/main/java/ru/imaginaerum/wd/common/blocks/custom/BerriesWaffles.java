@@ -9,6 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -21,13 +22,16 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.registries.RegistryObject;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 
 public class BerriesWaffles extends Block {
     public static final IntegerProperty WAFFLERS = IntegerProperty.create("wafflers", 0, 7);
+    private final RegistryObject<Item> waffleItem;
 
-    public BerriesWaffles(Properties properties) {
+    public BerriesWaffles(Properties properties, RegistryObject<Item> waffleItem) {
         super(properties);
+        this.waffleItem = waffleItem;
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(WAFFLERS, 0));
     }
@@ -61,7 +65,6 @@ public class BerriesWaffles extends Block {
             level.destroyBlock(pos, true);
         }
     }
-
 
     @Override
     public BlockState updateShape(BlockState currentState, Direction direction, BlockState adjacentState, LevelAccessor world, BlockPos currentPos, BlockPos adjacentPos) {
@@ -99,7 +102,7 @@ public class BerriesWaffles extends Block {
             if (currentStage > 0) {
                 level.setBlock(pos, state.setValue(WAFFLERS, currentStage - 1), 3);
 
-                ItemStack itemToGive = new ItemStack(ItemsWD.BERRIES_WAFFLES.get());
+                ItemStack itemToGive = new ItemStack(waffleItem.get());
                 if (!player.addItem(itemToGive)) {
                     player.drop(itemToGive, false);
                 }
@@ -110,14 +113,14 @@ public class BerriesWaffles extends Block {
             } else {
                 level.removeBlock(pos, false);
                 level.playSound(player, pos, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                ItemStack itemToGive = new ItemStack(ItemsWD.BERRIES_WAFFLES.get());
+                ItemStack itemToGive = new ItemStack(waffleItem.get());
                 if (!player.addItem(itemToGive)) {
                     player.drop(itemToGive, false);
                 }
                 return InteractionResult.SUCCESS;
             }
         } else {
-            if (!itemInHand.isEmpty() && itemInHand.is(ItemsWD.BERRIES_WAFFLES.get())) {
+            if (!itemInHand.isEmpty() && itemInHand.is(waffleItem.get())) {
                 if (currentStage < 7) {
                     level.setBlock(pos, state.setValue(WAFFLERS, currentStage + 1), 3);
                     level.playSound(player, pos, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -128,6 +131,19 @@ public class BerriesWaffles extends Block {
                     player.swing(hand);
                     return InteractionResult.SUCCESS;
                 }
+            } else if (itemInHand.isEmpty()) {
+                // Если рука пуста, восстанавливаем насыщение и сытость
+                if (currentStage > 0) {
+                    level.setBlock(pos, state.setValue(WAFFLERS, currentStage - 1), 3); // Уменьшаем стадию
+                } else if (currentStage == 0) {
+                    level.removeBlock(pos, false); // Если стадия равна 0, удаляем блок
+                }
+
+                // Общая логика для всех случаев
+                player.getFoodData().eat(6, 1.0F); // Восстанавливаем 6 единиц насыщения и 1 единицу сытости
+                level.playSound(player, pos, SoundEvents.GENERIC_EAT, SoundSource.PLAYERS, 1.0F, 1.0F);
+                player.swing(hand);
+                return InteractionResult.SUCCESS;
             }
         }
         return InteractionResult.PASS;

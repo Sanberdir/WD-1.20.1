@@ -54,8 +54,8 @@ public class HitBlockStarBall {
         // Добавляем проверку на A_BLOCK_OF_SPARKING_POLLEN
         if (state.getBlock() == BlocksWD.A_BLOCK_OF_SPARKING_POLLEN.get()) {
             // Взрыв с силой 10 и типом break
-            level.explode(null, x, y, z, 10, Level.ExplosionInteraction.TNT);
             level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            level.explode(null, x, y, z, 10, Level.ExplosionInteraction.TNT);
 
             Random random = new Random();
             for (int i = 0; i < 10; i++) {
@@ -69,8 +69,8 @@ public class HitBlockStarBall {
 
         if (state.getBlock() == BlocksWD.WIZARD_PIE.get()) {
             // Взрыв с силой 10 и типом break
-            level.explode(null, x, y, z, 4, Level.ExplosionInteraction.NONE);
             level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            level.explode(null, x, y, z, 4, Level.ExplosionInteraction.TNT);
 
             Random random = new Random();
             for (int i = 0; i < 10; i++) {

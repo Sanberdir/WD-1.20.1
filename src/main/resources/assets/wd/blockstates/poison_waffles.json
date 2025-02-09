@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "wafflers=0": {
+      "model": "wd:block/poison_waffles_0"
+    },
+    "wafflers=1": {
+      "model": "wd:block/poison_waffles_1"
+    },
+    "wafflers=2": {
+      "model": "wd:block/poison_waffles_2"
+    },
+    "wafflers=3": {
+      "model": "wd:block/poison_waffles_3"
+    },
+    "wafflers=4": {
+      "model": "wd:block/poison_waffles_4"
+    },
+    "wafflers=5": {
+      "model": "wd:block/poison_waffles_5"
+    },
+    "wafflers=6": {
+      "model": "wd:block/poison_waffles_6"
+    },
+    "wafflers=7": {
+      "model": "wd:block/poison_waffles_7"
+    }
+  }
+}

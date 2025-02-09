@@ -36,7 +36,11 @@ public class StarBallItem extends Item {
         }
         super.appendHoverText(stack, level, components, flag);
     }
-
+    @Override
+    public boolean isEnchantable(ItemStack stack) {
+        // Возвращаем false, чтобы сделать предмет незачаровуемым
+        return false;
+    }
     @Override
     public InteractionResult useOn(UseOnContext context) {
         // Получаем информацию о блоке, на который кликают
@@ -44,7 +48,7 @@ public class StarBallItem extends Item {
 
         // Проверяем, является ли блок стеклом
         if (block instanceof DragoliteCage) {
-            return InteractionResult.FAIL; // Возвращаем FAIL, если это стекло
+            return InteractionResult.FAIL;
         }
 
         // В остальных случаях вызываем реализацию родительского метода

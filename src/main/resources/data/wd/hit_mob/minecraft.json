@@ -20,6 +20,50 @@
         "max": 3
       }
     },
+    "minecraft:creeper": {
+      "drops": [
+        {
+          "item": "minecraft:wheat_seeds",
+          "min_count": 1,
+          "max_count": 2,
+          "chance": 1
+        },
+        {
+          "item": "minecraft:pumpkin_seeds",
+          "min_count": 1,
+          "max_count": 2,
+          "chance": 0.2
+        },
+        {
+          "item": "minecraft:melon_seeds",
+          "min_count": 1,
+          "max_count": 2,
+          "chance": 0.2
+        },
+        {
+          "item": "minecraft:beetroot_seeds",
+          "min_count": 1,
+          "max_count": 2,
+          "chance": 0.2
+        },
+        {
+          "item": "farmersdelight:cabbage_seeds",
+          "min_count": 1,
+          "max_count": 2,
+          "chance": 0.2
+        },
+        {
+          "item": "farmersdelight:tomato_seeds",
+          "min_count": 1,
+          "max_count": 2,
+          "chance": 0.2
+        }
+      ],
+      "experience": {
+        "min": 2,
+        "max": 8
+      }
+    },
     "minecraft:husk": {
       "drops": [
         {

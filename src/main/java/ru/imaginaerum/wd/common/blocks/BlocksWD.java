@@ -21,9 +21,21 @@ import java.util.function.Supplier;
 public class BlocksWD {
     public static final DeferredRegister<Block> BLOCKS =
             DeferredRegister.create(ForgeRegistries.BLOCKS, WD.MODID);
-
+    // Вафли
     public static final RegistryObject<Block> BERRIES_WAFFLES = BLOCKS.register("berries_waffles",
-            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL)));
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.BERRIES_WAFFLES));
+    public static final RegistryObject<Block> APPLE_WAFFLES = BLOCKS.register("apple_waffles",
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.APPLE_WAFFLES));
+    public static final RegistryObject<Block> ICE_WAFFLES = BLOCKS.register("ice_waffles",
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.ICE_WAFFLES));
+    public static final RegistryObject<Block> CHARMING_WAFFLES = BLOCKS.register("charming_waffles",
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.CHARMING_WAFFLES));
+    public static final RegistryObject<Block> POISON_WAFFLES = BLOCKS.register("poison_waffles",
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.POISON_WAFFLES));
+    public static final RegistryObject<Block> GLOW_BERRIES_WAFFLES = BLOCKS.register("glow_berries_waffles",
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.GLOW_BERRIES_WAFFLES));
+    public static final RegistryObject<Block> WAFFLES = BLOCKS.register("waffles",
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.WAFFLES));
     // Растения
     public static final RegistryObject<Block> FIRE_STEM = BLOCKS.register("fire_stem",
             () -> new FireRod(BlockBehaviour.Properties.of().noCollission().randomTicks().instabreak().sound(SoundType.GRASS)));
@@ -68,7 +80,7 @@ public class BlocksWD {
     public static final RegistryObject<Block> STRANGE_CHIP = registerBlock("strange_chip",
             () -> new DragolitBlock(BlockBehaviour.Properties.of().sound(SoundType.ANCIENT_DEBRIS).strength(30F, 1200F).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<Block> A_BLOCK_OF_SPARKING_POLLEN = registerBlock("a_block_of_sparkling_pollen",
-            () -> new FallingBlock(BlockBehaviour.Properties.of().strength(0.2F, 30)
+            () -> new FallingBlock(BlockBehaviour.Properties.of().strength(0.2F, 120000F)
                     .sound(SoundType.SAND)));
     public static final RegistryObject<Block> WIZARD_PIE = BLOCKS.register("wizard_pie",
             () -> new WizardPie(BlockBehaviour.Properties.of().strength(0.5F).sound(SoundType.WOOL).randomTicks()));
@@ -153,7 +165,7 @@ public class BlocksWD {
                     .mapColor(MapColor.WOOD).forceSolidOn().instrument(NoteBlockInstrument.BASS).noCollission().strength(1.0F).dropsLike(APPLE_HANGING_SIGN.get()), ModWoodType.APPLE_WOOD));
 
     public static final RegistryObject<Block> APPLE_LEAVES = BLOCKS.register("apple_leaves",
-            () -> new AppleLeaves(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES)));
+            () -> new LeavesBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES)));
     public static final RegistryObject<Block> APPLE_LEAVES_STAGES = BLOCKS.register("apple_leaves_stages",
             () -> new AppleLeavesStages(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES)));
 

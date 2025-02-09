@@ -13,13 +13,12 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.animal.Bee;
-import net.minecraft.world.entity.animal.Chicken;
-import net.minecraft.world.entity.animal.Rabbit;
+import net.minecraft.world.entity.animal.*;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -89,8 +88,7 @@ public class HitEntityStarball {
                     }
                 }
                 // Проверка, является ли сущность крипером
-                if ((entity.getType() == EntityType.CREEPER)
-                        || (entity.getType() == EntityType.VILLAGER)
+                if ((entity.getType() == EntityType.VILLAGER)
                         || (entity.getType() == EntityType.PILLAGER)
                         || (entity.getType() == EntityType.VINDICATOR)
                         || (entity.getType() == EntityType.EVOKER)
@@ -133,7 +131,7 @@ public class HitEntityStarball {
                     entity.discard();
 
                     // Проверяем, является ли сущность НЕ летающей
-                    if (!(entity instanceof FlyingMob)) {
+                    if (!(entity instanceof FlyingMob)&&!(entity instanceof Boat)&&!(entity instanceof Dolphin)) {
                         // Превращаем наземных существ в кролика
                         Rabbit rabbit = EntityType.RABBIT.create(world);
                         if (rabbit != null) {
@@ -143,7 +141,30 @@ public class HitEntityStarball {
                             // Эффект частиц
                             world.sendParticles(ModParticles.ROBIN_STAR_PARTICLES_PROJECTILE.get(), x, y, z, 36, 0.5, 0.5, 0.5, 0.05f);
                         }
-                    } else {
+                    }
+                    else if (entity instanceof Boat) {
+                        // Превращаем наземных существ в кролика
+                        Dolphin dolphin = EntityType.DOLPHIN.create(world);
+                        if (dolphin != null) {
+                            dolphin.setPos(x, y, z);
+                            world.addFreshEntity(dolphin);
+
+                            // Эффект частиц
+                            world.sendParticles(ModParticles.ROBIN_STAR_PARTICLES_PROJECTILE.get(), x, y, z, 36, 0.5, 0.5, 0.5, 0.05f);
+                        }
+                    }
+                    else if (entity instanceof Dolphin) {
+                        // Превращаем наземных существ в кролика
+                        Cod cod = EntityType.COD.create(world);
+                        if (cod != null) {
+                            cod.setPos(x, y, z);
+                            world.addFreshEntity(cod);
+
+                            // Эффект частиц
+                            world.sendParticles(ModParticles.ROBIN_STAR_PARTICLES_PROJECTILE.get(), x, y, z, 36, 0.5, 0.5, 0.5, 0.05f);
+                        }
+                    }
+                    else {
                         // Превращаем летающих в курицу
                         Chicken chicken = EntityType.CHICKEN.create(world);
                         if (chicken != null) {
@@ -154,6 +175,7 @@ public class HitEntityStarball {
                             world.sendParticles(ModParticles.ROBIN_STAR_PARTICLES_PROJECTILE.get(), x, y, z, 36, 0.5, 0.5, 0.5, 0.05f);
                         }
                     }
+
 
                     return;
                 }

@@ -17,7 +17,6 @@ import net.minecraftforge.fml.common.Mod;
 
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import ru.imaginaerum.wd.WD;
-import ru.imaginaerum.wd.common.blocks.custom.AppleLeaves;
 import ru.imaginaerum.wd.common.blocks.custom.AppleLeavesStages;
 import ru.imaginaerum.wd.common.blocks.entity.ModBlockEntities;
 import ru.imaginaerum.wd.common.blocks.entity.renderer.DragoliteCageEntityRenderer;
@@ -34,12 +33,7 @@ public class ModEventClientBusEvents {
 
     @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientSideHandler {
-        @SubscribeEvent
-        public static void blockColorLoad(RegisterColorHandlersEvent.Block event) {
-            AppleLeaves.blockColorLoad(event);
-            AppleLeavesStages.blockColorLoad(event);
 
-        }
         @SubscribeEvent
         public static void registerParticleFactories(final RegisterParticleProvidersEvent event) {
             Minecraft.getInstance().particleEngine.register(ModParticles.ROBIN_STAR_PARTICLES.get(),

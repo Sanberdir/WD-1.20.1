@@ -151,11 +151,5 @@ public class AppleLeavesStages extends Block implements BonemealableBlock, Simpl
             level.setBlock(pos, state.setValue(STAGE, nextStage), 2);
         }
     }
-    @OnlyIn(Dist.CLIENT)
-    public static void blockColorLoad(RegisterColorHandlersEvent.Block event) {
-        event.getBlockColors().register((bs, world, pos, index) -> {
 
-            return world != null && pos != null ? BiomeColors.getAverageGrassColor(world, pos) : GrassColor.get(0.5D, 1.0D);
-        }, BlocksWD.APPLE_LEAVES_STAGES.get());
-    }
 }

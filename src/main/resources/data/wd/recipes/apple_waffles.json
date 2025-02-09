@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "wooden_sign",
+  "key": {
+    "#": {
+      "item": "wd:apple_jam"
+    },
+    "X": {
+      "item": "wd:waffles"
+    }
+  },
+  "pattern": [
+    " # ",
+    "#X#",
+    " # "
+  ],
+  "result": {
+    "count": 3,
+    "item": "wd:apple_waffles"
+  }
+}

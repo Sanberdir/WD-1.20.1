@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "wooden_sign",
+  "key": {
+    "#": {
+      "item": "farmersdelight:wheat_dough"
+    },
+    "X": {
+      "item": "minecraft:sugar"
+    }
+  },
+  "pattern": [
+    " # ",
+    "#X#",
+    " # "
+  ],
+  "result": {
+    "count": 3,
+    "item": "wd:raw_waffles"
+  }
+}

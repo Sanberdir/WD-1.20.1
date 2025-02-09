@@ -95,8 +95,38 @@ public class ItemsWD {
             () -> new ItemNameBlockItem(BlocksWD.MEADOW_GOLDEN_FLOWER.get(),(new Item.Properties())));
     public static final RegistryObject<Item> ROSE_OF_GHOSTY_TEARS = ITEMS.register("rose_of_ghosty_tears",
             () -> new ItemNameBlockItem(BlocksWD.ROSE_OF_GHOSTY_TEARS.get(),(new Item.Properties())));
+
+    // Вафли
+    public static final RegistryObject<Item> RAW_WAFFLES = ITEMS.register("raw_waffles",
+            () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationMod(0.6f).alwaysEat()
+                    .build())));
     public static final RegistryObject<Item> BERRIES_WAFFLES = ITEMS.register("berries_waffles",
-            () -> new ItemNameBlockItem(BlocksWD.BERRIES_WAFFLES.get(),(new Item.Properties())));
+            () -> new ItemNameBlockItem(BlocksWD.BERRIES_WAFFLES.get(),(new Item.Properties())
+                    .food(new FoodProperties.Builder().nutrition(6).saturationMod(1).alwaysEat().build())));
+    public static final RegistryObject<Item> APPLE_WAFFLES = ITEMS.register("apple_waffles",
+            () -> new ItemNameBlockItem(BlocksWD.APPLE_WAFFLES.get(),(new Item.Properties())
+                    .food(new FoodProperties.Builder().nutrition(6).saturationMod(1).alwaysEat().build())));
+    public static final RegistryObject<Item> ICE_WAFFLES = ITEMS.register("ice_waffles",
+            () -> new ItemNameBlockItem(BlocksWD.ICE_WAFFLES.get(),(new Item.Properties())
+                    .food(new FoodProperties.Builder().nutrition(6).saturationMod(1).alwaysEat()
+                            .build())));
+    public static final RegistryObject<Item> POISON_WAFFLES = ITEMS.register("poison_waffles",
+            () -> new ItemNameBlockItem(BlocksWD.POISON_WAFFLES.get(),(new Item.Properties())
+                    .food(new FoodProperties.Builder().nutrition(6).saturationMod(1).alwaysEat()
+                            .build())));
+    public static final RegistryObject<Item> CHARMING_WAFFLES = ITEMS.register("charming_waffles",
+            () -> new ItemNameBlockItem(BlocksWD.CHARMING_WAFFLES.get(),(new Item.Properties())
+                    .food(new FoodProperties.Builder().nutrition(6).saturationMod(1).alwaysEat()
+                            .build())));
+    public static final RegistryObject<Item> GLOW_BERRIES_WAFFLES = ITEMS.register("glow_berries_waffles",
+            () -> new ItemNameBlockItem(BlocksWD.GLOW_BERRIES_WAFFLES.get(),(new Item.Properties())
+                    .food(new FoodProperties.Builder().nutrition(6).saturationMod(1).alwaysEat()
+                            .build())));
+    public static final RegistryObject<Item> WAFFLES = ITEMS.register("waffles",
+            () -> new ItemNameBlockItem(BlocksWD.WAFFLES.get(),(new Item.Properties())
+                    .food(new FoodProperties.Builder().nutrition(6).saturationMod(1).alwaysEat().build())));
+
+    // Цветы
     public static final RegistryObject<Item> SPATIAL_ORCHID = ITEMS.register("spatial_orchid",
             () -> new ItemNameBlockItem(BlocksWD.SPATIAL_ORCHID.get(),(new Item.Properties())));
     public static final RegistryObject<Item> CHARMING_BERRIES = ITEMS.register("charming_berries",
