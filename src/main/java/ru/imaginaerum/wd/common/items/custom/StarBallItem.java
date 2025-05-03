@@ -57,13 +57,19 @@ public class StarBallItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player entity, InteractionHand hand) {
-        entity.startUsingItem(hand);
+        ItemStack itemStack = entity.getItemInHand(hand);
 
-        StrikeRobinStick.execute(entity,level,entity.getX(),entity.getY(),entity.getZ());
+        // Проверяем прочность предмета
+        if (itemStack.getDamageValue() > 68) {
+            return new InteractionResultHolder<>(InteractionResult.FAIL, itemStack);
+        }
+
+        entity.startUsingItem(hand);
+        StrikeRobinStick.execute(entity, level, entity.getX(), entity.getY(), entity.getZ());
 
         // Кулдаун
         entity.getCooldowns().addCooldown(this, 40);
-        return new InteractionResultHolder(InteractionResult.SUCCESS, entity.getItemInHand(hand));
+        return new InteractionResultHolder<>(InteractionResult.SUCCESS, itemStack);
     }
 
 }
