@@ -27,7 +27,7 @@ public class ItemsWD {
             DeferredRegister.create(ForgeRegistries.ITEMS, WD.MODID);
 
 
-    // Шляпа/головка Санбердира)))
+    // Шляпа
     public static final RegistryObject<Item> MAGIC_HAT = ITEMS.register("magic_hat",
             () -> new MagicHat(ModArmorMaterials.MAGIC, ArmorItem.Type.HELMET, new Item.Properties()));
     public static final RegistryObject<Item> MAGIC_HAT_JAM = ITEMS.register("magic_hat_jam",
@@ -35,7 +35,8 @@ public class ItemsWD {
 
     // Тут Варенья и кусты, про что изначально мод
     public static final RegistryObject<Item> POISON_BERRY_JAM = ITEMS.register("poison_berry_jam",
-            () -> new Jam(new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(13).saturationMod(0.3f)
+            () -> new Jam(BlocksWD.POISON_BERRY_JAM.get(),new Item.Properties().food(new FoodProperties.Builder().alwaysEat()
+                    .nutrition(13).saturationMod(0.3f)
                     .effect(new MobEffectInstance(MobEffects.POISON, 180, 0), 1F)
                     .effect(new MobEffectInstance(MobEffects.HEALTH_BOOST, 3300, 4), 0.95F)
                     .build())));
@@ -43,43 +44,47 @@ public class ItemsWD {
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationMod(0.5f)
                     .build())));
     public static final RegistryObject<Item> SWEET_JAM = ITEMS.register("sweet_jam",
-            () -> new Jam(new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(9).saturationMod(0.6f)
+            () -> new Jam(BlocksWD.SWEET_JAM.get(),new Item.Properties()
+                    .food(new FoodProperties.Builder().alwaysEat()
+                            .nutrition(9)
+                            .saturationMod(0.6f)
                     .build())));
     public static final RegistryObject<Item> LEVITAN_JAM = ITEMS.register("levitan_jam",
-            () -> new Jam(new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(15).saturationMod(0.4f)
+            () -> new Jam(BlocksWD.LEVITAN_JAM.get(),new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(15).saturationMod(0.4f)
                     .effect(new MobEffectInstance(MobEffects.LEVITATION, 4, 100), 1F)
                     .effect(new MobEffectInstance(MobEffects.SLOW_FALLING, 200, 10), 1F)
-                    .effect(new MobEffectInstance(MobEffects.WATER_BREATHING, 2000, 0), 0.4F)
                     .build())));
     public static final RegistryObject<Item> APPLE_JAM = ITEMS.register("apple_jam",
-            () -> new Jam(new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(9).saturationMod(0.6f)
+            () -> new Jam(BlocksWD.APPLE_JAM.get(),new Item.Properties().food(new FoodProperties.Builder().alwaysEat()
+                    .nutrition(9).saturationMod(0.6f)
                     .build())));
     public static final RegistryObject<Item> JAM_INVISIBILITY = ITEMS.register("jam_invisibility",
-            () -> new Jam(new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(12).saturationMod(0.55f)
+            () -> new Jam(BlocksWD.JAM_INVISIBILITY.get(),new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(12).saturationMod(0.55f)
                     .effect(new MobEffectInstance(MobEffects.INVISIBILITY, 4800, 0), 1F)
                     .build())));
     public static final RegistryObject<Item> JAM_TONIC = ITEMS.register("jam_tonic",
-            () -> new Jam(new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(9).saturationMod(0.7f)
+            () -> new Jam(BlocksWD.JAM_TONIC.get(),new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(9).saturationMod(0.7f)
                     .effect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 2000, 10), 1F)
                     .effect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 4800, 4), 1F)
                     .effect(new MobEffectInstance(MobEffects.DIG_SPEED, 5000, 8), 1F)
                     .build())));
     public static final RegistryObject<Item> CHARMING_JAM = ITEMS.register("charming_jam",
-            () -> new Jam(new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(10).saturationMod(0.3f)
+            () -> new Jam(BlocksWD.CHARMING_JAM.get(),new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(10).saturationMod(0.3f)
                     .effect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1), 0.2F)
                     .effect(new MobEffectInstance(MobEffects.DIG_SPEED, 1200, 0), 0.4F)
                     .effect(new MobEffectInstance(MobEffects.BLINDNESS, 120, 0), 0.6F)
                     .effect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 840, 2), 0.7F)
                     .build())));
     public static final RegistryObject<Item> GLOWING_JAM = ITEMS.register("glowing_jam",
-            () -> new Jam(new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(14).saturationMod(0.5f)
+            () -> new Jam(BlocksWD.GLOWING_JAM.get(),new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(14).saturationMod(0.5f)
                     .effect(new MobEffectInstance(MobEffects.GLOWING, 220, 0), 1F)
                     .build())));
     public static final RegistryObject<Item> FREEZE_JAM = ITEMS.register("freeze_jam",
-            () -> new Jam(new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(10).saturationMod(0.3f)
+            () -> new Jam(BlocksWD.FREEZE_JAM.get(),new Item.Properties().food(new FoodProperties.Builder().alwaysEat().nutrition(10).saturationMod(0.3f)
                     .effect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 0), 0.9F)
                     .effect(new MobEffectInstance(EffectsWD.FREEZE.get(), 2200, 0), 1F)
                     .build())));
+
     public static final RegistryObject<Item> JAR = ITEMS.register("jar",
             () -> new Item(new Item.Properties()));
     // Кусты
@@ -89,6 +94,7 @@ public class ItemsWD {
                             .effect(new MobEffectInstance(MobEffects.POISON, 80, 0), 0.5F)
                             .effect(new MobEffectInstance(MobEffects.HEALTH_BOOST, 200, 0), 0.5F)
                             .build()))));
+
     public static final RegistryObject<Item> MEADOW_GOLDEN_FLOWER = ITEMS.register("meadow_golden_flower",
             () -> new ItemNameBlockItem(BlocksWD.MEADOW_GOLDEN_FLOWER.get(),(new Item.Properties())));
     public static final RegistryObject<Item> MEADOW_GOLDEN_FLOWER_INACTIVE = ITEMS.register("meadow_golden_flower_inactive",
@@ -103,6 +109,10 @@ public class ItemsWD {
     public static final RegistryObject<Item> BERRIES_WAFFLES = ITEMS.register("berries_waffles",
             () -> new ItemNameBlockItem(BlocksWD.BERRIES_WAFFLES.get(),(new Item.Properties())
                     .food(new FoodProperties.Builder().nutrition(6).saturationMod(1).alwaysEat().build())));
+    public static final RegistryObject<Item> THE_PILLAGERS_CHEST = ITEMS.register("the_pillagers_chest",
+            () -> new ItemNameBlockItem(BlocksWD.THE_PILLAGERS_CHEST.get(),(new Item.Properties())));
+    public static final RegistryObject<Item> GOLDEN_CHEST_KING_PILLAGER = ITEMS.register("golden_chest_king_pillager",
+            () -> new ItemNameBlockItem(BlocksWD.GOLDEN_CHEST_KING_PILLAGER.get(),(new Item.Properties())));
     public static final RegistryObject<Item> APPLE_WAFFLES = ITEMS.register("apple_waffles",
             () -> new ItemNameBlockItem(BlocksWD.APPLE_WAFFLES.get(),(new Item.Properties())
                     .food(new FoodProperties.Builder().nutrition(6).saturationMod(1).alwaysEat().build())));
@@ -227,8 +237,6 @@ public class ItemsWD {
     public static final RegistryObject<Item> KRUTNEVY_BREAD = ITEMS.register("krutnevy_bread",
             () -> new MinusEffectBeneficial(new Item.Properties().food(new FoodProperties.Builder().nutrition(6).saturationMod(0.45f)
                     .build())));
-    public static final RegistryObject<Item> THROWING_KNIFE = ITEMS.register("throwing_knife",
-            () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> TURTLE_SOUP = ITEMS.register("turtle_soup",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(7).saturationMod(0.4f)
                     .build())));
@@ -269,7 +277,7 @@ public class ItemsWD {
                     .build())));
     // Особая еда
     public static final RegistryObject<Item> CHEESE = ITEMS.register("cheese",
-            () -> new Cheese(new Item.Properties().food(new FoodProperties.Builder().nutrition(20).saturationMod(1f)
+            () -> new Cheese(new Item.Properties().food(new FoodProperties.Builder().nutrition(20).alwaysEat().saturationMod(1f)
                     .effect(new MobEffectInstance(MobEffects.REGENERATION, 160, 0), 1F)
                     .build())));
     public static final RegistryObject<Item> WIZARD_PIE = ITEMS.register("wizard_pie",
@@ -375,12 +383,9 @@ public class ItemsWD {
 
 
     // Сундуки разбойников
-    public static final RegistryObject<Item> THE_PILLAGERS_CHEST = ITEMS.register("the_pillagers_chest",
-            () -> new Item(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> THE_PILLAGERS_KEY = ITEMS.register("the_pillagers_key",
             () -> new Item(new Item.Properties()));
-    public static final RegistryObject<Item> GOLDEN_CHEST_KING_PILLAGER = ITEMS.register("golden_chest_king_pillager",
-            () -> new Item(new Item.Properties().stacksTo(1)));
+
     public static final RegistryObject<Item> THE_KING_PILLAGERS_KEY = ITEMS.register("the_king_pillagers_key",
             () -> new Item(new Item.Properties()));
 

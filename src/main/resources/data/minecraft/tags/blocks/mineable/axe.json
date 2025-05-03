@@ -11,6 +11,7 @@
     "wd:apple_button",
     "wd:stripped_apple_wood",
     "wd:stripped_apple_log",
-    "wd:apple_pressure_plate"
+    "wd:apple_pressure_plate",
+    "wd:the_pillagers_chest"
   ]
 }

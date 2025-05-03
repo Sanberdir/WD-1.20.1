@@ -21,6 +21,25 @@ import java.util.function.Supplier;
 public class BlocksWD {
     public static final DeferredRegister<Block> BLOCKS =
             DeferredRegister.create(ForgeRegistries.BLOCKS, WD.MODID);
+    // Джемы
+    public static final RegistryObject<Block> SWEET_JAM = BLOCKS.register("sweet_jam",
+            () -> new SweetJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.SWEET_JAM));
+    public static final RegistryObject<Block> APPLE_JAM = BLOCKS.register("apple_jam",
+            () -> new AppleJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.APPLE_JAM));
+    public static final RegistryObject<Block> JAM_INVISIBILITY = BLOCKS.register("jam_invisibility",
+            () -> new InvisibilityJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.JAM_INVISIBILITY));
+    public static final RegistryObject<Block> POISON_BERRY_JAM = BLOCKS.register("poison_berry_jam",
+            () -> new PoisonJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.POISON_BERRY_JAM));
+    public static final RegistryObject<Block> CHARMING_JAM = BLOCKS.register("charming_jam",
+            () -> new CharmingJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.CHARMING_JAM));
+    public static final RegistryObject<Block> GLOWING_JAM = BLOCKS.register("glowing_jam",
+            () -> new GlowingJamBlock(GlowingJamBlock.Types.GLOWING_JAM, BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion()));
+    public static final RegistryObject<Block> FREEZE_JAM = BLOCKS.register("freeze_jam",
+            () -> new FreezeJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.FREEZE_JAM));
+    public static final RegistryObject<Block> LEVITAN_JAM = BLOCKS.register("levitan_jam",
+            () -> new LevitanJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.LEVITAN_JAM));
+    public static final RegistryObject<Block> JAM_TONIC = BLOCKS.register("jam_tonic",
+            () -> new TonicJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.JAM_TONIC));
     // Вафли
     public static final RegistryObject<Block> BERRIES_WAFFLES = BLOCKS.register("berries_waffles",
             () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.BERRIES_WAFFLES));
@@ -70,6 +89,12 @@ public class BlocksWD {
             () -> new FreezeBerries(BlockBehaviour.Properties.of().randomTicks()
                     .noCollission().sound(SoundType.SWEET_BERRY_BUSH)));
 
+
+    // Сундуки
+    public static final RegistryObject<Block> THE_PILLAGERS_CHEST = BLOCKS.register("the_pillagers_chest",
+            () -> new PillagerChestBlock(BlockBehaviour.Properties.of().sound(SoundType.WOOD).strength(1F).noOcclusion()));
+    public static final RegistryObject<Block> GOLDEN_CHEST_KING_PILLAGER = BLOCKS.register("golden_chest_king_pillager",
+            () -> new PillagerChestBlock(BlockBehaviour.Properties.of().sound(SoundType.METAL).strength(1F).noOcclusion()));
     // Блоки
     public static final RegistryObject<Block> SUGAR_SACK = registerBlock("sugar_sack",
             () -> new FacingBlock(BlockBehaviour.Properties.of().sound(SoundType.WOOL).noOcclusion()));

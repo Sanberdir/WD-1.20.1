@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "wd:block/golden_chest_king_pillager"
+    },
+    "facing=south": {
+      "model": "wd:block/golden_chest_king_pillager",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "wd:block/golden_chest_king_pillager",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "wd:block/golden_chest_king_pillager",
+      "y": 270
+    }
+  }
+}

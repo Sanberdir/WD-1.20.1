@@ -1,0 +1,103 @@
+{
+	"parent": "jar",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "wd:block/poison_berry_jam",
+		"particle": "wd:block/poison_berry_jam"
+	},"render_type": "translucent",
+	"elements": [
+		{
+			"name": "jar",
+			"from": [4.8, -0.2, 4.8],
+			"to": [11.2, 6.2, 11.2],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 5, 8]},
+			"faces": {
+				"north": {"uv": [3, 0, 6, 3], "texture": "#0"},
+				"east": {"uv": [3, 0, 6, 3], "texture": "#0"},
+				"south": {"uv": [3, 0, 6, 3], "texture": "#0"},
+				"west": {"uv": [3, 0, 6, 3], "texture": "#0"},
+				"up": {"uv": [9, 3, 6, 0], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [6, 9, 3, 12], "rotation": 90, "texture": "#0"}
+			}
+		},
+		{
+			"name": "layer",
+			"from": [4.7, -0.3, 4.7],
+			"to": [11.3, 6.3, 11.3],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 5, 8]},
+			"faces": {
+				"north": {"uv": [3, 12, 6, 15], "texture": "#0"},
+				"east": {"uv": [9, 9, 12, 12], "texture": "#0"},
+				"south": {"uv": [0, 12, 3, 15], "texture": "#0"},
+				"west": {"uv": [0, 9, 3, 12], "texture": "#0"},
+				"up": {"uv": [9, 12, 6, 9], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [9, 12, 6, 15], "rotation": 90, "texture": "#0"}
+			}
+		},
+		{
+			"name": "lid_layer",
+			"from": [5.9, 5.9, 5.9],
+			"to": [10.1, 8.1, 10.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 5, 8]},
+			"faces": {
+				"north": {"uv": [5, 6, 7, 7], "texture": "#0"},
+				"east": {"uv": [7, 6, 9, 7], "texture": "#0"},
+				"south": {"uv": [11, 6, 13, 7], "texture": "#0"},
+				"west": {"uv": [9, 6, 11, 7], "texture": "#0"},
+				"up": {"uv": [9, 6, 7, 4], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [7, 4, 5, 6], "rotation": 90, "texture": "#0"}
+			}
+		},
+		{
+			"name": "lid",
+			"from": [6, 6, 6],
+			"to": [10, 8, 10],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 5, 8]},
+			"faces": {
+				"north": {"uv": [3, 6, 5, 7], "texture": "#0"},
+				"east": {"uv": [3, 6, 5, 7], "texture": "#0"},
+				"south": {"uv": [3, 6, 5, 7], "texture": "#0"},
+				"west": {"uv": [3, 6, 5, 7], "texture": "#0"},
+				"up": {"uv": [5, 6, 3, 4], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [7, 4, 5, 6], "rotation": 90, "texture": "#0"}
+			}
+		},
+		{
+			"name": "jar",
+			"from": [5, 0, 5],
+			"to": [11, 6, 11],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 5, 8]},
+			"faces": {
+				"north": {"uv": [0, 0, 3, 3], "texture": "#0"},
+				"east": {"uv": [0, 0, 3, 3], "texture": "#0"},
+				"south": {"uv": [0, 0, 3, 3], "texture": "#0"},
+				"west": {"uv": [0, 0, 3, 3], "texture": "#0"},
+				"up": {"uv": [3, 9, 0, 6], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [3, 3, 0, 6], "rotation": 90, "texture": "#0"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "group",
+			"origin": [8, 8, 8],
+			"color": 0,
+			"children": [
+				{
+					"name": "group",
+					"origin": [8, 7, 10],
+					"color": 0,
+					"children": [0]
+				},
+				{
+					"name": "group",
+					"origin": [8, 8, 8],
+					"color": 0,
+					"children": [1, 2]
+				},
+				3,
+				4
+			]
+		}
+	]
+}

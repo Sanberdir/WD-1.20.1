@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "jam_number=0":
+    {"model": "wd:block/charming_jam_0"},
+    "jam_number=1":
+    {"model": "wd:block/charming_jam_1"},
+    "jam_number=2":
+    {"model": "wd:block/charming_jam_2"},
+    "jam_number=3":
+    {"model": "wd:block/charming_jam_3"},
+    "jam_number=4":
+    {"model": "wd:block/charming_jam_4"},
+    "jam_number=5":
+    {"model": "wd:block/charming_jam_5"},
+    "jam_number=6":
+    {"model": "wd:block/charming_jam_6"},
+    "jam_number=7":
+    {"model": "wd:block/charming_jam_7"}
+  }
+}

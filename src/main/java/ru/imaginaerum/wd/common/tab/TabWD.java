@@ -57,7 +57,6 @@ public class TabWD extends CreativeModeTab {
                         pOutput.accept(ItemsWD.MEDICAL_POTATO.get());
                         pOutput.accept(ItemsWD.PEPPER.get());
                         pOutput.accept(ItemsWD.KRUTNEVY_BREAD.get());
-                        pOutput.accept(ItemsWD.THROWING_KNIFE.get());
                         pOutput.accept(ItemsWD.TURTLE_SOUP.get());
                         pOutput.accept(ItemsWD.CLEANED_TURTLE_NECK.get());
                         pOutput.accept(ItemsWD.PICKLED_TURTLE_NECK.get());
@@ -102,7 +101,6 @@ public class TabWD extends CreativeModeTab {
                         pOutput.accept(ItemsWD.HEALING_DEW_NETHER.get());
                         pOutput.accept(ItemsWD.SPATIAL_ORCHID.get());
                         pOutput.accept(ItemsWD.COASTAL_STEEP.get());
-                        pOutput.accept(ItemsWD.THE_PILLAGERS_CHEST.get());
                         pOutput.accept(ItemsWD.GOLDEN_CHEST_KING_PILLAGER.get());
                         pOutput.accept(ItemsWD.THE_PILLAGERS_KEY.get());
                         pOutput.accept(ItemsWD.THE_KING_PILLAGERS_KEY.get());
@@ -132,6 +130,8 @@ public class TabWD extends CreativeModeTab {
                         pOutput.accept(BlocksWD.FREEZE_BERRIES.get());
                         pOutput.accept(BlocksWD.WARPED_WART.get());
                         pOutput.accept(BlocksWD.SUGAR_SACK.get());
+                        pOutput.accept(BlocksWD.THE_PILLAGERS_CHEST.get());
+                        pOutput.accept(BlocksWD.GOLDEN_CHEST_KING_PILLAGER.get());
                         pOutput.accept(BlocksWD.A_BLOCK_OF_SPARKING_POLLEN.get());
                         pOutput.accept(BlocksWD.ROSE_OF_GHOSTY_TEARS.get());
                         pOutput.accept(BlocksWD.DRAGOLIT_GRID.get());
