@@ -10,44 +10,74 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.AbstractSkullBlock;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SkullBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.registries.RegistryObject;
+import org.jetbrains.annotations.Nullable;
+import ru.imaginaerum.wd.common.blocks.entity.GlowingJamBlockEntity;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 
-public class GlowingJamBlock extends AbstractSkullBlock {
-    // Хитбоксы для банки
+public class GlowingJamBlock extends BaseEntityBlock {
+    public static final int ROTATIONS = RotationSegment.getMaxSegmentIndex() + 1;
+    public static final IntegerProperty ROTATION = BlockStateProperties.ROTATION_16;
 
+    // Хитбоксы для банки
     private static final VoxelShape SHAPES_1_1 = Block.box(5.0D, 7.0D, 5.0D, 11.0D, 8.0D, 11.0D);
     private static final VoxelShape SHAPES_1_2 = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 6.0D, 12.0D);
     private static final VoxelShape SHAPES_1 = Shapes.or(SHAPES_1_1, SHAPES_1_2);
 
-    public GlowingJamBlock(GlowingJamBlock.Type pType, Properties pProperties) {
-        super(pType, pProperties);
+    public GlowingJamBlock(BlockBehaviour.Properties properties) {
+        super(properties);
+        // Устанавливаем дефолтное состояние с поворотом 0
+        this.registerDefaultState(this.stateDefinition.any().setValue(ROTATION, 0));
     }
-    public static enum Types implements GlowingJamBlock.Type {
-        GLOWING_JAM;
 
-        private Types() {
-        }
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(ROTATION);
+        super.createBlockStateDefinition(builder);
     }
-    public interface Type extends SkullBlock.Type {
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        // Вычисляем сегмент поворота по направлению взгляда игрока
+        int segment = RotationSegment.convertToSegment(context.getRotation());
+        return this.defaultBlockState().setValue(ROTATION, segment);
     }
+
+    @Override
+    public BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rot) {
+        int value = state.getValue(ROTATION);
+        return state.setValue(ROTATION, rot.rotate(value, ROTATIONS));
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
+        int value = state.getValue(ROTATION);
+        return state.setValue(ROTATION, mirror.mirror(value, ROTATIONS));
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
+        return new GlowingJamBlockEntity(blockPos, blockState);
+    }
+
     @Override
     public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock())) {
@@ -74,7 +104,8 @@ public class GlowingJamBlock extends AbstractSkullBlock {
     }
 
     @Override
-    public BlockState updateShape(BlockState currentState, Direction direction, BlockState adjacentState, LevelAccessor world, BlockPos currentPos, BlockPos adjacentPos) {
+    public BlockState updateShape(BlockState currentState, Direction direction, BlockState adjacentState,
+                                  LevelAccessor world, BlockPos currentPos, BlockPos adjacentPos) {
         if (!currentState.canSurvive(world, currentPos)) {
             world.scheduleTick(currentPos, this, 1);
         }
@@ -84,17 +115,12 @@ public class GlowingJamBlock extends AbstractSkullBlock {
     @Override
     public boolean canSurvive(BlockState state, LevelReader world, BlockPos position) {
         BlockState blockBelow = world.getBlockState(position.below());
-        if (blockBelow.is(this)) {
-            return true;
-        }
-        if (blockBelow.isFaceSturdy(world, position.below(), Direction.UP)) {
-            return true;
-        }
-        return false;
+        return blockBelow.isFaceSturdy(world, position.below(), Direction.UP);
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player,
+                                 InteractionHand hand, BlockHitResult hitResult) {
         ItemStack itemInHand = player.getItemInHand(hand);
 
         if (player.isShiftKeyDown()) {
@@ -111,15 +137,11 @@ public class GlowingJamBlock extends AbstractSkullBlock {
             return InteractionResult.SUCCESS;
         } else {
             if (!itemInHand.isEmpty() && itemInHand.is(ItemsWD.GLOWING_JAM.get())) {
-                // Если игрок держит банку джема, ничего не делаем (блок уже есть)
                 return InteractionResult.PASS;
             } else if (itemInHand.isEmpty()) {
-                // Если рука пуста, съедаем джем
                 level.removeBlock(pos, false);
                 player.getFoodData().eat(14, 0.5F);
-                RandomSource random = level.getRandom();
                 player.addEffect(new MobEffectInstance(MobEffects.GLOWING, 220, 0));
-
                 level.playSound(player, pos, SoundEvents.HONEY_DRINK, SoundSource.PLAYERS, 1.0F, 1.0F);
                 player.swing(hand);
                 return InteractionResult.SUCCESS;

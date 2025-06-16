@@ -87,7 +87,7 @@ public class AppleJamBlock extends Block {
     public boolean canSurvive(BlockState state, LevelReader world, BlockPos position) {
         BlockState blockBelow = world.getBlockState(position.below());
         if (blockBelow.is(this)) {
-            return true;
+            return blockBelow.getValue(JAM_NUMBER) == 7;
         }
         if (blockBelow.isFaceSturdy(world, position.below(), Direction.UP)) {
             return true;

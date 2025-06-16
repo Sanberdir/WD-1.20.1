@@ -1,0 +1,40 @@
+{
+  "parent": "wd:sweet_advance/strange_scrap",
+  "criteria": {
+    "dragolit_rapier": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:dragolit_rapier"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.dragolit_rapier.description"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "icon": {
+      "item": "wd:dragolit_rapier"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.dragolit_rapier.title"
+    }
+  },
+  "requirements": [
+    [
+      "dragolit_rapier"
+    ]
+  ],
+  "rewards": {
+    "experience": 500
+  }
+}

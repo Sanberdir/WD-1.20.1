@@ -1,0 +1,37 @@
+{
+  "parent": "wd:sweet_advance/magic_adventures",
+  "criteria": {
+    "meadow_golden_flower": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:meadow_golden_flower"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.meadow_golden_flower.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "wd:meadow_golden_flower"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.meadow_golden_flower.title"
+    }
+  },
+  "requirements": [
+    [
+      "meadow_golden_flower"
+    ]
+  ]
+}

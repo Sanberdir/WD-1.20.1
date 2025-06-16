@@ -20,6 +20,7 @@ import ru.imaginaerum.wd.WD;
 import ru.imaginaerum.wd.common.blocks.custom.AppleLeavesStages;
 import ru.imaginaerum.wd.common.blocks.entity.ModBlockEntities;
 import ru.imaginaerum.wd.common.blocks.entity.renderer.DragoliteCageEntityRenderer;
+import ru.imaginaerum.wd.common.blocks.entity.renderer.GlowingJamBlockRenderer;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 import ru.imaginaerum.wd.common.items.custom.SoulStone;
 import ru.imaginaerum.wd.common.items.entity.client.ModModelLayersItem;
@@ -65,6 +66,11 @@ public class ModEventClientBusEvents {
     public static void registerBER(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.DRAGOLITE_CAGE_ENTITY.get(), DragoliteCageEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.APPLE_SIGN.get(), SignRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.GLOWING_JAM.get(), GlowingJamBlockRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.APPLE_HANGING_SIGN.get(), HangingSignRenderer::new);
+    }
+    @SubscribeEvent
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModBlockEntities.GLOWING_JAM.get(), GlowingJamBlockRenderer::new);
     }
 }

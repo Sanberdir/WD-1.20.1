@@ -1,0 +1,37 @@
+{
+  "parent": "wd:sweet_advance/magic_adventures",
+  "criteria": {
+    "a_drop_of_love": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:a_drop_of_love"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.a_drop_of_love.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "wd:a_drop_of_love"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.a_drop_of_love.title"
+    }
+  },
+  "requirements": [
+    [
+      "a_drop_of_love"
+    ]
+  ]
+}

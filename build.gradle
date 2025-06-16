@@ -121,6 +121,7 @@ repositories {
     // flatDir {
     //     dir 'libs'
     // }
+    maven { url = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/" }
     maven {
         url = "https://repo.spongepowered.org/repository/maven-public/"
     }
@@ -149,7 +150,7 @@ dependencies {
     fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
     runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
     implementation fg.deobf("curse.maven:farmers-delight-398521:5051242")
-
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.1:4.3") // GeckoLib для Forge 1.20.1
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"

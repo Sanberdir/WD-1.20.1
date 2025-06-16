@@ -6,6 +6,7 @@
 		"0": "wd:block/jam_tonic",
 		"particle": "wd:block/jam_tonic"
 	},"render_type": "translucent",
+	"ambientocclusion": false,
 	"elements": [
 		{
 			"name": "lid",

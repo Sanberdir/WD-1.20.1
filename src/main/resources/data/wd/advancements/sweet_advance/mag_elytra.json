@@ -1,0 +1,40 @@
+{
+  "parent": "wd:sweet_advance/strange_scrap",
+  "criteria": {
+    "mag_elytra": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:mag_elytra"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.mag_elitra.description"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "icon": {
+      "item": "wd:mag_elytra"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.mag_elitra.title"
+    }
+  },
+  "requirements": [
+    [
+      "mag_elytra"
+    ]
+  ],
+  "rewards": {
+    "experience": 500
+  }
+}

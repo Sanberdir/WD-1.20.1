@@ -1,0 +1,37 @@
+{
+  "parent": "wd:sweet_advance/magic_adventures",
+  "criteria": {
+    "rose_of_ghosty_tears": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:rose_of_ghosty_tears"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.rose_of_ghosty_tears.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "wd:rose_of_ghosty_tears"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.rose_of_ghosty_tears.title"
+    }
+  },
+  "requirements": [
+    [
+      "rose_of_ghosty_tears"
+    ]
+  ]
+}

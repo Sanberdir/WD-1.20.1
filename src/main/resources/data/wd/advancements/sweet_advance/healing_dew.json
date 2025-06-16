@@ -1,0 +1,40 @@
+{
+  "parent": "wd:sweet_advance/magic_adventures",
+  "criteria": {
+    "healing_dew": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:healing_dew"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.healing_dew.description"
+    },
+    "frame": "challenge",
+    "hidden": true,
+    "icon": {
+      "item": "wd:healing_dew"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.healing_dew.title"
+    }
+  },
+  "requirements": [
+    [
+      "healing_dew"
+    ]
+  ],
+  "rewards": {
+    "experience": 500
+  }
+}

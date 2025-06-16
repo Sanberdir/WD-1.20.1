@@ -6,6 +6,7 @@
 		"0": "wd:block/poison_berry_jam",
 		"particle": "wd:block/poison_berry_jam"
 	},"render_type": "translucent",
+	"ambientocclusion": false,
 	"elements": [
 		{
 			"name": "jar",

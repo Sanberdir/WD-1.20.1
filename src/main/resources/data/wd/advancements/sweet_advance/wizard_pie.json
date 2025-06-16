@@ -1,0 +1,40 @@
+{
+  "parent": "wd:sweet_advance/droping_love",
+  "criteria": {
+    "wizard_pie": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:wizard_pie"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.wizard_pie.description"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "icon": {
+      "item": "wd:wizard_pie"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.wizard_pie.title"
+    }
+  },
+  "requirements": [
+    [
+      "wizard_pie"
+    ]
+  ],
+  "rewards": {
+    "experience": 500
+  }
+}

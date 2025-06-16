@@ -1,0 +1,40 @@
+{
+  "parent": "wd:sweet_advance/the_pillagers_chest",
+  "criteria": {
+    "golden_chest_king_pillager": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:golden_chest_king_pillager"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.golden_chest_king_pillager.description"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "icon": {
+      "item": "wd:golden_chest_king_pillager"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.golden_chest_king_pillager.title"
+    }
+  },
+  "requirements": [
+    [
+      "golden_chest_king_pillager"
+    ]
+  ],
+  "rewards": {
+    "experience": 500
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "parent": "wd:sweet_advance/magic_adventures",
+  "criteria": {
+    "magic_hat": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:magic_hat"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.magic_hat.description"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "icon": {
+      "item": "wd:magic_hat"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.magic_hat.title"
+    }
+  },
+  "requirements": [
+    [
+      "magic_hat"
+    ]
+  ],
+  "rewards": {
+    "experience": 500
+  }
+}

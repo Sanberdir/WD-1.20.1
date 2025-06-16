@@ -1,0 +1,40 @@
+{
+  "parent": "wd:sweet_advance/magic_adventures",
+  "criteria": {
+    "sweet_roll": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:sweet_roll"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.sweet_roll.description"
+    },
+    "frame": "challenge",
+    "hidden": true,
+    "icon": {
+      "item": "wd:sweet_roll"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.sweet_roll.title"
+    }
+  },
+  "requirements": [
+    [
+      "sweet_roll"
+    ]
+  ],
+  "rewards": {
+    "experience": 500
+  }
+}

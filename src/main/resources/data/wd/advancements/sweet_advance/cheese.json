@@ -1,0 +1,40 @@
+{
+  "parent": "wd:sweet_advance/magic_adventures",
+  "criteria": {
+    "cheese": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:cheese"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.cheese.description"
+    },
+    "frame": "challenge",
+    "hidden": true,
+    "icon": {
+      "item": "wd:cheese"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.cheese.title"
+    }
+  },
+  "requirements": [
+    [
+      "cheese"
+    ]
+  ],
+  "rewards": {
+    "experience": 500
+  }
+}

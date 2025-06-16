@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "magic_adventure": {
+      "conditions": {},
+      "trigger": "minecraft:tick"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "wd:textures/gui/adventure.png",
+    "description": {
+      "translate": "wd.advancements.adventure.magic_adventures.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "wd:robin_stick"
+    },
+    "show_toast": false,
+    "title": {
+      "translate": "wd.advancements.adventure.magic_adventures.title"
+    }
+  },
+  "requirements": [
+    [
+      "magic_adventure"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

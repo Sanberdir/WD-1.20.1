@@ -5,6 +5,7 @@
 		"0": "wd:block/sweet_jam",
 		"particle": "wd:block/sweet_jam"
 	},"render_type": "translucent",
+	"ambientocclusion": false,
 	"elements": [
 		{
 			"name": "lid",

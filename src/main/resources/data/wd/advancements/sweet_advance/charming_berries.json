@@ -1,0 +1,37 @@
+{
+  "parent": "wd:sweet_advance/magic_adventures",
+  "criteria": {
+    "charming_berries": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:charming_berries"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.charming_berries.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "wd:charming_berries"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.charming_berries.title"
+    }
+  },
+  "requirements": [
+    [
+      "charming_berries"
+    ]
+  ]
+}

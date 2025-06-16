@@ -11,6 +11,11 @@ public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, WD.MODID);
 
+    public static final RegistryObject<BlockEntityType<GlowingJamBlockEntity>> GLOWING_JAM =
+            BLOCK_ENTITIES.register("glowing_jam", () ->
+                    BlockEntityType.Builder.of(GlowingJamBlockEntity::new,
+                            BlocksWD.GLOWING_JAM.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<RoseMurdererBlockEntity>> ROSE_MURDERER =
             BLOCK_ENTITIES.register("rose_murderer", () ->
                     BlockEntityType.Builder.of(RoseMurdererBlockEntity::new,

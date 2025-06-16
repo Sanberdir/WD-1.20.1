@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/leaves",
+  "textures": {
+    "all": "wd:block/apple_leaves_s_4"
+  },  "render_type": "cutout"
+}

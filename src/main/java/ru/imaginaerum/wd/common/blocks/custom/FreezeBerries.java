@@ -75,12 +75,10 @@ public class FreezeBerries extends BushBlock implements BonemealableBlock {
 
     @Override
     public void entityInside(BlockState blockState, Level level, BlockPos blockPos, Entity entity) {
-        // Проверяем, что сущность является LivingEntity (игроки, мобы и т.д.)
-        // или что она уже находится в блоке этого типа (для предотвращения многократного применения логики).
+
         if (!(entity instanceof LivingEntity) || entity.getFeetBlockState().is(this)) {
             // Замедляем движение сущности, имитируя эффект сыпучего материала.
             entity.makeStuckInBlock(blockState, new Vec3(0.9, 1.5, 0.9));
-
         }
         // Устанавливаем флаг, что сущность находится в сыпучем снегу.
         entity.setIsInPowderSnow(true);

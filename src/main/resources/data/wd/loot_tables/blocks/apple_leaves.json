@@ -2,7 +2,7 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "bonus_rolls": 0.0,
+      "bonus_rolls": 0,
       "entries": [
         {
           "type": "minecraft:alternatives",
@@ -37,7 +37,7 @@
                   ]
                 }
               ],
-              "name": "wd:apple_leaves"
+              "name": "wd:apple_leaves_stages"
             },
             {
               "type": "minecraft:item",
@@ -47,10 +47,10 @@
                 },
                 {
                   "chances": [
-                    0.05,
-                    0.0625,
-                    0.083333336,
-                    0.1
+                    0.03,
+                    0.04,
+                    0.06,
+                    0.95
                   ],
                   "condition": "minecraft:table_bonus",
                   "enchantment": "minecraft:fortune"
@@ -61,10 +61,10 @@
           ]
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     },
     {
-      "bonus_rolls": 0.0,
+      "bonus_rolls": 0,
       "conditions": [
         {
           "condition": "minecraft:inverted",
@@ -102,11 +102,11 @@
           "conditions": [
             {
               "chances": [
+                0.01,
                 0.02,
-                0.022222223,
-                0.025,
-                0.033333335,
-                0.1
+                0.03,
+                0.04,
+                0.08
               ],
               "condition": "minecraft:table_bonus",
               "enchantment": "minecraft:fortune"
@@ -117,8 +117,8 @@
               "add": false,
               "count": {
                 "type": "minecraft:uniform",
-                "max": 2.0,
-                "min": 1.0
+                "max": 2,
+                "min": 1
               },
               "function": "minecraft:set_count"
             },
@@ -129,8 +129,8 @@
           "name": "minecraft:stick"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     }
   ],
-  "random_sequence": "wd:blocks/apple_leaves"
+  "random_sequence": "wd:blocks/apple_leaves_stages"
 }

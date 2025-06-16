@@ -1,0 +1,40 @@
+{
+  "parent": "wd:sweet_advance/strange_scrap",
+  "criteria": {
+    "robin_stick": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:robin_stick"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.robin_stick.description"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "icon": {
+      "item": "wd:robin_stick"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.robin_stick.title"
+    }
+  },
+  "requirements": [
+    [
+      "robin_stick"
+    ]
+  ],
+  "rewards": {
+    "experience": 500
+  }
+}

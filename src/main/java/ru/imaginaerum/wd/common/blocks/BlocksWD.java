@@ -33,7 +33,8 @@ public class BlocksWD {
     public static final RegistryObject<Block> CHARMING_JAM = BLOCKS.register("charming_jam",
             () -> new CharmingJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.CHARMING_JAM));
     public static final RegistryObject<Block> GLOWING_JAM = BLOCKS.register("glowing_jam",
-            () -> new GlowingJamBlock(GlowingJamBlock.Types.GLOWING_JAM, BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion()));
+            () -> new GlowingJamBlock(BlockBehaviour.Properties.of().lightLevel((i) -> 15)
+                    .strength(0.2F).sound(SoundType.GLASS).noOcclusion()));
     public static final RegistryObject<Block> FREEZE_JAM = BLOCKS.register("freeze_jam",
             () -> new FreezeJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.FREEZE_JAM));
     public static final RegistryObject<Block> LEVITAN_JAM = BLOCKS.register("levitan_jam",
@@ -190,9 +191,9 @@ public class BlocksWD {
                     .mapColor(MapColor.WOOD).forceSolidOn().instrument(NoteBlockInstrument.BASS).noCollission().strength(1.0F).dropsLike(APPLE_HANGING_SIGN.get()), ModWoodType.APPLE_WOOD));
 
     public static final RegistryObject<Block> APPLE_LEAVES = BLOCKS.register("apple_leaves",
-            () -> new LeavesBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES)));
+            () -> new LeavesBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES).randomTicks()));
     public static final RegistryObject<Block> APPLE_LEAVES_STAGES = BLOCKS.register("apple_leaves_stages",
-            () -> new AppleLeavesStages(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES)));
+            () -> new AppleLeavesStages(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES).randomTicks()));
 
     public static final RegistryObject<Block> APPLE_SAPLING = BLOCKS.register("apple_sapling",
             () -> new SaplingBlock(new AppleTreeGrower() ,BlockBehaviour.Properties.of()

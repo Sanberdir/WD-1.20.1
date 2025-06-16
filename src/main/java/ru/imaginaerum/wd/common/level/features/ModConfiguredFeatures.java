@@ -10,6 +10,7 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
@@ -47,8 +48,8 @@ public class ModConfiguredFeatures {
                 new FancyTrunkPlacer(3, 11, 0),
                 new WeightedStateProvider(  // Используем WeightedStateProvider для двух типов листвы
                         SimpleWeightedRandomList.<BlockState>builder()
-                                .add(BlocksWD.APPLE_LEAVES.get().defaultBlockState(), 3)  // Первый тип листвы с вероятностью 3
-                                .add(BlocksWD.APPLE_LEAVES_STAGES.get().defaultBlockState(), 1)  // Второй тип листвы с вероятностью 1
+                                .add(BlocksWD.APPLE_LEAVES.get().defaultBlockState().setValue(BlockStateProperties.PERSISTENT, true), 3)  // Первый тип листвы с вероятностью 3
+                                .add(BlocksWD.APPLE_LEAVES_STAGES.get().defaultBlockState().setValue(BlockStateProperties.PERSISTENT, true), 1)  // Второй тип листвы с вероятностью 1
                                 .build()
                 ),
                 new FancyFoliagePlacer(ConstantInt.of(2), ConstantInt.of(4), 4),

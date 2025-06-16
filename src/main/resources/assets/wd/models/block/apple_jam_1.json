@@ -4,7 +4,8 @@
 	"textures": {
 		"0": "wd:block/apple_jam",
 		"particle": "wd:block/apple_jam"
-	},"render_type": "translucent",
+	},"render_type": "cutout",
+	"ambientocclusion": false,
 	"elements": [
 		{
 			"name": "jar",

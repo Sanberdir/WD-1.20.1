@@ -5,7 +5,8 @@
 	"textures": {
 		"0": "wd:block/freeze_jam",
 		"particle": "wd:block/freeze_jam"
-	},"render_type": "translucent",
+	},"render_type": "cutout",
+	"ambientocclusion": false,
 	"elements": [
 		{
 			"name": "jar",

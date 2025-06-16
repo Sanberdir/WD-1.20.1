@@ -1,0 +1,37 @@
+{
+  "parent": "wd:sweet_advance/magic_adventures",
+  "criteria": {
+    "the_pillagers_chest": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "wd:the_pillagers_chest"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "wd.advancements.adventures.the_pillagers_chest.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "wd:the_pillagers_chest"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "wd.advancements.adventures.the_pillagers_chest.title"
+    }
+  },
+  "requirements": [
+    [
+      "the_pillagers_chest"
+    ]
+  ]
+}
