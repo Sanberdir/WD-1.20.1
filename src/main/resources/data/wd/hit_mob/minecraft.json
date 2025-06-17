@@ -230,6 +230,46 @@
         "max": 6
       }
     },
+    "minecraft:spider": {
+      "drops": [
+        {
+          "item": "minecraft:spider_eye",
+          "min_count": 2,
+          "max_count": 4,
+          "chance": 1
+        },
+        {
+          "item": "minecraft:fermented_spider_eye",
+          "min_count": 1,
+          "max_count": 2,
+          "chance": 0.2
+        }
+      ],
+      "experience": {
+        "min": 3,
+        "max": 6
+      }
+    },
+    "minecraft:cave_spider": {
+      "drops": [
+        {
+          "item": "minecraft:fermented_spider_eye",
+          "min_count": 2,
+          "max_count": 4,
+          "chance": 1
+        },
+        {
+          "item": "minecraft:spider_eye",
+          "min_count": 1,
+          "max_count": 2,
+          "chance": 0.2
+        }
+      ],
+      "experience": {
+        "min": 3,
+        "max": 6
+      }
+    },
     "minecraft:stray": {
       "drops": [
         {
