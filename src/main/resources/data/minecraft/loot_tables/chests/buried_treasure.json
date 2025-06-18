@@ -16,16 +16,6 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "wd:wd_jam_music_disk"
-        }
-      ],
-      "rolls": 1.0
-    },
-    {
-      "bonus_rolls": 0.0,
-      "entries": [
-        {
-          "type": "minecraft:item",
           "functions": [
             {
               "add": false,

@@ -75,6 +75,9 @@ public class TabWD extends CreativeModeTab {
                         pOutput.accept(ItemsWD.CLEANSING_DECOCTION.get());
                         pOutput.accept(ItemsWD.HANDFUL_NETHER.get());
                         pOutput.accept(ItemsWD.SPARKLING_POLLEN.get());
+                        pOutput.accept(ItemsWD.MUSIC_DISK_1.get());
+                        pOutput.accept(ItemsWD.MUSIC_DISK_2.get());
+                        pOutput.accept(ItemsWD.MUSIC_DISK_3.get());
                         pOutput.accept(ItemsWD.CRIMSON_BONE_MEAL.get());
                         pOutput.accept(ItemsWD.WARPED_BONE_MEAL.get());
                         pOutput.accept(ItemsWD.GRASS_BONE_MEAL.get());

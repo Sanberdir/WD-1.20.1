@@ -21,8 +21,12 @@ public class CustomSoundEvents {
             registerSoundEvents("flies");
     public static final RegistryObject<SoundEvent> ROBIN_STICK =
             registerSoundEvents("robin_stick");
-    public static final RegistryObject<SoundEvent> WD_JAM_MUSIC_DISK =
-            registerSoundEvents("wd_jam_music_disk");
+    public static final RegistryObject<SoundEvent> REZOLV_12_THE_LONG_WAY_HOME =
+            registerSoundEvents("rezolv_12_the_long_way_home");
+    public static final RegistryObject<SoundEvent> REZOLV_15_SO_LITTLE_BUT_SO_BIG =
+            registerSoundEvents("rezolv_15_so_little_but_so_big");
+    public static final RegistryObject<SoundEvent> REZOLV_4_WANDERING_MINSTREL =
+            registerSoundEvents("rezolv_4_wandering_minstrel");
 
 
 

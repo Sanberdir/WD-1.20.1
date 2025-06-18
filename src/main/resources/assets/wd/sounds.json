@@ -57,12 +57,30 @@
       }
     ]
   },
-  "wd_jam_music_disk": {
-    "subtitle": "sounds.wd.wd_jam_music_disk",
+  "rezolv_12_the_long_way_home": {
+    "subtitle": "sounds.wd.rezolv_12_the_long_way_home",
     "sounds": [
       {
-       "name": "wd:wd_jam_music_disk",
+       "name": "wd:rezolv_12_the_long_way_home",
        "stream": true
+      }
+    ]
+  },
+  "rezolv_15_so_little_but_so_big": {
+    "subtitle": "sounds.wd.rezolv_15_so_little_but_so_big",
+    "sounds": [
+      {
+        "name": "wd:rezolv_15_so_little_but_so_big",
+        "stream": true
+      }
+    ]
+  },
+  "rezolv_4_wandering_minstrel": {
+    "subtitle": "sounds.wd.rezolv_4_wandering_minstrel",
+    "sounds": [
+      {
+        "name": "wd:rezolv_4_wandering_minstrel",
+        "stream": true
       }
     ]
   }

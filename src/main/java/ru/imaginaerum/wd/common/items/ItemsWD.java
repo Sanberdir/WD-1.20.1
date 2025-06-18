@@ -298,6 +298,17 @@ public class ItemsWD {
     public static final RegistryObject<Item> SPARKLING_POLLEN = ITEMS.register("sparkling_pollen",
             () -> new Item(new Item.Properties()));
 
+    public static final RegistryObject<Item> MUSIC_DISK_1 = ITEMS.register("music_disk_1",
+            () -> new RecordItem(8, CustomSoundEvents.REZOLV_12_THE_LONG_WAY_HOME.get(),
+                    new Item.Properties().stacksTo(1),255));
+
+    public static final RegistryObject<Item> MUSIC_DISK_2 = ITEMS.register("music_disk_2",
+            () -> new RecordItem(8, CustomSoundEvents.REZOLV_15_SO_LITTLE_BUT_SO_BIG.get(),
+                    new Item.Properties().stacksTo(1),201));
+    public static final RegistryObject<Item> MUSIC_DISK_3 = ITEMS.register("music_disk_3",
+            () -> new RecordItem(8, CustomSoundEvents.REZOLV_4_WANDERING_MINSTREL.get(),
+                    new Item.Properties().stacksTo(1),174));
+
     public static final RegistryObject<Item> SOUL_STONE = ITEMS.register("soul_stone",
             () -> new SoulStone(new Item.Properties().stacksTo(1)));
 

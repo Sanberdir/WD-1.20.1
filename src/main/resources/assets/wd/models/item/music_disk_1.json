@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "wd:item/wd_jam_music_disk"
+    "layer0": "wd:item/music_disk_1"
   }
 }

@@ -33,7 +33,7 @@ public class BlocksWD {
     public static final RegistryObject<Block> CHARMING_JAM = BLOCKS.register("charming_jam",
             () -> new CharmingJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.CHARMING_JAM));
     public static final RegistryObject<Block> GLOWING_JAM = BLOCKS.register("glowing_jam",
-            () -> new GlowingJamBlock(BlockBehaviour.Properties.of().lightLevel((i) -> 15)
+            () -> new GlowingJamBlock(BlockBehaviour.Properties.of().lightLevel((i) -> 7)
                     .strength(0.2F).sound(SoundType.GLASS).noOcclusion()));
     public static final RegistryObject<Block> FREEZE_JAM = BLOCKS.register("freeze_jam",
             () -> new FreezeJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.FREEZE_JAM));
