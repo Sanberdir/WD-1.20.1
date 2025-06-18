@@ -43,19 +43,32 @@ public class BlocksWD {
             () -> new TonicJamBlock(BlockBehaviour.Properties.of().strength(0.2F).sound(SoundType.GLASS).noOcclusion(), ItemsWD.JAM_TONIC));
     // Вафли
     public static final RegistryObject<Block> BERRIES_WAFFLES = BLOCKS.register("berries_waffles",
-            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.BERRIES_WAFFLES));
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL),
+                    ItemsWD.BERRIES_WAFFLES, BerriesWaffles.WaffleType.BERRIES));
+
     public static final RegistryObject<Block> APPLE_WAFFLES = BLOCKS.register("apple_waffles",
-            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.APPLE_WAFFLES));
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL),
+                    ItemsWD.APPLE_WAFFLES, BerriesWaffles.WaffleType.APPLE));
+
     public static final RegistryObject<Block> ICE_WAFFLES = BLOCKS.register("ice_waffles",
-            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.ICE_WAFFLES));
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL),
+                    ItemsWD.ICE_WAFFLES, BerriesWaffles.WaffleType.ICE));
+
     public static final RegistryObject<Block> CHARMING_WAFFLES = BLOCKS.register("charming_waffles",
-            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.CHARMING_WAFFLES));
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL),
+                    ItemsWD.CHARMING_WAFFLES, BerriesWaffles.WaffleType.CHARMING));
+
     public static final RegistryObject<Block> POISON_WAFFLES = BLOCKS.register("poison_waffles",
-            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.POISON_WAFFLES));
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL),
+                    ItemsWD.POISON_WAFFLES, BerriesWaffles.WaffleType.POISON));
+
     public static final RegistryObject<Block> GLOW_BERRIES_WAFFLES = BLOCKS.register("glow_berries_waffles",
-            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.GLOW_BERRIES_WAFFLES));
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().lightLevel((i) -> 15).sound(SoundType.WOOL),
+                    ItemsWD.GLOW_BERRIES_WAFFLES, BerriesWaffles.WaffleType.GLOW_BERRIES));
+
     public static final RegistryObject<Block> WAFFLES = BLOCKS.register("waffles",
-            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL), ItemsWD.WAFFLES));
+            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL),
+                    ItemsWD.WAFFLES, BerriesWaffles.WaffleType.WAFFLES_NULL));
     // Растения
     public static final RegistryObject<Block> FIRE_STEM = BLOCKS.register("fire_stem",
             () -> new FireRod(BlockBehaviour.Properties.of().noCollission().randomTicks().instabreak().sound(SoundType.GRASS)));

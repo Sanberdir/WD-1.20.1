@@ -1,0 +1,30 @@
+{
+  "type": "farmersdelight:cooking",
+  "cookingtime": 150,
+  "experience": 3,
+  "ingredients": [
+    {
+      "tag": "minecraft:mushrooms"
+    },
+    {
+      "tag": "minecraft:mushrooms"
+    },
+    {
+      "tag": "minecraft:mushrooms"
+    },
+    {
+      "item": "minecraft:bone_meal"
+    },
+    {
+      "item": "minecraft:redstone"
+    },
+    {
+      "tag": "minecraft:mushrooms_blocks"
+    }
+  ],
+  "recipe_book_tab": "mycelium_bone_meal",
+  "result": {
+    "item": "wd:mycelium_bone_meal",
+    "count": 4
+  }
+}

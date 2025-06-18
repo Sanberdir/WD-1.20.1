@@ -1,7 +1,9 @@
 package ru.imaginaerum.wd.common.blocks.custom;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -11,6 +13,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -23,19 +26,45 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.registries.RegistryObject;
+import ru.imaginaerum.wd.WD;
 import ru.imaginaerum.wd.common.items.ItemsWD;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class BerriesWaffles extends Block {
     public static final IntegerProperty WAFFLERS = IntegerProperty.create("wafflers", 0, 7);
     private final RegistryObject<Item> waffleItem;
+    private final WaffleType waffleType;
 
-    public BerriesWaffles(Properties properties, RegistryObject<Item> waffleItem) {
+    public BerriesWaffles(Properties properties, RegistryObject<Item> waffleItem, WaffleType waffleType) {
         super(properties);
         this.waffleItem = waffleItem;
-        this.registerDefaultState(this.stateDefinition.any()
-                .setValue(WAFFLERS, 0));
+        this.waffleType = waffleType;
+        this.registerDefaultState(this.stateDefinition.any().setValue(WAFFLERS, 0));
     }
 
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, level, tooltip, flag);
+        tooltip.add(Component.translatable(WD.MODID + "." + waffleType.name + ".description")
+                .withStyle(ChatFormatting.DARK_PURPLE)); // Добавляем фиолетовый цвет
+    }
+    public enum WaffleType {
+        BERRIES("berries_waffles"),
+        APPLE("apple_waffles"),
+        ICE("ice_waffles"),
+        CHARMING("charming_waffles"),
+        POISON("poison_waffles"),
+        GLOW_BERRIES("glow_berries_waffles"),
+        WAFFLES_NULL("waffles");
+
+        public final String name;
+
+        WaffleType(String name) {
+            this.name = name;
+        }
+    }
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(WAFFLERS);

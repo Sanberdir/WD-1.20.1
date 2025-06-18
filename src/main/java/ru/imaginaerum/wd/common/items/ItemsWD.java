@@ -297,8 +297,7 @@ public class ItemsWD {
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> SPARKLING_POLLEN = ITEMS.register("sparkling_pollen",
             () -> new Item(new Item.Properties()));
-    public static final RegistryObject<Item> WD_JAM_MUSIC_DISK = ITEMS.register("wd_jam_music_disk",
-            () -> new RecordItem(8, CustomSoundEvents.WD_JAM_MUSIC_DISK.get(),new Item.Properties().stacksTo(1),114));
+
     public static final RegistryObject<Item> SOUL_STONE = ITEMS.register("soul_stone",
             () -> new SoulStone(new Item.Properties().stacksTo(1)));
 

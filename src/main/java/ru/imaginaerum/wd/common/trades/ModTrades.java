@@ -31,6 +31,12 @@ public class ModTrades {
                 .add(new BasicItemListing(new ItemStack(Items.EMERALD, 2),
                         new ItemStack(ItemsWD.HANDFUL_NETHER.get(),10), 20, 10, 0f));
         event.getGenericTrades()
+                .add(new BasicItemListing(new ItemStack(Items.EMERALD, 1),
+                        new ItemStack(ItemsWD.HANDFUL_YADOGA.get(),6), 20, 10, 0f));
+        event.getGenericTrades()
+                .add(new BasicItemListing(new ItemStack(Items.EMERALD, 2),
+                        new ItemStack(ItemsWD.HANDFUL_YADOGA.get(),10), 20, 10, 0f));
+        event.getGenericTrades()
                 .add(new BasicItemListing(new ItemStack(ItemsWD.HANDFUL_NETHER.get(), 5),
                         new ItemStack(Items.EMERALD,1), 20, 10, 0f));
         event.getGenericTrades()
@@ -40,13 +46,7 @@ public class ModTrades {
                 .add(new BasicItemListing(new ItemStack(Items.EMERALD, 1),
                         new ItemStack(ItemsWD.HANDFUL_NETHER.get(),5), 20, 10, 0f));
 
-        event.getGenericTrades()
-                .add(new BasicItemListing(new ItemStack(Items.EMERALD, 3),
-                        new ItemStack(ItemsWD.SILVERAN.get(),7), 20, 10, 0f));
 
-        event.getGenericTrades()
-                .add(new BasicItemListing(new ItemStack(Items.EMERALD, 2),
-                        new ItemStack(ItemsWD.SILVERAN.get(),7), 20, 10, 0f));
 
         event.getGenericTrades()
                 .add(new BasicItemListing(new ItemStack(Items.EMERALD, 35),

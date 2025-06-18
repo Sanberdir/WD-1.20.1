@@ -18,6 +18,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,11 +33,33 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import ru.imaginaerum.wd.common.blocks.entity.GlowingJamBlockEntity;
 import ru.imaginaerum.wd.common.items.ItemsWD;
+import software.bernie.geckolib.animatable.GeoBlockEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class GlowingJamBlock extends BaseEntityBlock {
+public class GlowingJamBlock extends BaseEntityBlock implements GeoBlockEntity {
     public static final int ROTATIONS = RotationSegment.getMaxSegmentIndex() + 1;
     public static final IntegerProperty ROTATION = BlockStateProperties.ROTATION_16;
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
+    }
 
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
+
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
+    }
     // Хитбоксы для банки
     private static final VoxelShape SHAPES_1_1 = Block.box(5.0D, 7.0D, 5.0D, 11.0D, 8.0D, 11.0D);
     private static final VoxelShape SHAPES_1_2 = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 6.0D, 12.0D);

@@ -1,5 +1,6 @@
 package ru.imaginaerum.wd.common.blocks.entity.model;
 
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import ru.imaginaerum.wd.WD;
 import ru.imaginaerum.wd.common.blocks.entity.GlowingJamBlockEntity;

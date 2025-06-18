@@ -1,0 +1,30 @@
+{
+  "type": "farmersdelight:cooking",
+  "cookingtime": 150,
+  "experience": 3,
+  "ingredients": [
+    {
+      "tag": "minecraft:flowers"
+    },
+    {
+      "tag": "minecraft:grass"
+    },
+    {
+      "tag": "minecraft:grass"
+    },
+    {
+      "item": "minecraft:bone_meal"
+    },
+    {
+      "item": "minecraft:redstone"
+    },
+    {
+      "item": "minecraft:moss_block"
+    }
+  ],
+  "recipe_book_tab": "grass_bone_meal",
+  "result": {
+    "item": "wd:grass_bone_meal",
+    "count": 4
+  }
+}
