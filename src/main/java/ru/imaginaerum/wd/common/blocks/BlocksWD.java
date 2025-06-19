@@ -67,8 +67,8 @@ public class BlocksWD {
                     ItemsWD.GLOW_BERRIES_WAFFLES, BerriesWaffles.WaffleType.GLOW_BERRIES));
 
     public static final RegistryObject<Block> WAFFLES = BLOCKS.register("waffles",
-            () -> new BerriesWaffles(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL),
-                    ItemsWD.WAFFLES, BerriesWaffles.WaffleType.WAFFLES_NULL));
+            () -> new WafflesBlock(BlockBehaviour.Properties.of().randomTicks().sound(SoundType.WOOL),
+                    ItemsWD.WAFFLES));
     // Растения
     public static final RegistryObject<Block> FIRE_STEM = BLOCKS.register("fire_stem",
             () -> new FireRod(BlockBehaviour.Properties.of().noCollission().randomTicks().instabreak().sound(SoundType.GRASS)));

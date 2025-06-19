@@ -25,7 +25,7 @@ public class ModPlacedFeatures {
 
 
         register(context, APPLE_PLACED_KEY, configuredFeatures.getOrThrow(ModConfiguredFeatures.APPLE_KEY),
-                VegetationPlacements.treePlacement(PlacementUtils.countExtra(3, 0.1f, 2),
+                VegetationPlacements.treePlacement(PlacementUtils.countExtra(0, 0.02f, 1),
                         BlocksWD.APPLE_SAPLING.get()));
     }
 

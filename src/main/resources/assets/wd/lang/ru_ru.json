@@ -243,7 +243,7 @@
   "item.wd.warped_wart": "Искажённый нарост",
   "item.wd.wd_jam": "§bПластинка",
   "item.wd.music_disk_1": "§bПластинка",
-  "item.wd.music_disk_1.desc": "Rezolv-12. Долгое возвращение домой",
+  "item.wd.music_disk_1.desc": "Rezolv-12. Долгий путь домой",
   "item.wd.music_disk_2": "§bПластинка",
   "item.wd.music_disk_2.desc": "Rezolv-15. Такой маленький, но такой большой",
   "item.wd.music_disk_3": "§bПластинка",
@@ -281,6 +281,5 @@
   "wd.ice_waffles.description": "В морожковом джеме.",
   "wd.charming_waffles.description": "В чарничном варенье.",
   "wd.poison_waffles.description": "В джеме из ядоги.",
-  "wd.glow_berries_waffles.description": "В варенье из светящихся ягод.",
-  "wd.waffles.description": "Без начинки."
+  "wd.glow_berries_waffles.description": "В варенье из светящихся ягод."
 }
