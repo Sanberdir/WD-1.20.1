@@ -22,6 +22,7 @@ import net.minecraft.world.level.levelgen.feature.foliageplacers.PineFoliagePlac
 import net.minecraft.world.level.levelgen.feature.foliageplacers.RandomSpreadFoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
+import net.minecraft.world.level.levelgen.feature.treedecorators.BeehiveDecorator;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.BendingTrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.FancyTrunkPlacer;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTest;
@@ -40,7 +41,8 @@ public class ModConfiguredFeatures {
     public static final ResourceKey<ConfiguredFeature<?, ?>> APPLE_KEY = registerKey("apple");
 
     public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> context) {
-        register(context, APPLE_KEY, Feature.TREE, createFancyOak().build());
+        BeehiveDecorator beezApple012 = new BeehiveDecorator(0.12F);
+        register(context, APPLE_KEY, Feature.TREE, createFancyOak().decorators(List.of(beezApple012)).build());
     }
     private static TreeConfiguration.TreeConfigurationBuilder createFancyOak() {
         return (new TreeConfiguration.TreeConfigurationBuilder(
@@ -49,7 +51,7 @@ public class ModConfiguredFeatures {
                 new WeightedStateProvider(  // Используем WeightedStateProvider для двух типов листвы
                         SimpleWeightedRandomList.<BlockState>builder()
                                 .add(BlocksWD.APPLE_LEAVES.get().defaultBlockState().setValue(BlockStateProperties.PERSISTENT, true), 3)  // Первый тип листвы с вероятностью 3
-                                .add(BlocksWD.APPLE_LEAVES_STAGES.get().defaultBlockState().setValue(BlockStateProperties.PERSISTENT, true), 1)  // Второй тип листвы с вероятностью 1
+                                .add(BlocksWD.APPLE_LEAVES_STAGES.get().defaultBlockState().setValue(BlockStateProperties.PERSISTENT, true), 1)
                                 .build()
                 ),
                 new FancyFoliagePlacer(ConstantInt.of(2), ConstantInt.of(4), 4),

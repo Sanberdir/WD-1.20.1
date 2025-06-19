@@ -1,7 +1,12 @@
 {
   "type": "minecraft:tree",
   "config": {
-    "decorators": [],
+    "decorators": [
+      {
+        "type": "minecraft:beehive",
+        "probability": 0.12
+      }
+    ],
     "dirt_provider": {
       "type": "minecraft:simple_state_provider",
       "state": {
@@ -22,7 +27,7 @@
             "Name": "wd:apple_leaves",
             "Properties": {
               "distance": "7",
-              "persistent": "false",
+              "persistent": "true",
               "waterlogged": "false"
             }
           },
@@ -32,7 +37,10 @@
           "data": {
             "Name": "wd:apple_leaves_stages",
             "Properties": {
-              "stage": "0"
+              "distance": "7",
+              "persistent": "true",
+              "stage": "0",
+              "waterlogged": "false"
             }
           },
           "weight": 1
