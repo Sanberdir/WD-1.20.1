@@ -161,7 +161,7 @@ public class GlowingJamBlock extends BaseEntityBlock implements GeoBlockEntity {
         } else {
             if (!itemInHand.isEmpty() && itemInHand.is(ItemsWD.GLOWING_JAM.get())) {
                 return InteractionResult.PASS;
-            } else if (itemInHand.isEmpty()) {
+            } else if ((itemInHand.isEmpty()) && player.getFoodData().needsFood()) {
                 level.removeBlock(pos, false);
                 player.getFoodData().eat(14, 0.5F);
                 player.addEffect(new MobEffectInstance(MobEffects.GLOWING, 220, 0));

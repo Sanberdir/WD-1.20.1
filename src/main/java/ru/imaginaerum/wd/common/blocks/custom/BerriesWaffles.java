@@ -160,7 +160,7 @@ public class BerriesWaffles extends Block {
                     player.swing(hand);
                     return InteractionResult.SUCCESS;
                 }
-            } else if (itemInHand.isEmpty()) {
+            } else if ((itemInHand.isEmpty()) && player.getFoodData().needsFood()) {
                 // Если рука пуста, восстанавливаем насыщение и сытость
                 if (currentStage > 0) {
                     level.setBlock(pos, state.setValue(WAFFLERS, currentStage - 1), 3); // Уменьшаем стадию
