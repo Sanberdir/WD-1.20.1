@@ -21,12 +21,11 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PlayMessages;
 import ru.imaginaerum.wd.WD;
-import ru.imaginaerum.wd.common.blocks.custom.AppleLeavesStages;
 import ru.imaginaerum.wd.common.entities.ModEntities;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 import ru.imaginaerum.wd.server.events.HitAppleStarBall;
 import ru.imaginaerum.wd.server.events.HitBlockStarBall;
-import ru.imaginaerum.wd.server.events.HitEntityStarball;
+import ru.imaginaerum.wd.server.events.HitEntityHandler;
 
 @OnlyIn(value = Dist.CLIENT, _interface = ItemSupplier.class)
 public class StarBall extends AbstractHurtingProjectileMod implements ItemSupplier {
@@ -43,22 +42,17 @@ public class StarBall extends AbstractHurtingProjectileMod implements ItemSuppli
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
-    @Override
     protected void onHitEntity(EntityHitResult hitResult) {
         super.onHitEntity(hitResult);
-
         Entity entity = hitResult.getEntity();
-        if (!this.level().isClientSide) {
-            this.discard(); // Удаляем текущий объект
-
-            // Проверяем, является ли уровень серверным
-            if (this.level() instanceof ServerLevel serverLevel) {
-                // Вызываем статический метод из HitEntityStarball
-                HitEntityStarball.hitEntity(entity, serverLevel);
-            }
+        if (!this.level().isClientSide && this.level() instanceof ServerLevel serverLevel) {
+            // Сначала обрабатываем дроп
+            HitEntityHandler.handleHitEntity(hitResult, serverLevel);
+            this.discard();
         }
-        // Дополнительная логика, если требуется
     }
+
+
 
     @Override
     protected void onHitBlock(BlockHitResult blockHitResult) {
