@@ -25,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.server.ServerLifecycleHooks;
+import ru.imaginaerum.wd.common.items.ItemsWD;
 import ru.imaginaerum.wd.common.particles.ModParticles;
 
 import java.io.InputStream;
@@ -70,7 +71,19 @@ public class HitEntityHandler {
         if (mobConfig != null) {
             // Визуальные эффекты
             spawnEffects(level, entity);
-
+            RandomSource random = level.random;
+            double x = entity.getX();
+            double y = entity.getY();
+            double z = entity.getZ();
+            if (random.nextFloat() <= 0.3f) {
+                Item sparklingPollen = ItemsWD.SPARKLING_POLLEN.get();
+                if (sparklingPollen != null) {
+                    int count = 1 + random.nextInt(2); // 1-2 штуки
+                    ItemStack stack = new ItemStack(sparklingPollen, count);
+                    ItemEntity itemEntity = new ItemEntity(level, x, y, z, stack);
+                    level.addFreshEntity(itemEntity);
+                }
+            }
             // Обрабатываем дроп предметов
             if (mobConfig.has("drops")) {
                 processItemDrops(level, entity, mobConfig.getAsJsonObject("drops"));

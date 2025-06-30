@@ -97,7 +97,12 @@ public class FireRod extends Block implements IPlantable {
         // Проверка специальных блоков
         if (blockBelow.is(BlockTags.NYLIUM) || blockBelow.is(Blocks.NETHERRACK) ||
                 blockBelow.is(Blocks.GRAVEL) || blockBelow.is(Blocks.BASALT) ||
-                blockBelow.is(Blocks.BLACKSTONE)) {
+                blockBelow.is(Blocks.BLACKSTONE) || blockBelow.is(Blocks.STONE) ||
+                blockBelow.is(Blocks.COBBLESTONE) || blockBelow.is(Blocks.ANDESITE) ||
+                blockBelow.is(Blocks.DIORITE) || blockBelow.is(Blocks.GRANITE) ||
+                blockBelow.is(Blocks.DEEPSLATE) || blockBelow.is(Blocks.TUFF) ||
+                blockBelow.is(Blocks.CALCITE) || blockBelow.is(Blocks.BLACKSTONE) ||
+                blockBelow.is(Blocks.BASALT) || blockBelow.is(Blocks.SMOOTH_BASALT)) {
 
             BlockPos belowPos = pos.below();
 
@@ -117,11 +122,6 @@ public class FireRod extends Block implements IPlantable {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(AGE);
-    }
-
-    @Override
-    public PlantType getPlantType(BlockGetter world, BlockPos pos) {
-        return PlantType.NETHER; // Или другой подходящий тип
     }
 
     @Override
