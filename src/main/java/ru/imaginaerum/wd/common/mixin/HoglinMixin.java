@@ -10,13 +10,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zoglin;
-import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import net.minecraft.world.entity.monster.hoglin.HoglinBase;
 import net.minecraft.world.entity.player.Player;
@@ -66,7 +63,7 @@ public class HoglinMixin extends Animal implements Enemy, HoglinBase {
     }
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (player.getMainHandItem().getItem() == ItemsWD.HEALING_DEW_NETHER.get() && !this.isPreventZombification()) {
+        if (player.getMainHandItem().getItem() == ItemsWD.TINCTURE_FOR_PIGLIN.get() && !this.isPreventZombification()) {
             Random random = new Random();
 
             // 70% шанс на успешное взаимодействие

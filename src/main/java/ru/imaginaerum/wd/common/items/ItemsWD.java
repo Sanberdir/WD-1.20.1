@@ -26,6 +26,8 @@ public class ItemsWD {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, WD.MODID);
 
+    public static final RegistryObject<Item> DRAGOLITE_CAGE = ITEMS.register("dragolite_cage",
+            () -> new DragoliteCage(BlocksWD.DRAGOLITE_CAGE.get(),(new Item.Properties().rarity(Rarity.RARE))));
 
     // Шляпа
     public static final RegistryObject<Item> MAGIC_HAT = ITEMS.register("magic_hat",
@@ -100,7 +102,7 @@ public class ItemsWD {
     public static final RegistryObject<Item> MEADOW_GOLDEN_FLOWER_INACTIVE = ITEMS.register("meadow_golden_flower_inactive",
             () -> new ItemNameBlockItem(BlocksWD.MEADOW_GOLDEN_FLOWER.get(),(new Item.Properties())));
     public static final RegistryObject<Item> ROSE_OF_GHOSTY_TEARS = ITEMS.register("rose_of_ghosty_tears",
-            () -> new ItemNameBlockItem(BlocksWD.ROSE_OF_GHOSTY_TEARS.get(),(new Item.Properties())));
+            () -> new GhostyTearsRose(BlocksWD.ROSE_OF_GHOSTY_TEARS.get(),(new Item.Properties())));
 
     // Вафли
     public static final RegistryObject<Item> RAW_WAFFLES = ITEMS.register("raw_waffles",
@@ -367,7 +369,7 @@ public class ItemsWD {
             () -> new ItemNameBlockItem(BlocksWD.COASTAL_STEEP.get(), (new Item.Properties())));
 
     public static final RegistryObject<Item> ROSE_OF_THE_MURDERER = ITEMS.register("rose_of_the_murderer",
-            () -> new ItemNameBlockItem(BlocksWD.ROSE_OF_THE_MURDERER.get(), (new Item.Properties().fireResistant())));
+            () -> new MurdererRose(BlocksWD.ROSE_OF_THE_MURDERER.get(), (new Item.Properties().fireResistant())));
 
     public static final RegistryObject<Item> POTTED_FIRE_STEM = ITEMS.register("potted_fire_stem",
             () -> new ItemNameBlockItem(BlocksWD.POTTED_FIRE_STEM.get(), (new Item.Properties().fireResistant())));
@@ -387,8 +389,8 @@ public class ItemsWD {
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> HEALING_DEW = ITEMS.register("healing_dew",
             () -> new HealingDew(new Item.Properties()));
-    public static final RegistryObject<Item> HEALING_DEW_NETHER = ITEMS.register("healing_dew_nether",
-            () -> new HealingDewNether(new Item.Properties()));
+    public static final RegistryObject<Item> TINCTURE_FOR_PIGLIN = ITEMS.register("tincture_for_piglin",
+            () -> new TinctureForPiglin(new Item.Properties()));
 
 
 

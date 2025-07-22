@@ -1,0 +1,30 @@
+{
+  "type": "farmersdelight:cooking",
+  "cookingtime": 400,
+  "experience": 5.3,
+  "container": {
+    "item": "minecraft:glass_bottle"
+  },
+  "ingredients": [
+    {
+      "item": "wd:rose_of_ghosty_tears"
+    },
+    {
+      "item": "wd:handful_nether"
+    },
+    {
+      "item": "wd:pepper"
+    },
+    {
+      "item": "minecraft:gold_block"
+    },
+    {
+      "item": "minecraft:crimson_fungus"
+    }
+  ],
+  "recipe_book_tab": "jam",
+  "result": {
+    "item": "wd:tincture_for_piglin",
+    "count": 3
+  }
+}

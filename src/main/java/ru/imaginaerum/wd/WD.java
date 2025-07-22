@@ -130,7 +130,6 @@ public class WD {
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.POISON_BERRY.get()), createPotion(Potions.STRONG_POISON)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.POISON_BERRY.get()), createSplashPotion(Potions.STRONG_POISON)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.POISON_BERRY.get()), createLingeringPotion(Potions.STRONG_POISON)));
-            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createItemStack(ItemsWD.HEALING_DEW.get())), Ingredient.of(ItemsWD.HANDFUL_NETHER.get()), createItemStack(ItemsWD.HEALING_DEW_NETHER.get())));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createItemStack(Items.GLASS_BOTTLE)), Ingredient.of(ItemsWD.COASTAL_STEEP_FLOWER.get()), createPotion(Potions.WATER)));
         });
         DispenserRegistry.registerBehaviors();

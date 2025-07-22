@@ -127,7 +127,7 @@ public class BlocksWD {
             () -> new RottenPie(BlockBehaviour.Properties.of().randomTicks().strength(0.5F).sound(SoundType.WOOL)));
 
     //Уникальные блоки
-    public static final RegistryObject<Block> DRAGOLITE_CAGE = registerBlock("dragolite_cage",
+    public static final RegistryObject<Block> DRAGOLITE_CAGE = BLOCKS.register("dragolite_cage",
             () -> new DragoliteCage(BlockBehaviour.Properties.of().sound(SoundType.METAL)
                     .noOcclusion().strength(4F).explosionResistance(20F).randomTicks().requiresCorrectToolForDrops()));
 

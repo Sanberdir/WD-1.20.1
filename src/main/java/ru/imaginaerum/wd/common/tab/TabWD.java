@@ -4,7 +4,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 import ru.imaginaerum.wd.WD;
@@ -100,7 +99,7 @@ public class TabWD extends CreativeModeTab {
                         pOutput.accept(ItemsWD.CLEAR_DRAGOLIT_NUGGET.get());
                         pOutput.accept(ItemsWD.DRAGOLIT_RAPIER.get());
                         pOutput.accept(ItemsWD.HEALING_DEW.get());
-                        pOutput.accept(ItemsWD.HEALING_DEW_NETHER.get());
+                        pOutput.accept(ItemsWD.TINCTURE_FOR_PIGLIN.get());
                         pOutput.accept(ItemsWD.SPATIAL_ORCHID.get());
                         pOutput.accept(ItemsWD.COASTAL_STEEP.get());
                         pOutput.accept(ItemsWD.GOLDEN_CHEST_KING_PILLAGER.get());
@@ -138,7 +137,7 @@ public class TabWD extends CreativeModeTab {
                         pOutput.accept(BlocksWD.ROSE_OF_GHOSTY_TEARS.get());
                         pOutput.accept(BlocksWD.DRAGOLIT_GRID.get());
                         pOutput.accept(BlocksWD.DRAGOLIT_BLOCK.get());
-                        pOutput.accept(BlocksWD.DRAGOLITE_CAGE.get());
+                        pOutput.accept(ItemsWD.DRAGOLITE_CAGE.get());
                         pOutput.accept(BlocksWD.STRANGE_CHIP.get());
                         pOutput.accept(BlocksWD.APPLE_LOG.get());
                         pOutput.accept(BlocksWD.APPLE_WOOD.get());

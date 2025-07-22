@@ -9,16 +9,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
-import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -63,7 +59,7 @@ public class AbstractPiglinMixin extends Monster {
     }
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (player.getMainHandItem().getItem() == ItemsWD.HEALING_DEW_NETHER.get() && !this.isPreventZombification()) {
+        if (player.getMainHandItem().getItem() == ItemsWD.TINCTURE_FOR_PIGLIN.get() && !this.isPreventZombification()) {
             Random random = new Random();
 
             // 70% шанс на успешное взаимодействие
