@@ -13,8 +13,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class DragolitBlock extends Block {
-    public DragolitBlock(Properties p_49795_) {
-        super(p_49795_);
+    public DragolitBlock(Properties properties) {
+        super(properties);
     }
     @Override
     public void stepOn(Level world, BlockPos pos, BlockState state, Entity entity) {

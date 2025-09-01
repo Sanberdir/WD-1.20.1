@@ -6,6 +6,8 @@ import net.minecraft.client.renderer.entity.ArmorStandRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
@@ -48,6 +50,7 @@ import ru.imaginaerum.wd.common.items.armor.model_layered.WDModelLayers;
 import ru.imaginaerum.wd.common.items.arrows.DispenserRegistry;
 import ru.imaginaerum.wd.common.items.arrows.EntityTypeInit;
 import ru.imaginaerum.wd.common.items.arrows.FlameArrowRenderer;
+import ru.imaginaerum.wd.common.items.custom.WateringCan;
 import ru.imaginaerum.wd.common.items.entity.ModEntitiesItem;
 import ru.imaginaerum.wd.common.items.entity.client.ModBoatRenderer;
 import ru.imaginaerum.wd.common.particles.ModParticles;
@@ -195,7 +198,11 @@ public class WD {
             EntityRenderers.register(ModEntitiesItem.MOD_BOAT.get(), pContext -> new ModBoatRenderer(pContext, false));
             EntityRenderers.register(ModEntitiesItem.MOD_CHEST_BOAT.get(), pContext -> new ModBoatRenderer(pContext, true));
             event.enqueueWork(() -> {
-
+                ItemProperties.register(
+                        ItemsWD.WATERING_CAN.get(), // твой Item из DeferredRegister
+                        new ResourceLocation("wd", "water_full"),
+                        (stack, level, entity, seed) -> WateringCan.isFull(stack) ? 1.0F : 0.0F
+                );
                 ComposterBlock.COMPOSTABLES.put(ItemsWD.FIRE_STEM.get(), 0.2f);
                 ComposterBlock.COMPOSTABLES.put(ItemsWD.WARPED_WART.get(), 0.2f);
                 ComposterBlock.COMPOSTABLES.put(ItemsWD.POISON_BERRY.get(), 0.2f);

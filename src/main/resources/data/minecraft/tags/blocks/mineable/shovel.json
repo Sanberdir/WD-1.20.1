@@ -1,5 +1,8 @@
 {
   "values": [
+    "wd:magic_soil",
+    "wd:magic_soil_farmland",
+    "wd:magic_compost",
     "wd:a_block_of_sparkling_pollen"
   ]
 }

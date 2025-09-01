@@ -29,6 +29,10 @@ public class ItemsWD {
     public static final RegistryObject<Item> DRAGOLITE_CAGE = ITEMS.register("dragolite_cage",
             () -> new DragoliteCage(BlocksWD.DRAGOLITE_CAGE.get(),(new Item.Properties().rarity(Rarity.RARE))));
 
+    // Лейка
+    public static final RegistryObject<Item> WATERING_CAN = ITEMS.register("watering_can",
+            () -> new WateringCan(new Item.Properties().stacksTo(1)));
+
     // Шляпа
     public static final RegistryObject<Item> MAGIC_HAT = ITEMS.register("magic_hat",
             () -> new MagicHat(ModArmorMaterials.MAGIC, ArmorItem.Type.HELMET, new Item.Properties()));

@@ -372,14 +372,14 @@
     "drops": [
       {
         "item": "minecraft:bread",
-        "min_count": 5,
-        "max_count": 8,
+        "min_count": 1,
+        "max_count": 2,
         "chance": 1.0
       },
       {
         "item": "minecraft:bread",
         "min_count": 1,
-        "max_count": 4,
+        "max_count": 1,
         "chance": 0.4
       }
     ],"experience": 5
@@ -421,13 +421,13 @@
       {
         "item": "minecraft:bread",
         "min_count": 2,
-        "max_count": 4,
+        "max_count": 8,
         "chance": 1.0
       },
       {
         "item": "minecraft:bread",
         "min_count": 1,
-        "max_count": 1,
+        "max_count": 3,
         "chance": 0.4
       }
     ],"experience": 5

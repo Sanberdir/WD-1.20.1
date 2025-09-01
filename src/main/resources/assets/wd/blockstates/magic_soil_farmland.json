@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "moist=false":
+    {"model": "wd:block/magic_soil_farmland"},
+    "moist=true":
+    {"model": "wd:block/magic_soil_farmland_moist"}
+  }
+}

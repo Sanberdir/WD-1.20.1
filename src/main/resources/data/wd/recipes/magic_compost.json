@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "wd:grass_bone_meal"
+    },
+    {
+      "item": "wd:grass_bone_meal"
+    },
+    {
+      "item": "wd:grass_bone_meal"
+    },
+    {
+      "item": "wd:grass_bone_meal"
+    },
+    {
+      "item": "wd:sparkling_pollen"
+    },
+    {
+      "item": "wd:sparkling_pollen"
+    },
+    {
+      "item": "wd:charming_berries"
+    },
+    {
+      "item": "wd:charming_berries"
+    },
+    {
+      "item": "farmersdelight:rich_soil"
+    }
+  ],
+  "result": {
+    "item": "wd:magic_compost",
+    "count": 4
+  }
+}

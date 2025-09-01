@@ -189,6 +189,33 @@ public class BlocksWD {
             () -> new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F)
                     .sound(SoundType.WOOD).ignitedByLava()));
+    public static final RegistryObject<Block> APPLE_CABINET = registerBlock("apple_cabinet",
+            () -> new CabinetBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F)
+                    .sound(SoundType.WOOD).ignitedByLava()));
+
+    public static final RegistryObject<Block> ROTTEN_PIE_CAGE = registerBlock("rotten_pie_cage",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F)
+                    .sound(SoundType.METAL).noOcclusion().ignitedByLava()));
+
+    public static final RegistryObject<Block> PEPPER_SEEDS = registerBlock("pepper_seeds",
+            () -> new PepperSeeds(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).instabreak()
+                    .sound(SoundType.CROP).randomTicks().noCollission().noOcclusion()));
+
+    public static final RegistryObject<Block> MAGIC_COMPOST = registerBlock("magic_compost",
+            () -> new MagicCompost(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).strength(0.5F)
+                    .sound(SoundType.CROP)));
+    public static final RegistryObject<Block> MAGIC_SOIL = registerBlock("magic_soil",
+            () -> new MagicSoil(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).strength(0.5F)
+                    .sound(SoundType.CROP)));
+    public static final RegistryObject<Block> MAGIC_SOIL_FARMLAND = registerBlock("magic_soil_farmland",
+            () -> new MagicSoilFarmland(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).strength(0.5F)
+                    .sound(SoundType.CROP)));
 
     public static final RegistryObject<Block> APPLE_SIGN = BLOCKS.register("apple_sign",
             () -> new ModStandingSignBlock(BlockBehaviour.Properties.of()

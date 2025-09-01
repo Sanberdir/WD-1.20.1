@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "wd:block/apple_cabinet_front",
+    "side": "wd:block/apple_cabinet_side",
+    "top": "wd:block/apple_cabinet_top"
+  }
+}

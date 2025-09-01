@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "wd:apple_trapdoor"
+    },
+    "_": {
+      "item": "wd:apple_slab"
+    }
+  },
+  "pattern": [
+    "___",
+    "D D",
+    "___"
+  ],
+  "result": {
+    "item": "wd:apple_cabinet"
+  },
+  "show_notification": true
+}

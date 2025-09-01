@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:iron_bars"
+    },
+    "_": {
+      "item": "wd:rotten_pie"
+    }
+  },
+  "pattern": [
+    "DDD",
+    "D_D",
+    "DDD"
+  ],
+  "result": {
+    "item": "wd:rotten_pie_cage"
+  },
+  "show_notification": true
+}
