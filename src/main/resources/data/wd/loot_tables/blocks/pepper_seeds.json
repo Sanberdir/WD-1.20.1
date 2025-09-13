@@ -16,14 +16,28 @@
               "type": "minecraft:item",
               "conditions": [
                 {
-                  "block": "wd:pepper_seeds",
                   "condition": "minecraft:block_state_property",
+                  "block": "wd:pepper_seeds",
                   "properties": {
                     "stage": "12"
                   }
                 }
               ],
+              "functions": [
+                {
+                  "function": "minecraft:set_count",
+                  "count": {
+                    "type": "minecraft:uniform",
+                    "min": 1,
+                    "max": 3
+                  }
+                }
+              ],
               "name": "wd:pepper"
+            },
+            {
+              "type": "minecraft:item",
+              "name": "wd:pepper_seeds"
             }
           ]
         }

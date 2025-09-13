@@ -12,9 +12,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import ru.imaginaerum.wd.common.blocks.BlocksWD;
-import ru.imaginaerum.wd.common.blocks.MagicSoilFarmlandRegistry;
-
-import java.util.Random;
+import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.MagicSoilFarmlandData;
 
 public class MagicSoilFarmland extends Block {
     public static final BooleanProperty MOIST = BooleanProperty.create("moist");
@@ -35,7 +33,6 @@ public class MagicSoilFarmland extends Block {
             // Если сверху есть любой "твёрдый" блок
             if (aboveState.isSolidRender(level, abovePos)) {
                 level.setBlock(pos, BlocksWD.MAGIC_SOIL.get().defaultBlockState(), 3);
-                MagicSoilFarmlandRegistry.FARMLANDS.remove(pos);
             }
         }
     }
@@ -50,8 +47,8 @@ public class MagicSoilFarmland extends Block {
             // Проверка на "давление" сверху через scheduled tick
             if (aboveState.isSolidRender(level, abovePos)) {
                 level.setBlock(pos, BlocksWD.MAGIC_SOIL.get().defaultBlockState(), 3);
-                MagicSoilFarmlandRegistry.FARMLANDS.remove(pos);
             }
+
         }
     }
 
@@ -68,7 +65,7 @@ public class MagicSoilFarmland extends Block {
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
         super.onPlace(state, level, pos, oldState, isMoving);
         if (!level.isClientSide) {
-            MagicSoilFarmlandRegistry.FARMLANDS.add(pos.immutable());
+            MagicSoilFarmlandData.get((ServerLevel) level).add(pos);
         }
     }
 
@@ -76,7 +73,7 @@ public class MagicSoilFarmland extends Block {
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
         super.onRemove(state, level, pos, newState, isMoving);
         if (!level.isClientSide && state.getBlock() != newState.getBlock()) {
-            MagicSoilFarmlandRegistry.FARMLANDS.remove(pos);
+            MagicSoilFarmlandData.get((ServerLevel) level).remove(pos);
         }
     }
 

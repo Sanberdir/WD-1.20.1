@@ -26,6 +26,11 @@ public class ModBlockEntities {
                     BlockEntityType.Builder.of(DragoliteCageBlockEntity::new,
                             BlocksWD.DRAGOLITE_CAGE.get()).build(null));
 
+    public static final RegistryObject<BlockEntityType<EchotronBlockEntity>> ECHOTRON_ENTITY =
+            BLOCK_ENTITIES.register("echotron_entity", () ->
+                    BlockEntityType.Builder.of(EchotronBlockEntity::new,
+                            BlocksWD.ECHOTRON.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<ModSignBlockEntity>> APPLE_SIGN =
             BLOCK_ENTITIES.register("apple_sign", () ->
                     BlockEntityType.Builder.of(ModSignBlockEntity::new,

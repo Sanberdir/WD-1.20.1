@@ -22,5 +22,4 @@ public class GlowingJamModel extends GeoModel<GlowingJamBlockEntity> {
         return null;
     }
 
-
 }

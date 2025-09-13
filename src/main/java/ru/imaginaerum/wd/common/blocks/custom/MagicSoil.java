@@ -21,17 +21,23 @@ public class MagicSoil extends Block {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (player.getItemInHand(hand).is(ItemTags.HOES)) {
-            level.setBlock(pos, BlocksWD.MAGIC_SOIL_FARMLAND.get().defaultBlockState(), 3);
-            level.playSound(player, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1,1);
-            if (!level.isClientSide) {
-                player.getItemInHand(hand).hurtAndBreak(
-                        1,
-                        player,
-                        (p) -> p.broadcastBreakEvent(hand)
-                );
+            // проверяем, что над блоком пусто
+            if (level.isEmptyBlock(pos.above())) {
+                level.setBlock(pos, BlocksWD.MAGIC_SOIL_FARMLAND.get().defaultBlockState(), 3);
+                level.playSound(player, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1, 1);
+                if (!level.isClientSide) {
+                    player.getItemInHand(hand).hurtAndBreak(
+                            1,
+                            player,
+                            (p) -> p.broadcastBreakEvent(hand)
+                    );
+                }
+                return InteractionResult.SUCCESS;
+            } else {
+                return InteractionResult.PASS;
             }
-            return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
     }
+
 }

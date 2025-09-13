@@ -131,6 +131,9 @@ public class BlocksWD {
             () -> new DragoliteCage(BlockBehaviour.Properties.of().sound(SoundType.METAL)
                     .noOcclusion().strength(4F).explosionResistance(20F).randomTicks().requiresCorrectToolForDrops()));
 
+    public static final RegistryObject<Block> ECHOTRON = registerBlock("echotron",
+            () -> new EchotronBlock(BlockBehaviour.Properties.of().sound(SoundType.WOOL).noOcclusion()));
+
     //Торты со свечами wizard
     public static final RegistryObject<Block> CANDLE_WIZARD_PIE = registerBlock("candle_wizard_pie",
             () -> new CandleWizardPie(Blocks.CANDLE,BlockBehaviour.Properties.copy(Blocks.CANDLE_CAKE)));
@@ -215,7 +218,7 @@ public class BlocksWD {
     public static final RegistryObject<Block> MAGIC_SOIL_FARMLAND = registerBlock("magic_soil_farmland",
             () -> new MagicSoilFarmland(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).strength(0.5F)
-                    .sound(SoundType.CROP)));
+                    .sound(SoundType.CROP).randomTicks()));
 
     public static final RegistryObject<Block> APPLE_SIGN = BLOCKS.register("apple_sign",
             () -> new ModStandingSignBlock(BlockBehaviour.Properties.of()

@@ -127,6 +127,7 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.GLOW_BERRIES_WAFFLES.get());
 
                         //Blocks
+                        output.accept(BlocksWD.ECHOTRON.get());
                         output.accept(BlocksWD.FIRE_STEM.get());
                         output.accept(BlocksWD.POISON_BERRY.get());
                         output.accept(BlocksWD.FREEZE_BERRIES.get());

@@ -9,13 +9,12 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.imaginaerum.wd.WD;
 import ru.imaginaerum.wd.common.blocks.BlocksWD;
-import ru.imaginaerum.wd.common.blocks.MagicSoilFarmlandRegistry;
-import ru.imaginaerum.wd.common.blocks.PepperRegistry;
+import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.MagicSoilFarmlandData;
+import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.PepperRegistry;
 import ru.imaginaerum.wd.common.blocks.custom.MagicSoilFarmland;
 import ru.imaginaerum.wd.common.blocks.custom.PepperSeeds;
 
 import java.util.HashSet;
-import java.util.Set;
 
 @Mod.EventBusSubscriber(modid = WD.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEventBusEvents {
@@ -30,18 +29,15 @@ public class ForgeEventBusEvents {
         }
     }
     private static void upgradeStagePepper(ServerLevel level) {
-        Set<BlockPos> pepperPositions = PepperRegistry.getPepperBlocksCopy();
+        PepperRegistry data = PepperRegistry.get(level);
 
-        for (BlockPos pos : pepperPositions) {
-            // Пропускаем незагруженные чанки
-            if (!level.hasChunkAt(pos)) {
-                continue;
-            }
+        for (BlockPos pos : new HashSet<>(data.getPepperBlocks())) {
+            if (!level.hasChunkAt(pos)) continue;
 
             BlockState state = level.getBlockState(pos);
 
-            // Если блок всё ещё перец — пробуем увеличить стадию.
-            if (state.getBlock() instanceof PepperSeeds) {
+            // Если блок всё ещё перец — пробуем увеличить стадию
+            if (state.is(BlocksWD.PEPPER_SEEDS.get())) {
                 int currentStage = state.getValue(PepperSeeds.STAGE);
                 final int MAX_STAGE = 12;
 
@@ -49,36 +45,60 @@ public class ForgeEventBusEvents {
                     int nextStage = currentStage + 1;
                     BlockState newState = state.setValue(PepperSeeds.STAGE, nextStage);
 
-                    // Используем флаг 2 — не трогаем соседние апдейты, только обновляем клиент.
+                    // Флаг 2 — только обновляем клиент без соседних апдейтов
                     level.setBlock(pos, newState, 2);
-
-                    // Проверка состояния после установки (без логов)
-                    BlockState after = level.getBlockState(pos);
-                    if (!(after.getBlock() instanceof PepperSeeds)) {
-                        BlockState below = level.getBlockState(pos.below());
-                        // intentionally no logging; onRemove будет обработан самим блоком
-                    }
                 }
+            } else {
+                // Если блока уже нет, убираем из SavedData
+                data.remove(pos);
             }
         }
     }
 
 
     private static void dryAllSoil(ServerLevel level) {
-        for (BlockPos pos : new HashSet<>(MagicSoilFarmlandRegistry.FARMLANDS)) {
+        MagicSoilFarmlandData data = MagicSoilFarmlandData.get(level);
+
+        // создаём копию, чтобы безопасно удалять элементы
+        for (BlockPos pos : new HashSet<>(data.getFarmlands())) {
+            if (!level.hasChunkAt(pos)) continue;
+
             BlockState state = level.getBlockState(pos);
 
-            if (state.getBlock() instanceof MagicSoilFarmland farmland) {
+            // проверяем, что это наш MagicSoilFarmland
+            if (state.is(BlocksWD.MAGIC_SOIL_FARMLAND.get())) {
                 if (state.getValue(MagicSoilFarmland.MOIST)) {
-                    // если был влажный → сушим
+                    // сушим
                     level.setBlock(pos, state.setValue(MagicSoilFarmland.MOIST, false), 3);
                 } else {
-                    // если уже сухой → превращаем в MagicSoil
+                    // превращаем в обычную землю
                     level.setBlock(pos, BlocksWD.MAGIC_SOIL.get().defaultBlockState(), 3);
-                    MagicSoilFarmlandRegistry.FARMLANDS.remove(pos); // больше не farmland
+                    data.remove(pos); // удаляем из сохранённого списка
                 }
+            } else {
+                // если блок уже не farmland, убираем из списка
+                data.remove(pos);
             }
         }
     }
 
+    @SubscribeEvent
+    public static void tickMoistSoil(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            if (!level.isRaining()) continue;
+
+            MagicSoilFarmlandData data = MagicSoilFarmlandData.get(level);
+            for (BlockPos pos : new HashSet<>(data.getFarmlands())) {
+                if (!level.hasChunkAt(pos)) continue;
+
+                BlockState state = level.getBlockState(pos);
+                if (state.is(BlocksWD.MAGIC_SOIL_FARMLAND.get())
+                        && !state.getValue(MagicSoilFarmland.MOIST)) {
+                    level.setBlock(pos, state.setValue(MagicSoilFarmland.MOIST, true), 2);
+                }
+            }
+        }
+    }
 }

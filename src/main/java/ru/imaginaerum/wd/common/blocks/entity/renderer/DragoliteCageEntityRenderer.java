@@ -1,19 +1,17 @@
 package ru.imaginaerum.wd.common.blocks.entity.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import ru.imaginaerum.wd.common.blocks.entity.DragoliteCageBlockEntity;
 
-import java.awt.*;
 import java.util.Optional;
 
 public class DragoliteCageEntityRenderer implements BlockEntityRenderer<DragoliteCageBlockEntity> {
@@ -46,9 +44,9 @@ public class DragoliteCageEntityRenderer implements BlockEntityRenderer<Dragolit
                     poseStack.pushPose();
                     poseStack.translate(0.5D, 0.4D, 0.5D); // Позиция в центре блока
                     poseStack.scale(scale, scale, scale); // Масштабирование
-                    poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(spin)); // Вращение вокруг оси Y
+                    poseStack.mulPose(Axis.YP.rotationDegrees(spin)); // Вращение вокруг оси Y
                     poseStack.translate(0.0F, -0.2F, 0.0F); // Сдвиг для наклона
-                    poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-30.0F)); // Наклон на оси X
+                    poseStack.mulPose(Axis.XP.rotationDegrees(-30.0F)); // Наклон на оси X
 
                     entityRenderer.render(entity, 0, partialTick, poseStack, bufferSource, packedLight);
                     poseStack.popPose();
