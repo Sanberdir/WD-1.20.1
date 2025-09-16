@@ -37,6 +37,7 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.GLOWING_JAM.get());
                         output.accept(ItemsWD.FREEZE_JAM.get());
                         output.accept(ItemsWD.JAR.get());
+                        output.accept(ItemsWD.ARS_MELIMA.get());
                         output.accept(ItemsWD.RAW_BEAR_MEAT.get());
                         output.accept(ItemsWD.RAW_HORSE.get());
                         output.accept(ItemsWD.RAW_GOATS_MEAT.get());

@@ -1,6 +1,7 @@
 package ru.imaginaerum.wd.common.items.custom;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -96,7 +98,10 @@ public class WateringCan extends Item {
             return InteractionResultHolder.pass(stack);
         }
     }
-
+    @Override
+    public UseAnim getUseAnimation(ItemStack stack) {
+        return UseAnim.DRINK; // Покачивание руки, похожее на полив
+    }
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
@@ -109,18 +114,24 @@ public class WateringCan extends Item {
             BlockState state = level.getBlockState(pos);
 
             // Проверяем, что блок не увлажнен (MOIST == false)
-            if (state.hasProperty(MagicSoilFarmland.MOIST) &&
-                    !state.getValue(MagicSoilFarmland.MOIST)) {
-
-                // Увлажняем farmland
+            if (state.hasProperty(MagicSoilFarmland.MOIST) && !state.getValue(MagicSoilFarmland.MOIST)) {
                 level.setBlock(pos, state.setValue(MagicSoilFarmland.MOIST, true), 3);
 
-                // Уменьшаем количество воды в лейке
                 int currentWater = getWaterAmount(stack);
                 setWaterAmount(stack, currentWater - WATER_USAGE);
 
-                // Воспроизводим звук и эффекты
+                // Звук
                 level.playSound(player, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+
+                // Частицы воды
+                for (int i = 0; i < 10; i++) {
+                    double offsetX = 0.5 + (level.random.nextDouble() - 0.5);
+                    double offsetY = 1.0;
+                    double offsetZ = 0.5 + (level.random.nextDouble() - 0.5);
+                    level.addParticle(ParticleTypes.SPLASH, pos.getX() + offsetX, pos.getY() + offsetY, pos.getZ() + offsetZ,
+                            0.0, 0.1, 0.0);
+                }
+
                 return InteractionResult.sidedSuccess(level.isClientSide());
             }
         }

@@ -12,7 +12,4 @@ public class ModEventSubscriber {
     public static void onCommonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(ModFlammableBlocks::registerFlammableBlocks);
     }
-
-
-
 }

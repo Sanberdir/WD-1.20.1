@@ -93,6 +93,11 @@ public class ItemsWD {
 
     public static final RegistryObject<Item> JAR = ITEMS.register("jar",
             () -> new Item(new Item.Properties()));
+
+    // Книга
+    public static final RegistryObject<Item> ARS_MELIMA = ITEMS.register("ars_melima",
+            () -> new Item(new Item.Properties()));
+
     // Кусты
     public static final RegistryObject<Item> POISON_BERRY = ITEMS.register("poison_berry",
             () -> new ItemNameBlockItem(BlocksWD.POISON_BERRY.get(),(new Item.Properties()
@@ -251,6 +256,9 @@ public class ItemsWD {
                     .build())));
     public static final RegistryObject<Item> PICKLED_TURTLE_NECK = ITEMS.register("pickled_turtle_neck",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(5).saturationMod(0.4f)
+                    .effect(new MobEffectInstance(MobEffects.DIG_SPEED, 1200, 1), 0.7F)
+                    .effect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 1200, 1), 0.3F)
+                    .effect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 1200, 1), 1)
                     .build())));
 
     public static final RegistryObject<Item> TURTLE_NECK = ITEMS.register("turtle_neck",

@@ -5,7 +5,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.StemGrownBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -30,28 +32,26 @@ public class MagicSoilFarmland extends Block {
             BlockPos abovePos = pos.above();
             BlockState aboveState = level.getBlockState(abovePos);
 
-            // Если сверху есть любой "твёрдый" блок
-            if (aboveState.isSolidRender(level, abovePos)) {
+            // Если сверху есть любой блок, кроме воздуха
+            if (!aboveState.isAir()) {
                 level.setBlock(pos, BlocksWD.MAGIC_SOIL.get().defaultBlockState(), 3);
             }
         }
     }
 
-    @Override
-    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource randomSource) {
-        super.tick(state, level, pos, randomSource);
-        if (!level.isClientSide) {
-            BlockPos abovePos = pos.above();
-            BlockState aboveState = level.getBlockState(abovePos);
-
-            // Проверка на "давление" сверху через scheduled tick
-            if (aboveState.isSolidRender(level, abovePos)) {
-                level.setBlock(pos, BlocksWD.MAGIC_SOIL.get().defaultBlockState(), 3);
-            }
-
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource rand) {
+        if (!state.canSurvive(level, pos)) {
+            turnToMagicSoil(state, level, pos);
         }
-    }
 
+    }
+    public static void turnToMagicSoil(BlockState state, Level level, BlockPos pos) {
+        level.setBlockAndUpdate(pos, pushEntitiesUp(state, ((Block) BlocksWD.MAGIC_SOIL.get()).defaultBlockState(), level, pos));
+    }
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+        BlockState aboveState = level.getBlockState(pos.above());
+        return super.canSurvive(state, level, pos) || aboveState.getBlock() instanceof StemGrownBlock;
+    }
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(MOIST);

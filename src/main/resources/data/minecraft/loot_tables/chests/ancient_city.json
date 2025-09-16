@@ -70,6 +70,16 @@
         },
         {
           "type": "minecraft:item",
+          "name": "wd:the_pillagers_chest",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "wd:golden_chest_king_pillager",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
           "functions": [
             {
               "add": false,

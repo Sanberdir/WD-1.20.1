@@ -44,7 +44,7 @@ public class RottenPie extends Block {
 
     private static final VoxelShape SHAPE = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 8.0D, 15.0D);
     private static final VoxelShape SHAPE_1 = Shapes.or(
-            box(1.0D, 0.0D, 6.0D, 15.0D, 8.0D, 15.0D), // Элемент 5
+            box(1.0D, 0.0D, 6.0D, 15.0D, 8.0D, 15.0D),
             box(8.0D, 0.0D, 1.0D, 15.0D, 8.0D, 6.0D));
     private static final VoxelShape SHAPE_2 = Block.box(1.0D, 0.0D, 6.0D, 15.0D, 8.0D, 15.0D);
     private static final VoxelShape SHAPE_3 = Block.box(1.0D, 0.0D, 6.0D, 7.0D, 8.0D, 15.0D);
@@ -72,7 +72,7 @@ public class RottenPie extends Block {
         if (!player.canEat(false)) {
             return InteractionResult.PASS;
         } else {
-            player.addEffect(new MobEffectInstance(EffectsWD.FLIES.get(), 200, 0));
+            player.addEffect(new MobEffectInstance(MobEffects.POISON, 200, 0));
             player.awardStat(Stats.EAT_CAKE_SLICE);
             player.getFoodData().eat(6, 0.8F);
             world.playSound((Player) null, blockPos, SoundEvents.GENERIC_EAT, SoundSource.BLOCKS, 1.0F, 1.0F);

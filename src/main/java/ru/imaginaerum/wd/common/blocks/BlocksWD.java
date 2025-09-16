@@ -132,7 +132,7 @@ public class BlocksWD {
                     .noOcclusion().strength(4F).explosionResistance(20F).randomTicks().requiresCorrectToolForDrops()));
 
     public static final RegistryObject<Block> ECHOTRON = registerBlock("echotron",
-            () -> new EchotronBlock(BlockBehaviour.Properties.of().sound(SoundType.WOOL).noOcclusion()));
+            () -> new EchotronBlock(BlockBehaviour.Properties.of().sound(SoundType.STONE).strength(4f,20f).noOcclusion()));
 
     //Торты со свечами wizard
     public static final RegistryObject<Block> CANDLE_WIZARD_PIE = registerBlock("candle_wizard_pie",
@@ -198,7 +198,7 @@ public class BlocksWD {
                     .sound(SoundType.WOOD).ignitedByLava()));
 
     public static final RegistryObject<Block> ROTTEN_PIE_CAGE = registerBlock("rotten_pie_cage",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new RottenPieCage(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F)
                     .sound(SoundType.METAL).noOcclusion().ignitedByLava()));
 
@@ -216,10 +216,7 @@ public class BlocksWD {
                     .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).strength(0.5F)
                     .sound(SoundType.CROP)));
     public static final RegistryObject<Block> MAGIC_SOIL_FARMLAND = registerBlock("magic_soil_farmland",
-            () -> new MagicSoilFarmland(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).strength(0.5F)
-                    .sound(SoundType.CROP).randomTicks()));
-
+            () -> new MagicSoilFarmland(BlockBehaviour.Properties.copy(Blocks.FARMLAND)));
     public static final RegistryObject<Block> APPLE_SIGN = BLOCKS.register("apple_sign",
             () -> new ModStandingSignBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD).noCollission().strength(1.0F).sound(SoundType.CHERRY_WOOD), ModWoodType.APPLE_WOOD));

@@ -2,12 +2,16 @@ package ru.imaginaerum.wd.common.items.custom;
 
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MinusEffectBeneficialDrink extends Item {
     public MinusEffectBeneficialDrink(Properties properties) {
@@ -25,14 +29,20 @@ public class MinusEffectBeneficialDrink extends Item {
         if (entityLiving instanceof Player) {
             Player player = (Player) entityLiving;
 
-            // Проходим по активным эффектам игрока
+            // Собираем эффекты для удаления в отдельный список
+            List<MobEffect> effectsToRemove = new ArrayList<>();
             for (MobEffectInstance effectInstance : player.getActiveEffects()) {
-                // Проверяем, является ли эффект отрицательным
                 if (!effectInstance.getEffect().isBeneficial()) {
-                    // Удаляем только один отрицательный эффект и выходим из цикла
-                    player.removeEffect(effectInstance.getEffect());
-                    break;
+                    effectsToRemove.add(effectInstance.getEffect());
+                    if (effectsToRemove.size() >= 2) {
+                        break; // Останавливаемся после сбора двух эффектов
+                    }
                 }
+            }
+
+            // Удаляем собранные эффекты
+            for (MobEffect effect : effectsToRemove) {
+                player.removeEffect(effect);
             }
         }
 
