@@ -22,7 +22,7 @@ public class ZombieEatPieGoal extends MoveToBlockGoal {
 
     private int eatCooldown = 0;
     private int breakProgress = 0;
-    private static final int BREAK_THRESHOLD = 40; // ~2 секунды при 20 тик/сек
+    private static final int BREAK_THRESHOLD = 80; // ~2 секунды при 20 тик/сек
 
     public ZombieEatPieGoal(Zombie zombie, double speed, int searchRange) {
         super(zombie, speed, searchRange, 6);
@@ -74,7 +74,7 @@ public class ZombieEatPieGoal extends MoveToBlockGoal {
                         1.0F, 0.9F + level.random.nextFloat() * 0.2F);
 
                 zombie.getNavigation().stop();
-                eatCooldown = 10; // небольшая пауза
+                eatCooldown = 25; // небольшая пауза
                 breakProgress = 0;
 
                 return; // следующий тик зомби увидит пирог и съест
@@ -100,7 +100,7 @@ public class ZombieEatPieGoal extends MoveToBlockGoal {
             }
 
             zombie.getNavigation().stop();
-            eatCooldown = 35;
+            eatCooldown = 60;
         }
     }
 
