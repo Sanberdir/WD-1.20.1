@@ -113,9 +113,9 @@ public class BlocksWD {
     public static final RegistryObject<Block> SUGAR_SACK = registerBlock("sugar_sack",
             () -> new FacingBlock(BlockBehaviour.Properties.of().sound(SoundType.WOOL).noOcclusion()));
     public static final RegistryObject<Block> DRAGOLIT_GRID = registerBlock("dragolit_grid",
-            () -> new DragolitGrid(BlockBehaviour.Properties.of().sound(SoundType.METAL).strength(2.5F).noOcclusion().requiresCorrectToolForDrops()));
+            () -> new DragolitGrid(BlockBehaviour.Properties.of().sound(SoundType.METAL).strength(2.5F, 12000F).noOcclusion().requiresCorrectToolForDrops()));
     public static final RegistryObject<Block> DRAGOLIT_BLOCK = registerBlock("dragolit_block",
-            () -> new DragolitBlock(BlockBehaviour.Properties.of().sound(SoundType.METAL).strength(5F).noOcclusion().requiresCorrectToolForDrops()));
+            () -> new DragolitBlock(BlockBehaviour.Properties.of().sound(SoundType.METAL).strength(5F,12000F).noOcclusion().requiresCorrectToolForDrops()));
     public static final RegistryObject<Block> STRANGE_CHIP = registerBlock("strange_chip",
             () -> new DragolitBlock(BlockBehaviour.Properties.of().sound(SoundType.ANCIENT_DEBRIS).strength(30F, 1200F).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<Block> A_BLOCK_OF_SPARKING_POLLEN = registerBlock("a_block_of_sparkling_pollen",
@@ -129,7 +129,7 @@ public class BlocksWD {
     //Уникальные блоки
     public static final RegistryObject<Block> DRAGOLITE_CAGE = BLOCKS.register("dragolite_cage",
             () -> new DragoliteCage(BlockBehaviour.Properties.of().sound(SoundType.METAL)
-                    .noOcclusion().strength(4F).explosionResistance(20F).randomTicks().requiresCorrectToolForDrops()));
+                    .noOcclusion().strength(4F).explosionResistance(12000F).randomTicks().requiresCorrectToolForDrops()));
 
     public static final RegistryObject<Block> ECHOTRON = registerBlock("echotron",
             () -> new EchotronBlock(BlockBehaviour.Properties.of().sound(SoundType.STONE).strength(4f,20f).noOcclusion()));
@@ -202,8 +202,8 @@ public class BlocksWD {
                     .mapColor(MapColor.METAL).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F)
                     .sound(SoundType.METAL).noOcclusion().ignitedByLava()));
 
-    public static final RegistryObject<Block> PEPPER_SEEDS = registerBlock("pepper_seeds",
-            () -> new PepperSeeds(BlockBehaviour.Properties.of()
+    public static final RegistryObject<Block> BRIGHT_PEPPER_SEEDS = registerBlock("bright_pepper_seeds",
+            () -> new BrightPepperSeeds(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).instabreak()
                     .sound(SoundType.CROP).randomTicks().noCollission().noOcclusion()));
 

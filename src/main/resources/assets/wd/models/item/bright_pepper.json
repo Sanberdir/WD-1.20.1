@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "wd:block/pepper_seeds"
+    "layer0": "wd:item/bright_pepper"
   }
 }

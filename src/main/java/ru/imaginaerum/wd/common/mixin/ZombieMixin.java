@@ -12,6 +12,6 @@ public abstract class ZombieMixin {
     @Inject(method = "registerGoals", at = @At("TAIL"))
     private void addRottenPieGoal(CallbackInfo ci) {
         Zombie self = (Zombie)(Object)this;
-        self.goalSelector.addGoal(1, new ZombieEatPieGoal(self, 1.0D, 35));
+        self.goalSelector.addGoal(1, new ZombieEatPieGoal(self, 1.0D, 50));
     }
 }

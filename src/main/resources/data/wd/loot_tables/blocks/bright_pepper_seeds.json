@@ -17,7 +17,7 @@
               "conditions": [
                 {
                   "condition": "minecraft:block_state_property",
-                  "block": "wd:pepper_seeds",
+                  "block": "wd:bright_pepper_seeds",
                   "properties": {
                     "stage": "12"
                   }
@@ -33,11 +33,11 @@
                   }
                 }
               ],
-              "name": "wd:pepper"
+              "name": "wd:bright_pepper"
             },
             {
               "type": "minecraft:item",
-              "name": "wd:pepper_seeds"
+              "name": "wd:bright_pepper_seeds"
             }
           ]
         }
@@ -45,5 +45,5 @@
       "rolls": 1
     }
   ],
-  "random_sequence": "wd:blocks/pepper_seeds"
+  "random_sequence": "wd:blocks/bright_pepper_seeds"
 }

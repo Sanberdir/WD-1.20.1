@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/crop",
   "textures": {
-    "crop": "wd:block/pepper_stage_7"
+    "crop": "wd:block/bright_pepper_stage_0"
   },  "render_type": "cutout"
 }

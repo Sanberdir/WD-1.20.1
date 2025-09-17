@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "boat",
+  "key": {
+    "S": {
+      "item": "minecraft:echo_shard"
+    },
+    "B": {
+      "item": "minecraft:iron_block"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "ISI",
+    "IBI",
+    "PPP"
+  ],
+  "result": {
+    "item": "wd:echotron"
+  }
+}

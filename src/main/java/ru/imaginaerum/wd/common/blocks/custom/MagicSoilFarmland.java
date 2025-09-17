@@ -32,8 +32,9 @@ public class MagicSoilFarmland extends Block {
             BlockPos abovePos = pos.above();
             BlockState aboveState = level.getBlockState(abovePos);
 
-            // Если сверху есть любой блок, кроме воздуха
-            if (!aboveState.isAir()) {
+            // Если сверху что-то стоит, но это не растение
+            if (!aboveState.isAir()
+                    && !(aboveState.getBlock() instanceof BrightPepperSeeds)) {
                 level.setBlock(pos, BlocksWD.MAGIC_SOIL.get().defaultBlockState(), 3);
             }
         }

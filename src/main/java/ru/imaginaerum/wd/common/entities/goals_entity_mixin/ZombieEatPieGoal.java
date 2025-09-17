@@ -22,7 +22,7 @@ public class ZombieEatPieGoal extends MoveToBlockGoal {
 
     private int eatCooldown = 0;
     private int breakProgress = 0;
-    private static final int BREAK_THRESHOLD = 80; // ~2 секунды при 20 тик/сек
+    private static final int BREAK_THRESHOLD = 320;
 
     public ZombieEatPieGoal(Zombie zombie, double speed, int searchRange) {
         super(zombie, speed, searchRange, 6);
@@ -32,7 +32,12 @@ public class ZombieEatPieGoal extends MoveToBlockGoal {
 
     @Override
     public boolean canUse() {
-        return super.canUse() && zombie.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+        if (!zombie.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            return false;
+        }
+
+        // bypass parent's randomized delay and force immediate search
+        return this.findNearestBlock();
     }
 
     @Override

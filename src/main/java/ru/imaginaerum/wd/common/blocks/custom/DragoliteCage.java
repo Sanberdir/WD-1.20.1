@@ -3,6 +3,7 @@ package ru.imaginaerum.wd.common.blocks.custom;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -12,8 +13,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Zombie;
@@ -57,7 +62,31 @@ public class DragoliteCage extends BaseEntityBlock {
     public RenderShape getRenderShape(BlockState blockState) {
         return RenderShape.MODEL;
     }
+    @Override
+    public void stepOn(Level world, BlockPos pos, BlockState state, Entity entity) {
+        super.stepOn(world, pos, state, entity);
 
+        if (entity instanceof LivingEntity livingEntity && livingEntity.getMobType() == MobType.UNDEAD) {
+            // Наносим урон 4 сердца
+            entity.hurt(new DamageSource(world.registryAccess()
+                    .registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.GENERIC)), 8);
+        }
+    }
+
+    // Добавляем обработку смерти моба
+    public static void onEntityDeath(LivingEntity entity, DamageSource source) {
+        if (source.getMsgId().equals("generic") && entity.getMobType() == MobType.UNDEAD) {
+            Level world = entity.level();
+            if (!world.isClientSide && world instanceof ServerLevel serverWorld) {
+                int xp = 7 + world.random.nextInt(4); // 7–10 XP
+                net.minecraft.world.entity.ExperienceOrb.award(
+                        serverWorld,
+                        entity.position(),
+                        xp
+                );
+            }
+        }
+    }
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         super.tick(state, level, pos, random);

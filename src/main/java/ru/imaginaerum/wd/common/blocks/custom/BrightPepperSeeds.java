@@ -20,7 +20,7 @@ import ru.imaginaerum.wd.common.blocks.BlocksWD;
 import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.PepperRegistry;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 
-public class PepperSeeds extends Block {
+public class BrightPepperSeeds extends Block {
     public static final IntegerProperty STAGE = IntegerProperty.create("stage", 0, 12);
 
     private static final VoxelShape[] SHAPES = new VoxelShape[13];
@@ -33,7 +33,7 @@ public class PepperSeeds extends Block {
         }
     }
 
-    public PepperSeeds(Properties properties) {
+    public BrightPepperSeeds(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(STAGE, 0));
     }
@@ -61,7 +61,7 @@ public class PepperSeeds extends Block {
             dropCount = random.nextBoolean() ? 1 : 2;
         }
 
-        popResource(level, pos, new ItemStack(ItemsWD.PEPPER.get(), dropCount));
+        popResource(level, pos, new ItemStack(ItemsWD.BRIGHT_PEPPER.get(), dropCount));
 
         // Сбрасываем стадию до 9
         level.setBlock(pos, state.setValue(STAGE, 9), 3);

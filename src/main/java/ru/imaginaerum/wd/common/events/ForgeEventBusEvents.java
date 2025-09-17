@@ -5,14 +5,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.imaginaerum.wd.WD;
 import ru.imaginaerum.wd.common.blocks.BlocksWD;
+import ru.imaginaerum.wd.common.blocks.custom.*;
 import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.MagicSoilFarmlandData;
 import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.PepperRegistry;
-import ru.imaginaerum.wd.common.blocks.custom.MagicSoilFarmland;
-import ru.imaginaerum.wd.common.blocks.custom.PepperSeeds;
 
 import java.util.HashSet;
 
@@ -37,13 +37,13 @@ public class ForgeEventBusEvents {
             BlockState state = level.getBlockState(pos);
 
             // Если блок всё ещё перец — пробуем увеличить стадию
-            if (state.is(BlocksWD.PEPPER_SEEDS.get())) {
-                int currentStage = state.getValue(PepperSeeds.STAGE);
+            if (state.is(BlocksWD.BRIGHT_PEPPER_SEEDS.get())) {
+                int currentStage = state.getValue(BrightPepperSeeds.STAGE);
                 final int MAX_STAGE = 12;
 
                 if (currentStage < MAX_STAGE) {
                     int nextStage = currentStage + 1;
-                    BlockState newState = state.setValue(PepperSeeds.STAGE, nextStage);
+                    BlockState newState = state.setValue(BrightPepperSeeds.STAGE, nextStage);
 
                     // Флаг 2 — только обновляем клиент без соседних апдейтов
                     level.setBlock(pos, newState, 2);
@@ -100,5 +100,11 @@ public class ForgeEventBusEvents {
                 }
             }
         }
+    }
+    @SubscribeEvent
+    public static void onLivingDeath(LivingDeathEvent event) {
+        DragolitBlock.onEntityDeath(event.getEntity(), event.getSource());
+        DragolitGrid.onEntityDeath(event.getEntity(), event.getSource());
+        DragoliteCage.onEntityDeath(event.getEntity(), event.getSource());
     }
 }

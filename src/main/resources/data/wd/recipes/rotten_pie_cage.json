@@ -5,6 +5,9 @@
     "D": {
       "item": "minecraft:iron_bars"
     },
+    "W": {
+      "tag": "minecraft:planks"
+    },
     "_": {
       "item": "wd:rotten_pie"
     }
@@ -12,7 +15,7 @@
   "pattern": [
     "DDD",
     "D_D",
-    "DDD"
+    "WWW"
   ],
   "result": {
     "item": "wd:rotten_pie_cage"

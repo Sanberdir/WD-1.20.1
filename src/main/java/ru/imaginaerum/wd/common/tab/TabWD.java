@@ -56,7 +56,7 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.ROAST_GOAT_MEAT_WITH_FREEZE_BERRIES_SYRUP.get());
                         output.accept(ItemsWD.BEAR_MEAT_SOUP.get());
                         output.accept(ItemsWD.MEDICAL_POTATO.get());
-                        output.accept(ItemsWD.PEPPER.get());
+                        output.accept(ItemsWD.BRIGHT_PEPPER.get());
                         output.accept(ItemsWD.KRUTNEVY_BREAD.get());
                         output.accept(ItemsWD.TURTLE_SOUP.get());
                         output.accept(ItemsWD.CLEANED_TURTLE_NECK.get());
@@ -152,7 +152,7 @@ public class TabWD extends CreativeModeTab {
                         output.accept(BlocksWD.MAGIC_COMPOST.get());
                         output.accept(BlocksWD.MAGIC_SOIL.get());
                         output.accept(BlocksWD.MAGIC_SOIL_FARMLAND.get());
-                        output.accept(BlocksWD.PEPPER_SEEDS.get());
+                        output.accept(BlocksWD.BRIGHT_PEPPER_SEEDS.get());
                         output.accept(BlocksWD.APPLE_STAIRS.get());
                         output.accept(BlocksWD.APPLE_SLAB.get());
                         output.accept(BlocksWD.APPLE_FENCE.get());

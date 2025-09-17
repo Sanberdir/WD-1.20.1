@@ -242,8 +242,8 @@ public class ItemsWD {
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(5).saturationMod(0.6f).alwaysEat()
                     .effect(new MobEffectInstance(MobEffects.HEAL, 1, 0), 1F)
                     .build())));
-    public static final RegistryObject<Item> PEPPER = ITEMS.register("pepper",
-            () -> new Pepper(new Item.Properties().food(new FoodProperties.Builder().nutrition(1).saturationMod(0.2f)
+    public static final RegistryObject<Item> BRIGHT_PEPPER = ITEMS.register("bright_pepper",
+            () -> new BrightPepper(new Item.Properties().food(new FoodProperties.Builder().nutrition(1).saturationMod(0.2f)
                     .build()).fireResistant()));
     public static final RegistryObject<Item> KRUTNEVY_BREAD = ITEMS.register("krutnevy_bread",
             () -> new MinusEffectBeneficial(new Item.Properties().food(new FoodProperties.Builder().nutrition(6).saturationMod(0.45f)

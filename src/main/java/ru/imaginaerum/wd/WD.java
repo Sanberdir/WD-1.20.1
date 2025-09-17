@@ -127,9 +127,9 @@ public class WD {
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.HANDFUL_NETHER.get()), createPotion(Potions.STRONG_STRENGTH)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.HANDFUL_NETHER.get()), createSplashPotion(Potions.STRONG_STRENGTH)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.HANDFUL_NETHER.get()), createLingeringPotion(Potions.STRONG_STRENGTH)));
-            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.PEPPER.get()), createPotion(Potions.LONG_FIRE_RESISTANCE)));
-            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.PEPPER.get()), createSplashPotion(Potions.LONG_FIRE_RESISTANCE)));
-            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.PEPPER.get()), createLingeringPotion(Potions.LONG_FIRE_RESISTANCE)));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.BRIGHT_PEPPER.get()), createPotion(Potions.LONG_FIRE_RESISTANCE)));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.BRIGHT_PEPPER.get()), createSplashPotion(Potions.LONG_FIRE_RESISTANCE)));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.BRIGHT_PEPPER.get()), createLingeringPotion(Potions.LONG_FIRE_RESISTANCE)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.POISON_BERRY.get()), createPotion(Potions.STRONG_POISON)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.POISON_BERRY.get()), createSplashPotion(Potions.STRONG_POISON)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.POISON_BERRY.get()), createLingeringPotion(Potions.STRONG_POISON)));
