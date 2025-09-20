@@ -42,7 +42,7 @@ public class EchotronRenderer extends GeoBlockRenderer<EchotronBlockEntity> {
         poseStack.pushPose();
 
         // Возвращаем кристалл на правильную позицию относительно смещенной оси
-        poseStack.translate(0, 1.7, -0.1);
+        poseStack.translate(0, 1.6, -0.01);
 
         // Масштабируем
         poseStack.scale(0.75f, 0.75f, 0.75f);
@@ -86,7 +86,7 @@ public class EchotronRenderer extends GeoBlockRenderer<EchotronBlockEntity> {
             VertexConsumer vc = bufferSource.getBuffer(RenderType.lightning());
 
             poseStack.pushPose();
-            poseStack.translate(0, 1.7f, 0);
+            poseStack.translate(0, 1.6f, 0);
             Matrix4f matrix = poseStack.last().pose();
             java.util.Random rnd = new java.util.Random(animatable.getBlockPos().asLong());
 

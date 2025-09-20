@@ -30,8 +30,8 @@ public class ItemsWD {
             () -> new DragoliteCage(BlocksWD.DRAGOLITE_CAGE.get(),(new Item.Properties().rarity(Rarity.RARE))));
 
     // Лейка
-    public static final RegistryObject<Item> WATERING_CAN = ITEMS.register("watering_can",
-            () -> new WateringCan(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> IRON_WATERING_CAN = ITEMS.register("iron_watering_can",
+            () -> new IronWateringCan(new Item.Properties().stacksTo(1)));
 
     // Шляпа
     public static final RegistryObject<Item> MAGIC_HAT = ITEMS.register("magic_hat",
@@ -177,10 +177,6 @@ public class ItemsWD {
     public static final RegistryObject<Item> COCKED_GOAT_MEAT_KEBAB = ITEMS.register("cocked_goat_meat_kebab",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(2).saturationMod(0.2f)
                     .build())));
-    public static final RegistryObject<Item> NOT_PICKLED_SHISH_KEBAB = ITEMS.register("not_pickled_shish_kebab",
-            () -> new NotPickledKebab(new Item.Properties().durability(1500)));
-    public static final RegistryObject<Item> PICKLED_SHISH_KEBAB = ITEMS.register("pickled_shish_kebab",
-            () -> new PickledKebab(new Item.Properties().craftRemainder(Items.FLOWER_POT)));
     public static final RegistryObject<Item> RAW_HORSE = ITEMS.register("raw_horse",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(3).saturationMod(0.09f)
                     .build())));
@@ -257,7 +253,7 @@ public class ItemsWD {
     public static final RegistryObject<Item> PICKLED_TURTLE_NECK = ITEMS.register("pickled_turtle_neck",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(5).saturationMod(0.4f)
                     .effect(new MobEffectInstance(MobEffects.DIG_SPEED, 1200, 1), 0.7F)
-                    .effect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 1200, 1), 0.3F)
+                    .effect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 1200, 0), 0.8F)
                     .effect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 1200, 1), 1)
                     .build())));
 
@@ -269,6 +265,8 @@ public class ItemsWD {
                     .build())));
     public static final RegistryObject<Item> HUNTING_TWISTER = ITEMS.register("hunting_twister",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(14).saturationMod(0.7f)
+                    .effect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 3600, 0), 1)
+                    .effect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 3600, 0), 1)
                     .build())));
 
     public static final RegistryObject<Item> IRIS = ITEMS.register("iris",
@@ -290,8 +288,8 @@ public class ItemsWD {
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(4).saturationMod(0.3f)
                     .build())));
     // Особая еда
-    public static final RegistryObject<Item> CHEESE = ITEMS.register("cheese",
-            () -> new Cheese(new Item.Properties().food(new FoodProperties.Builder().nutrition(20).alwaysEat().saturationMod(1f)
+    public static final RegistryObject<Item> DUNGEON_MASTER_CHEESE = ITEMS.register("dungeon_master_cheese",
+            () -> new DungeonMasterCheese(new Item.Properties().food(new FoodProperties.Builder().nutrition(20).alwaysEat().saturationMod(1f)
                     .effect(new MobEffectInstance(MobEffects.REGENERATION, 160, 0), 1F)
                     .build())));
     public static final RegistryObject<Item> WIZARD_PIE = ITEMS.register("wizard_pie",
@@ -401,8 +399,10 @@ public class ItemsWD {
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> HEALING_DEW = ITEMS.register("healing_dew",
             () -> new HealingDew(new Item.Properties()));
-    public static final RegistryObject<Item> TINCTURE_FOR_PIGLIN = ITEMS.register("tincture_for_piglin",
-            () -> new TinctureForPiglin(new Item.Properties()));
+    public static final RegistryObject<Item> NETHER_GROG = ITEMS.register("nether_grog",
+            () -> new NetherGrog(new Item.Properties().food(new FoodProperties.Builder().nutrition(5).alwaysEat().saturationMod(1)
+                    .effect(new MobEffectInstance(MobEffects.DIG_SPEED, 6000, 2), 1F)
+                    .build()).rarity(Rarity.RARE)));
 
 
 

@@ -59,7 +59,7 @@ public class AbstractPiglinMixin extends Monster {
     }
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (player.getMainHandItem().getItem() == ItemsWD.TINCTURE_FOR_PIGLIN.get() && !this.isPreventZombification()) {
+        if (player.getMainHandItem().getItem() == ItemsWD.NETHER_GROG.get() && !this.isPreventZombification()) {
             Random random = new Random();
 
             // 70% шанс на успешное взаимодействие

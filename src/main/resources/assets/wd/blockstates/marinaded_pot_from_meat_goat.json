@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "wd:block/marinaded_pot_from_meat_goat"
+    },
+    "facing=east": {
+      "model": "wd:block/marinaded_pot_from_meat_goat",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "wd:block/marinaded_pot_from_meat_goat",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "wd:block/marinaded_pot_from_meat_goat",
+      "y": 270
+    }
+  }
+}

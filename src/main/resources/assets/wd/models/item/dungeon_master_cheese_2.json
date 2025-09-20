@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "wd:item/tincture_for_piglin"
+    "layer0": "wd:item/dungeon_master_cheese_2"
   }
 }

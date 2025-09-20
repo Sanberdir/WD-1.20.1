@@ -1,20 +1,20 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "wd:item/cheese"
+    "layer0": "wd:item/dungeon_master_cheese"
   },
   "overrides": [
     {
       "predicate": {
         "custom_model_data": 1
       },
-      "model": "wd:item/cheese_2"
+      "model": "wd:item/dungeon_master_cheese_2"
     },
     {
       "predicate": {
         "custom_model_data": 2
       },
-      "model": "wd:item/cheese_1"
+      "model": "wd:item/dungeon_master_cheese_1"
     }
   ]
 }

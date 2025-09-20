@@ -23,7 +23,7 @@ public class TabWD extends CreativeModeTab {
                     .title(Component.translatable("creativetab.wd"))
                     .displayItems((pParameters, output) -> {
                         //Items
-                        output.accept(ItemsWD.WATERING_CAN.get());
+                        output.accept(ItemsWD.IRON_WATERING_CAN.get());
                         output.accept(ItemsWD.MAGIC_HAT.get());
                         output.accept(ItemsWD.MAGIC_HAT_JAM.get());
                         output.accept(ItemsWD.POISON_BERRY_JAM.get());
@@ -69,7 +69,7 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.COCKED_MUSHROOM_ON_STICK.get());
                         output.accept(ItemsWD.SHPIKACHKI.get());
                         output.accept(ItemsWD.COCKED_SHPIKACHKI.get());
-                        output.accept(ItemsWD.CHEESE.get());
+                        output.accept(ItemsWD.DUNGEON_MASTER_CHEESE.get());
                         output.accept(ItemsWD.SILVERAN.get());
                         output.accept(ItemsWD.HANDFUL_YADOGA.get());
                         output.accept(ItemsWD.A_DROP_OF_LOVE.get());
@@ -101,7 +101,7 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.CLEAR_DRAGOLIT_NUGGET.get());
                         output.accept(ItemsWD.DRAGOLIT_RAPIER.get());
                         output.accept(ItemsWD.HEALING_DEW.get());
-                        output.accept(ItemsWD.TINCTURE_FOR_PIGLIN.get());
+                        output.accept(ItemsWD.NETHER_GROG.get());
                         output.accept(ItemsWD.SPATIAL_ORCHID.get());
                         output.accept(ItemsWD.COASTAL_STEEP.get());
                         output.accept(ItemsWD.GOLDEN_CHEST_KING_PILLAGER.get());
@@ -110,7 +110,6 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.MAG_ELYTRA.get());
                         output.accept(ItemsWD.DRAGOLITE_UPGRADE_SMITHING_TEMPLATE.get());
                         output.accept(ItemsWD.MEADOW_GOLDEN_FLOWER.get());
-                        output.accept(ItemsWD.PICKLED_SHISH_KEBAB.get());
                         output.accept(ItemsWD.APPLE_SAPLING.get());
                         output.accept(ItemsWD.APPLE_LEAVES.get());
                         output.accept(ItemsWD.APPLE_LEAVES_STAGES.get());
@@ -128,6 +127,11 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.GLOW_BERRIES_WAFFLES.get());
 
                         //Blocks
+                        //Meats_pots
+                        output.accept(BlocksWD.POT.get());
+                        output.accept(BlocksWD.POT_FROM_MEAT_GOAT.get());
+                        output.accept(BlocksWD.MARINADED_POT_FROM_MEAT_GOAT.get());
+
                         output.accept(BlocksWD.ECHOTRON.get());
                         output.accept(BlocksWD.FIRE_STEM.get());
                         output.accept(BlocksWD.POISON_BERRY.get());

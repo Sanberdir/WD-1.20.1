@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "wd:item/pickled_shish_kebab"
+    "layer0": "wd:item/pot"
   }
 }

@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "wd:item/watering_can_full"
+    "layer0": "wd:item/iron_watering_can_full"
   }
 }

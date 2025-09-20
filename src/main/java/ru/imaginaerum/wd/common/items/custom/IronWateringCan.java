@@ -28,12 +28,12 @@ import ru.imaginaerum.wd.common.blocks.custom.MagicSoilFarmland;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class WateringCan extends Item {
+public class IronWateringCan extends Item {
 
     private static final int MAX_CAPACITY = 1000;
     private static final int WATER_USAGE = 50;
 
-    public WateringCan(Properties properties) {
+    public IronWateringCan(Properties properties) {
         super(properties);
     }
 

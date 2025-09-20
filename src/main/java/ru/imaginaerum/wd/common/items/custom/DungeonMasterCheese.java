@@ -2,7 +2,6 @@ package ru.imaginaerum.wd.common.items.custom;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -15,11 +14,11 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import ru.imaginaerum.wd.common.sounds.CustomSoundEvents;
 
-public class Cheese extends Item {
+public class DungeonMasterCheese extends Item {
     public static final int MAX_BITES = 2;
     public static final String CHEESE_STATE = "cheese_state";
 
-    public Cheese(Properties properties) {
+    public DungeonMasterCheese(Properties properties) {
         super(properties.food(new FoodProperties.Builder()
                 .nutrition(20) // Восстановление 20 единиц голода
                 .saturationMod(1.0f) // Насыщенность 1.0 (можно настроить)

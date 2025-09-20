@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "wd:item/cheese_1"
+    "layer0": "wd:item/pot"
   }
 }

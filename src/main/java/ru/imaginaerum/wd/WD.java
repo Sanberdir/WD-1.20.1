@@ -50,7 +50,7 @@ import ru.imaginaerum.wd.common.items.armor.model_layered.WDModelLayers;
 import ru.imaginaerum.wd.common.items.arrows.DispenserRegistry;
 import ru.imaginaerum.wd.common.items.arrows.EntityTypeInit;
 import ru.imaginaerum.wd.common.items.arrows.FlameArrowRenderer;
-import ru.imaginaerum.wd.common.items.custom.WateringCan;
+import ru.imaginaerum.wd.common.items.custom.IronWateringCan;
 import ru.imaginaerum.wd.common.items.entity.ModEntitiesItem;
 import ru.imaginaerum.wd.common.items.entity.client.ModBoatRenderer;
 import ru.imaginaerum.wd.common.particles.ModParticles;
@@ -124,12 +124,12 @@ public class WD {
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.SUGAR_REFINED.get()), createPotion(Potions.STRONG_SWIFTNESS)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.SUGAR_REFINED.get()), createSplashPotion(Potions.STRONG_SWIFTNESS)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.SUGAR_REFINED.get()), createLingeringPotion(Potions.STRONG_SWIFTNESS)));
-            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.HANDFUL_NETHER.get()), createPotion(Potions.STRONG_STRENGTH)));
-            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.HANDFUL_NETHER.get()), createSplashPotion(Potions.STRONG_STRENGTH)));
-            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.HANDFUL_NETHER.get()), createLingeringPotion(Potions.STRONG_STRENGTH)));
-            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.BRIGHT_PEPPER.get()), createPotion(Potions.LONG_FIRE_RESISTANCE)));
-            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.BRIGHT_PEPPER.get()), createSplashPotion(Potions.LONG_FIRE_RESISTANCE)));
-            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.BRIGHT_PEPPER.get()), createLingeringPotion(Potions.LONG_FIRE_RESISTANCE)));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.THICK)), Ingredient.of(ItemsWD.HANDFUL_NETHER.get()), createPotion(Potions.STRONG_STRENGTH)));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.THICK)), Ingredient.of(ItemsWD.HANDFUL_NETHER.get()), createSplashPotion(Potions.STRONG_STRENGTH)));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.THICK)), Ingredient.of(ItemsWD.HANDFUL_NETHER.get()), createLingeringPotion(Potions.STRONG_STRENGTH)));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.THICK)), Ingredient.of(ItemsWD.BRIGHT_PEPPER.get()), createPotion(Potions.LONG_FIRE_RESISTANCE)));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.THICK)), Ingredient.of(ItemsWD.BRIGHT_PEPPER.get()), createSplashPotion(Potions.LONG_FIRE_RESISTANCE)));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.THICK)), Ingredient.of(ItemsWD.BRIGHT_PEPPER.get()), createLingeringPotion(Potions.LONG_FIRE_RESISTANCE)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.POISON_BERRY.get()), createPotion(Potions.STRONG_POISON)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.POISON_BERRY.get()), createSplashPotion(Potions.STRONG_POISON)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.AWKWARD)), Ingredient.of(ItemsWD.POISON_BERRY.get()), createLingeringPotion(Potions.STRONG_POISON)));
@@ -199,9 +199,9 @@ public class WD {
             EntityRenderers.register(ModEntitiesItem.MOD_CHEST_BOAT.get(), pContext -> new ModBoatRenderer(pContext, true));
             event.enqueueWork(() -> {
                 ItemProperties.register(
-                        ItemsWD.WATERING_CAN.get(), // твой Item из DeferredRegister
+                        ItemsWD.IRON_WATERING_CAN.get(), // твой Item из DeferredRegister
                         new ResourceLocation("wd", "water_full"),
-                        (stack, level, entity, seed) -> WateringCan.isFull(stack) ? 1.0F : 0.0F
+                        (stack, level, entity, seed) -> IronWateringCan.isFull(stack) ? 1.0F : 0.0F
                 );
                 ComposterBlock.COMPOSTABLES.put(ItemsWD.FIRE_STEM.get(), 0.2f);
                 ComposterBlock.COMPOSTABLES.put(ItemsWD.WARPED_WART.get(), 0.2f);

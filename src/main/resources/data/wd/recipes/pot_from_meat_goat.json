@@ -8,7 +8,7 @@
       "item": "farmersdelight:apple_cider"
     },
     {
-      "item": "minecraft:flower_pot"
+      "item": "wd:pot"
     },
     {
       "item": "wd:raw_slicing_goats_meat"
@@ -31,7 +31,7 @@
 
   ],
   "result": {
-    "item": "wd:not_pickled_shish_kebab",
+    "item": "wd:pot_from_meat_goat",
     "count": 1
   }
 }

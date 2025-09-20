@@ -126,6 +126,15 @@ public class BlocksWD {
     public static final RegistryObject<Block> ROTTEN_PIE = BLOCKS.register("rotten_pie",
             () -> new RottenPie(BlockBehaviour.Properties.of().randomTicks().strength(0.5F).sound(SoundType.WOOL)));
 
+
+    //Шашлык
+    public static final RegistryObject<Block> POT = registerBlock("pot",
+            () -> new Pot(BlockBehaviour.Properties.of().sound(SoundType.DECORATED_POT).strength(0.7F).noOcclusion()));
+    public static final RegistryObject<Block> POT_FROM_MEAT_GOAT = registerBlock("pot_from_meat_goat",
+            () -> new PotWithKebab(BlockBehaviour.Properties.of().sound(SoundType.DECORATED_POT).strength(0.7F).noOcclusion()));
+    public static final RegistryObject<Block> MARINADED_POT_FROM_MEAT_GOAT = registerBlock("marinaded_pot_from_meat_goat",
+            () -> new MarinadedPot(BlockBehaviour.Properties.of().sound(SoundType.DECORATED_POT).strength(0.7F).noOcclusion()));
+
     //Уникальные блоки
     public static final RegistryObject<Block> DRAGOLITE_CAGE = BLOCKS.register("dragolite_cage",
             () -> new DragoliteCage(BlockBehaviour.Properties.of().sound(SoundType.METAL)

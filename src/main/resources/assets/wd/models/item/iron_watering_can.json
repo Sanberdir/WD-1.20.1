@@ -1,14 +1,14 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "wd:item/watering_can"
+    "layer0": "wd:item/iron_watering_can"
   },
   "overrides": [
     {
       "predicate": {
         "wd:water_full": 1.0
       },
-      "model": "wd:item/watering_can_full"
+      "model": "wd:item/iron_watering_can_full"
     }
   ]
 }

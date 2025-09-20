@@ -13,7 +13,7 @@
       "item": "wd:handful_nether"
     },
     {
-      "item": "wd:pepper"
+      "item": "wd:bright_pepper"
     },
     {
       "item": "minecraft:gold_block"
@@ -24,7 +24,7 @@
   ],
   "recipe_book_tab": "jam",
   "result": {
-    "item": "wd:tincture_for_piglin",
+    "item": "wd:nether_grog",
     "count": 3
   }
 }

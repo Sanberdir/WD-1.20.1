@@ -112,6 +112,22 @@ public class ZombieEatPieGoal extends MoveToBlockGoal {
     @Override
     protected boolean isValidTarget(LevelReader levelReader, BlockPos blockPos) {
         BlockState state = levelReader.getBlockState(blockPos);
-        return state.getBlock() instanceof RottenPie || state.getBlock() instanceof RottenPieCage;
+
+        if (!(state.getBlock() instanceof RottenPie || state.getBlock() instanceof RottenPieCage)) {
+            return false;
+        }
+
+        int zombieY = this.zombie.blockPosition().getY();
+        int targetY = blockPos.getY();
+
+        // блок должен быть не выше, чем на 1 блок от позиции зомби
+        if (targetY > zombieY + 1) {
+            return false;
+        }
+
+        // (по желанию) можешь ещё добавить проверку "не слишком низко", например:
+        // if (targetY < zombieY - 1) return false;
+
+        return true;
     }
 }
