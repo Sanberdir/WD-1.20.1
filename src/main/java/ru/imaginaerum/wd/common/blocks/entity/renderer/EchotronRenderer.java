@@ -76,61 +76,94 @@ public class EchotronRenderer extends GeoBlockRenderer<EchotronBlockEntity> {
             float time = animatable.getLevel().getGameTime() + partialTick;
             int stage = animatable.getBlockState().getValue(EchotronBlock.STAGE);
 
-            float raysF = stage / 2f;
+            // количество "логических" лучей (можно регулировать для производительности)
+            float raysF = Math.max(1f, stage * 3f / 2f); // чем выше stage — больше лучей
             int maxRays = (int)Math.ceil(raysF);
             float partialRay = raysF - (maxRays - 1);
 
-            float baseRadius = 0.3f;
-            float baseHeight = 0.5f;
+            // базовые параметры сферы
+            float sphereBase = 0.45f; // средняя длина луча
+            float sphereJitter = 0.25f; // вариативность длины луча
+            float pulsationSpeed = 15.0f;
 
             VertexConsumer vc = bufferSource.getBuffer(RenderType.lightning());
 
             poseStack.pushPose();
             poseStack.translate(0, 1.6f, 0);
             Matrix4f matrix = poseStack.last().pose();
-            java.util.Random rnd = new java.util.Random(animatable.getBlockPos().asLong());
+
+            // Основной RNG: детерминирован относительно позиции блока, но
+            // для каждого луча мы добавляем индекс, чтобы получился стабильный набор направлений
+            long baseSeed = animatable.getBlockPos().asLong();
 
             for (int i = 0; i < maxRays; i++) {
-                double angle = i * (360.0 / maxRays) + time * 2;
-                float radius = baseRadius + 0.05f * (float)Math.sin(time / 20.0 + i);
-                float heightVariation = 0.1f * (float)Math.cos(time / 25.0 + i * 2);
+                // детерминированный RNG для каждого луча
+                java.util.Random rnd = new java.util.Random(baseSeed ^ (i * 0x9E3779B97F4A7C15L));
 
-                // Случайное фиксированное направление для этого блока и луча
-                int dir = rnd.nextInt(3) - 1; // -1 = вниз, 0 = вбок, 1 = вверх
-                float heightOffset = switch (dir) {
-                    case 1 -> 0.15f;
-                    case -1 -> -0.15f;
-                    default -> 0f;
-                };
+                // Равномерная выборка направлений на сфере:
+                // theta ∈ [0, 2π), z ∈ [-1,1] с равномерным распределением по площади
+                double u = rnd.nextDouble();
+                double v = rnd.nextDouble();
+                double theta = 2.0 * Math.PI * v + (time * 0.02); // добавляем медленную общую вращательную модуляцию
+                double z = 2.0 * u - 1.0; // cos(phi)
+                double r = Math.sqrt(Math.max(0.0, 1.0 - z * z));
 
-                float currentHeight = baseHeight + heightVariation + heightOffset;
+                float dirX = (float) (r * Math.cos(theta));
+                float dirZ = (float) (r * Math.sin(theta));
+                float dirY = (float) z;
 
-                // дальше как у тебя было
-                float x = (float)(Math.cos(Math.toRadians(angle)) * radius);
-                float z = (float)(Math.sin(Math.toRadians(angle)) * radius);
-                float y = currentHeight;
-
-                double nextAngle = angle + 15.0;
-                float x2 = (float)(Math.cos(Math.toRadians(nextAngle)) * (radius * 0.8f));
-                float z2 = (float)(Math.sin(Math.toRadians(nextAngle)) * (radius * 0.8f));
-                float y2 = currentHeight - 0.05f;
+                // длина луча — базовая + случайная + пульсация по времени
+                float length = sphereBase + sphereJitter * rnd.nextFloat() + 0.08f * (float)Math.sin(time / pulsationSpeed + i);
+                // маленькая вариация, чтобы некоторые лучи были короче (плавный эффект)
+                float lengthInner = length * (0.45f + 0.2f * rnd.nextFloat());
 
                 float alphaMultiplier = (i == maxRays - 1) ? partialRay : 1f;
 
-                vc.vertex(matrix, 0, 0, 0).color(0, 255, 255, (int)(150 * alphaMultiplier)).endVertex();
-                vc.vertex(matrix, x, y, z).color(0, 200, 255, (int)(30 * alphaMultiplier)).endVertex();
-                vc.vertex(matrix, x2, y2, z2).color(0, 200, 255, (int)(10 * alphaMultiplier)).endVertex();
+                // концы луча: от центра к точке на сфере
+                float x = dirX * length;
+                float y = dirY * length;
+                float z2 = dirZ * length;
 
-                if (i % 2 == 0) {
-                    float lowerY = currentHeight - 0.15f;
-                    vc.vertex(matrix, 0, 0, 0).color(0, 255, 255, (int)(120 * alphaMultiplier)).endVertex();
-                    vc.vertex(matrix, x * 0.7f, lowerY, z * 0.7f).color(0, 200, 255, (int)(15 * alphaMultiplier)).endVertex();
-                    vc.vertex(matrix, x2 * 0.7f, lowerY - 0.03f, z2 * 0.7f).color(0, 200, 255, (int)(5 * alphaMultiplier)).endVertex();
+                float xInner = dirX * lengthInner;
+                float yInner = dirY * lengthInner;
+                float zInner = dirZ * lengthInner;
+
+                // основной "тройной" треугольник (плотный центр -> средняя -> внешний)
+                int a1 = Math.min(255, (int)(180 * alphaMultiplier));
+                int a2 = Math.min(255, (int)(90 * alphaMultiplier));
+                int a3 = Math.min(255, (int)(35 * alphaMultiplier));
+
+                vc.vertex(matrix, 0f, 0f, 0f).color(0, 255, 255, a1).endVertex();
+                vc.vertex(matrix, xInner, yInner, zInner).color(0, 200, 255, a2).endVertex();
+                vc.vertex(matrix, x, y, z2).color(0, 200, 255, a3).endVertex();
+
+                // иногда добавляем тонкую вторичную ветвь для глубины
+                if (i % 3 == 0) {
+                    // небольшое отклонение направления для ветви
+                    float branchLen = length * (0.6f + 0.2f * rnd.nextFloat());
+                    // образуем слегка сдвинутую точку (меняем угол маленькой петлей)
+                    double branchTheta = theta + (rnd.nextDouble() - 0.5) * 0.6;
+                    double branchZ = Math.max(-1.0, Math.min(1.0, z + (rnd.nextDouble() - 0.5) * 0.2));
+                    double branchR = Math.sqrt(Math.max(0.0, 1.0 - branchZ * branchZ));
+                    float bdx = (float)(branchR * Math.cos(branchTheta));
+                    float bdz = (float)(branchR * Math.sin(branchTheta));
+                    float bdy = (float)branchZ;
+
+                    float bx = bdx * branchLen;
+                    float by = bdy * branchLen;
+                    float bz = bdz * branchLen;
+
+                    int ab1 = Math.min(255, (int)(120 * alphaMultiplier));
+                    int ab2 = Math.min(255, (int)(50 * alphaMultiplier));
+                    int ab3 = Math.min(255, (int)(15 * alphaMultiplier));
+
+                    vc.vertex(matrix, 0f, 0f, 0f).color(0, 255, 255, ab1).endVertex();
+                    vc.vertex(matrix, bx * 0.55f, by * 0.55f, bz * 0.55f).color(0, 200, 255, ab2).endVertex();
+                    vc.vertex(matrix, bx, by, bz).color(0, 200, 255, ab3).endVertex();
                 }
             }
 
             poseStack.popPose();
         }
-
     }
 }

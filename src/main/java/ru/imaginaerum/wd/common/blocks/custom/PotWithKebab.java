@@ -10,6 +10,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -96,7 +99,31 @@ public class PotWithKebab extends FacingBlock {
             double x = pos.getX() + 0.5;
             double y = pos.getY() + 1.0;
             double z = pos.getZ() + 0.5;
-            level.addParticle(ParticleTypes.ENTITY_EFFECT, x, y, z, 0.9, 0.2, 0.4); // бордовый
+
+            // #d1d9a5 в нормализованных значениях RGB
+            level.addParticle(ParticleTypes.ENTITY_EFFECT, x, y, z, 0.8196, 0.8510, 0.6471);
         }
+    }
+
+    @Override
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+        BlockPos belowPos = pos.below();
+        BlockState belowState = level.getBlockState(belowPos);
+
+        // Получаем форму блока снизу
+        VoxelShape shape = belowState.getShape(level, belowPos);
+
+        // Проверка: форма должна доходить до высоты 16 (1.0 блока)
+        return !shape.isEmpty() && shape.max(Direction.Axis.Y) >= 1.0;
+    }
+
+    @Override
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
+                                  LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        if (direction == Direction.DOWN && !canSurvive(state, level, pos)) {
+            // если снизу убрали блок — горшок дропается
+            return Blocks.AIR.defaultBlockState();
+        }
+        return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
     }
 }
