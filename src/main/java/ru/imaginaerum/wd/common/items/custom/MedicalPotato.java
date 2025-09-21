@@ -4,10 +4,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import vectorwing.farmersdelight.common.item.ConsumableItem;
 import vectorwing.farmersdelight.common.item.DrinkableItem;
 
-public class MedicalPotato extends Item {
-    public MedicalPotato(Item.Properties properties) {
+public class MedicalPotato extends ConsumableItem {
+
+
+    public MedicalPotato(Properties properties) {
         super(properties);
     }
 
