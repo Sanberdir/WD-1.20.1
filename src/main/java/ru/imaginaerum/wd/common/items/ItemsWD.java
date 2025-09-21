@@ -235,8 +235,7 @@ public class ItemsWD {
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(9).saturationMod(0.8f)
                     .build())));
     public static final RegistryObject<Item> MEDICAL_POTATO = ITEMS.register("medical_potato",
-            () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(5).saturationMod(0.6f).alwaysEat()
-                    .effect(new MobEffectInstance(MobEffects.HEAL, 1, 0), 1F)
+            () -> new MedicalPotato(new Item.Properties().food(new FoodProperties.Builder().nutrition(5).saturationMod(0.6f).alwaysEat()
                     .build())));
     public static final RegistryObject<Item> BRIGHT_PEPPER = ITEMS.register("bright_pepper",
             () -> new BrightPepper(new Item.Properties().food(new FoodProperties.Builder().nutrition(1).saturationMod(0.2f)
