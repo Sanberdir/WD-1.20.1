@@ -6,9 +6,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import vectorwing.farmersdelight.common.item.DrinkableItem;
 
-public class MedicalPotato extends DrinkableItem {
+public class MedicalPotato extends Item {
     public MedicalPotato(Item.Properties properties) {
-        super(properties, false, true);
+        super(properties);
     }
 
     public void affectConsumer(ItemStack stack, Level level, LivingEntity consumer) {
