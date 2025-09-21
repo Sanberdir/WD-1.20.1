@@ -66,6 +66,14 @@
       }
     ]
   },
+  "open_chests": {
+    "subtitle": "sounds.wd.open_chests",
+    "sounds": [
+      {
+        "name": "wd:open_chests"
+      }
+    ]
+  },
   "rezolv_15_so_little_but_so_big": {
     "subtitle": "sounds.wd.rezolv_15_so_little_but_so_big",
     "sounds": [

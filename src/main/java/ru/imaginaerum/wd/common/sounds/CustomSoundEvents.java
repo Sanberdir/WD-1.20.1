@@ -11,6 +11,8 @@ public class CustomSoundEvents {
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS =
             DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, WD.MODID);
 
+    public static final RegistryObject<SoundEvent> OPEN_CHESTS =
+            registerSoundEvents("open_chests");
     public static final RegistryObject<SoundEvent> NYAMNYAM =
             registerSoundEvents("nyamnyam");
     public static final RegistryObject<SoundEvent> GOLDEN_FLOWER =

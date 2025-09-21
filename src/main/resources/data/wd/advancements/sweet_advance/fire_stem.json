@@ -2,7 +2,7 @@
   "parent": "wd:sweet_advance/magic_adventures",
   "criteria": {
     "requirement": {
-      "trigger": "minecraft:location",
+      "trigger": "minecraft:enter_block",
       "conditions": {
         "player": [
           {

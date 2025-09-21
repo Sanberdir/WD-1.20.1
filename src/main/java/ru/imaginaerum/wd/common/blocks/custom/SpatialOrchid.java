@@ -12,9 +12,12 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
+import java.util.List;
 
 
 public class SpatialOrchid extends Block {
@@ -26,7 +29,29 @@ public class SpatialOrchid extends Block {
     @Override
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!level.isClientSide && level instanceof ServerLevel serverLevel) {
-            teleportEntityRandomly(serverLevel, entity);
+            // Запланировать тик через 10 тиков, если он еще не запланирован
+            if (!level.getBlockTicks().hasScheduledTick(pos, this)) {
+                level.scheduleTick(pos, this, 6);
+            }
+        }
+    }
+
+    @Override
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        // Увеличиваем область проверки до 1 блока во все стороны, чтобы захватить игрока, который мог немного сместиться
+        AABB searchArea = new AABB(pos).inflate(1.0);
+        List<Entity> entities = level.getEntitiesOfClass(Entity.class, searchArea);
+
+        if (!entities.isEmpty()) {
+            // Телепортируем всех сущностей в области, а не только первую
+            for (Entity entity : entities) {
+                teleportEntityRandomly(level, entity);
+            }
+        }
+
+        // Также проверить, может ли блок выжить (существующая логика)
+        if (!state.canSurvive(level, pos)) {
+            level.destroyBlock(pos, true);
         }
     }
 
@@ -52,12 +77,6 @@ public class SpatialOrchid extends Block {
         return level.getBlockState(pos).isSolid() && // Подходящая твёрдая поверхность
                 level.getBlockState(pos.above()).isAir() && // Над поверхностью воздух
                 level.getBlockState(pos.above(2)).isAir(); // Достаточно пространства для сущности
-    }
-
-    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (!state.canSurvive(level, pos)) {
-            level.destroyBlock(pos, true);
-        }
     }
 
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource source) {

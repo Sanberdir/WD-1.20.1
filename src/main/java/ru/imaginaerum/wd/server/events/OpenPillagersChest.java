@@ -7,6 +7,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +24,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import ru.imaginaerum.wd.common.blocks.BlocksWD;
 import ru.imaginaerum.wd.common.items.ItemsWD;
+import ru.imaginaerum.wd.common.sounds.CustomSoundEvents;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -55,9 +59,10 @@ public class OpenPillagersChest {
                     } else {
                         offHand.shrink(1);
                     }
+
                     level.destroyBlock(pos, false);
                     event.setCanceled(true); // Отменяем стандартное действие
-
+                    level.playSound(null,pos, CustomSoundEvents.OPEN_CHESTS.get(), SoundSource.BLOCKS,1,1);
                     JsonObject config = loadConfig();
                     JsonElement itemsConfig = config.get("items");
                     Random rand = new Random();
