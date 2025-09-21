@@ -42,7 +42,7 @@ public class MarinadedPot extends FacingBlock {
     public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
         if (stack.getItem() == BlocksWD.MARINADED_POT_FROM_MEAT_GOAT.get().asItem()) {
             tooltip.add(Component.translatable("tooltip.wd.pot_from_meat_goat")
-                    .withStyle(ChatFormatting.GRAY));
+                    .withStyle(ChatFormatting.DARK_PURPLE));
         }
     }
     @Override

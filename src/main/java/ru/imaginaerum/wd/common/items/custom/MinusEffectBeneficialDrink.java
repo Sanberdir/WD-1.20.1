@@ -27,12 +27,7 @@ public class MinusEffectBeneficialDrink extends Item {
     }
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> components, TooltipFlag flag) {
-        if(Screen.hasShiftDown()) {
-            components.add(Component.translatable("wd.press_shift2").withStyle(ChatFormatting.DARK_GRAY));
             components.add(Component.translatable("wd.hot_cocoa_with_sparkling_pollen").withStyle(ChatFormatting.DARK_PURPLE));
-        } else {
-            components.add(Component.translatable("wd.press_shift").withStyle(ChatFormatting.DARK_GRAY));
-        }
         super.appendHoverText(stack, level, components, flag);
     }
     public SoundEvent getEatingSound() {
