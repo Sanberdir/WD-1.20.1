@@ -36,43 +36,31 @@ public class ArsMelimaDraws {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.5F);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         graphics.blit(texture, destX, destY, srcU, srcV, width, height, xSize, ySize);
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
+
+    // теперь принимает hover и делает полную непрозрачность при наведении
     public static void drawBackArrow(GuiGraphics graphics, ResourceLocation texture,
-                                        int guiLeft, int guiTop,
-                                        int srcU, int srcV, int width, int height,
-                                        int xSize, int ySize, int relX, int relY) {
+                                     int guiLeft, int guiTop,
+                                     int srcU, int srcV, int width, int height,
+                                     int xSize, int ySize, boolean hover, int relX, int relY) {
         int destX = guiLeft + relX;
         int destY = guiTop + relY;
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.7F);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, hover ? 1.0f : 0.7F);
 
         graphics.blit(texture, destX, destY, srcU, srcV, width, height, xSize, ySize);
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
+
     public static void drawDimForwardArrow(GuiGraphics graphics, ResourceLocation texture,
-                                        int guiLeft, int guiTop,
-                                        int srcU, int srcV, int width, int height,
-                                        int xSize, int ySize, int relX, int relY) {
-        int destX = guiLeft + relX;
-        int destY = guiTop + relY;
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.5F);
-
-        graphics.blit(texture, destX, destY, srcU, srcV, width, height, xSize, ySize);
-
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-    public static void drawForwardArrow(GuiGraphics graphics, ResourceLocation texture,
                                            int guiLeft, int guiTop,
                                            int srcU, int srcV, int width, int height,
                                            int xSize, int ySize, int relX, int relY) {
@@ -81,7 +69,24 @@ public class ArsMelimaDraws {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.7F);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+
+        graphics.blit(texture, destX, destY, srcU, srcV, width, height, xSize, ySize);
+
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    // теперь принимает hover и делает полную непрозрачность при наведении
+    public static void drawForwardArrow(GuiGraphics graphics, ResourceLocation texture,
+                                        int guiLeft, int guiTop,
+                                        int srcU, int srcV, int width, int height,
+                                        int xSize, int ySize, boolean hover, int relX, int relY) {
+        int destX = guiLeft + relX;
+        int destY = guiTop + relY;
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, hover ? 1.0f : 0.7F);
 
         graphics.blit(texture, destX, destY, srcU, srcV, width, height, xSize, ySize);
 
@@ -114,7 +119,6 @@ public class ArsMelimaDraws {
         graphics.drawString(font, text, 0, 0, color, false);
         poseStack.popPose();
     }
-
 
     public static void renderItem(GuiGraphics graphics, ItemStack stack, int x, int y) {
         graphics.renderItem(stack, x, y);

@@ -1,20 +1,20 @@
 package ru.imaginaerum.wd.client.gui.ars_melima;
 
-public class Chapter {
-    private final String id; // имя файла или идентификатор
-    private final String title;
-    private final String content;
-    private final String imageResource; // nullable, ResourceLocation string
+import java.util.List;
 
-    public Chapter(String id, String title, String content, String imageResource) {
+
+public class Chapter {
+    private final String id;
+    private final String title;
+    private final List<ChapterElement> elements;
+
+    public Chapter(String id, String title, List<ChapterElement> elements) {
         this.id = id;
         this.title = title;
-        this.content = content;
-        this.imageResource = imageResource;
+        this.elements = elements;
     }
 
     public String getId() { return id; }
     public String getTitle() { return title; }
-    public String getContent() { return content; }
-    public String getImageResource() { return imageResource; }
+    public List<ChapterElement> getElements() { return elements; }
 }
