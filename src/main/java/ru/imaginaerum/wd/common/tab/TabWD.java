@@ -125,7 +125,7 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.POISON_WAFFLES.get());
                         output.accept(ItemsWD.CHARMING_WAFFLES.get());
                         output.accept(ItemsWD.GLOW_BERRIES_WAFFLES.get());
-
+                        output.accept(ItemsWD.BRIGHT_PEPPER_SEEDS.get());
                         //Blocks
                         //Meats_pots
                         output.accept(BlocksWD.POT.get());
@@ -156,7 +156,6 @@ public class TabWD extends CreativeModeTab {
                         output.accept(BlocksWD.MAGIC_COMPOST.get());
                         output.accept(BlocksWD.MAGIC_SOIL.get());
                         output.accept(BlocksWD.MAGIC_SOIL_FARMLAND.get());
-                        output.accept(BlocksWD.BRIGHT_PEPPER_SEEDS.get());
                         output.accept(BlocksWD.APPLE_STAIRS.get());
                         output.accept(BlocksWD.APPLE_SLAB.get());
                         output.accept(BlocksWD.APPLE_FENCE.get());

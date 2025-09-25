@@ -211,7 +211,7 @@ public class BlocksWD {
                     .mapColor(MapColor.METAL).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F)
                     .sound(SoundType.METAL).noOcclusion().ignitedByLava()));
 
-    public static final RegistryObject<Block> BRIGHT_PEPPER_SEEDS = registerBlock("bright_pepper_seeds",
+    public static final RegistryObject<Block> BRIGHT_PEPPER_SEEDS = BLOCKS.register("bright_pepper_seeds",
             () -> new BrightPepperSeeds(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).instabreak()
                     .sound(SoundType.CROP).randomTicks().noCollission().noOcclusion()));

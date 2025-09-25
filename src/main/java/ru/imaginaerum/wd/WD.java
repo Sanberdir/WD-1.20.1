@@ -45,6 +45,7 @@ import ru.imaginaerum.wd.common.blocks.entity.ModBlockEntities;
 import ru.imaginaerum.wd.common.custom_recipes.ProperBrewingRecipe;
 import ru.imaginaerum.wd.common.effects.EffectsWD;
 import ru.imaginaerum.wd.common.entities.ModEntities;
+import ru.imaginaerum.wd.client.gui.WDMenus;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 import ru.imaginaerum.wd.common.items.armor.model_layered.WDModelLayers;
 import ru.imaginaerum.wd.common.items.arrows.DispenserRegistry;
@@ -78,6 +79,8 @@ public class WD {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         if (FMLEnvironment.dist.isClient()) modEventBus.addListener(this::registerElytraLayer);
         modEventBus.addListener(this::registerLayerDefinitions);
+        WDMenus.REGISTRY_MENUS.register(modEventBus);
+
         EntityTypeInit.ENTITY_TYPES.register(modEventBus);
         ItemsWD.ITEMS.register(modEventBus);
         ModParticles.PARTICLE_TYPES.register(modEventBus);
@@ -203,19 +206,19 @@ public class WD {
                         new ResourceLocation("wd", "water_full"),
                         (stack, level, entity, seed) -> IronWateringCan.isFull(stack) ? 1.0F : 0.0F
                 );
-                ComposterBlock.COMPOSTABLES.put(ItemsWD.FIRE_STEM.get(), 0.2f);
+                ComposterBlock.COMPOSTABLES.put(ItemsWD.FIRE_STEM.get(), 0.4f);
                 ComposterBlock.COMPOSTABLES.put(ItemsWD.WARPED_WART.get(), 0.2f);
                 ComposterBlock.COMPOSTABLES.put(ItemsWD.POISON_BERRY.get(), 0.2f);
-                ComposterBlock.COMPOSTABLES.put(ItemsWD.MEADOW_GOLDEN_FLOWER.get(), 0.2f);
+                ComposterBlock.COMPOSTABLES.put(ItemsWD.MEADOW_GOLDEN_FLOWER.get(), 0.8f);
                 ComposterBlock.COMPOSTABLES.put(ItemsWD.ROSE_OF_GHOSTY_TEARS.get(), 0.2f);
                 ComposterBlock.COMPOSTABLES.put(ItemsWD.ROSE_OF_THE_MURDERER.get(), 0.2f);
                 ComposterBlock.COMPOSTABLES.put(ItemsWD.MEDICAL_POTATO.get(), 0.2f);
-                ComposterBlock.COMPOSTABLES.put(ItemsWD.SPATIAL_ORCHID.get(), 0.2f);
-                ComposterBlock.COMPOSTABLES.put(ItemsWD.APPLE_LEAVES.get(), 0.2f);
-                ComposterBlock.COMPOSTABLES.put(ItemsWD.APPLE_LEAVES_STAGES.get(), 0.2f);
-                ComposterBlock.COMPOSTABLES.put(ItemsWD.APPLE_SAPLING.get(), 0.2f);
-
-
+                ComposterBlock.COMPOSTABLES.put(ItemsWD.SPATIAL_ORCHID.get(), 0.62f);
+                ComposterBlock.COMPOSTABLES.put(ItemsWD.APPLE_LEAVES.get(), 0.4f);
+                ComposterBlock.COMPOSTABLES.put(ItemsWD.APPLE_LEAVES_STAGES.get(), 0.4f);
+                ComposterBlock.COMPOSTABLES.put(ItemsWD.APPLE_SAPLING.get(), 0.4f);
+                ComposterBlock.COMPOSTABLES.put(ItemsWD.BRIGHT_PEPPER.get(), 0.5f);
+                ComposterBlock.COMPOSTABLES.put(ItemsWD.BRIGHT_PEPPER_SEEDS.get(), 0.6f);
             });
         }
     }

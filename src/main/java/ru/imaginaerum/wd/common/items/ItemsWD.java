@@ -96,7 +96,7 @@ public class ItemsWD {
 
     // Книга
     public static final RegistryObject<Item> ARS_MELIMA = ITEMS.register("ars_melima",
-            () -> new Item(new Item.Properties()));
+            () -> new ArsMelima(new Item.Properties()));
 
     // Кусты
     public static final RegistryObject<Item> POISON_BERRY = ITEMS.register("poison_berry",
@@ -105,6 +105,8 @@ public class ItemsWD {
                             .effect(new MobEffectInstance(MobEffects.POISON, 80, 0), 0.5F)
                             .effect(new MobEffectInstance(MobEffects.HEALTH_BOOST, 200, 0), 0.5F)
                             .build()))));
+    public static final RegistryObject<Item> BRIGHT_PEPPER_SEEDS = ITEMS.register("bright_pepper_seeds",
+            () -> new ItemNameBlockItem(BlocksWD.BRIGHT_PEPPER_SEEDS.get(),(new Item.Properties())));
 
     public static final RegistryObject<Item> MEADOW_GOLDEN_FLOWER = ITEMS.register("meadow_golden_flower",
             () -> new ItemNameBlockItem(BlocksWD.MEADOW_GOLDEN_FLOWER.get(),(new Item.Properties())));
@@ -175,7 +177,7 @@ public class ItemsWD {
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(2).saturationMod(0.2f)
                     .build())));
     public static final RegistryObject<Item> COCKED_GOAT_MEAT_KEBAB = ITEMS.register("cocked_goat_meat_kebab",
-            () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(2).saturationMod(0.2f)
+            () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(6).saturationMod(0.7f)
                     .build())));
     public static final RegistryObject<Item> RAW_HORSE = ITEMS.register("raw_horse",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(3).saturationMod(0.09f)
