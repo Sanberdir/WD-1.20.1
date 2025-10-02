@@ -18,8 +18,19 @@ public class ArsMelima extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        level.playSound(
+                null, // null => всем игрокам
+                player.getX(),
+                player.getY(),
+                player.getZ(),
+                net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN,
+                net.minecraft.sounds.SoundSource.PLAYERS,
+                1.0F,
+                1.0F
+        );
         if (level.isClientSide) {
             openScreen();
+
         }
         return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
     }

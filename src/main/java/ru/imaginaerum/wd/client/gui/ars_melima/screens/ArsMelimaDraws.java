@@ -11,21 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ArsMelimaDraws {
 
-    public static void drawBackChaptersArrow(GuiGraphics graphics, ResourceLocation texture,
-                                             int guiLeft, int guiTop, int arrowU, int arrowV,
-                                             int arrowW, int arrowH, int xSize, int ySize, boolean hover,
-                                             int relX, int relY) {
-        int destX = guiLeft + relX;
-        int destY = guiTop + relY;
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, hover ? 1.0f : 0.7f);
-
-        graphics.blit(texture, destX, destY, arrowU, arrowV, arrowW, arrowH, xSize, ySize);
-
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
 
     public static void drawDimBackArrow(GuiGraphics graphics, ResourceLocation texture,
                                         int guiLeft, int guiTop,
@@ -36,7 +21,7 @@ public class ArsMelimaDraws {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F); // тусклая версия
 
         graphics.blit(texture, destX, destY, srcU, srcV, width, height, xSize, ySize);
 
@@ -53,12 +38,13 @@ public class ArsMelimaDraws {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, hover ? 1.0f : 0.7F);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, hover ? 1.0f : 1.0F);
 
         graphics.blit(texture, destX, destY, srcU, srcV, width, height, xSize, ySize);
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
+
 
     public static void drawDimForwardArrow(GuiGraphics graphics, ResourceLocation texture,
                                            int guiLeft, int guiTop,

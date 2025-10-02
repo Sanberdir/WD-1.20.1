@@ -224,6 +224,10 @@ public class BlocksWD {
             () -> new MagicSoil(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).strength(0.5F)
                     .sound(SoundType.CROP)));
+    public static final RegistryObject<Block> MAGIC_SOIL_GRASS = registerBlock("magic_soil_grass",
+            () -> new MagicSoilGrass(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.GRASS).instrument(NoteBlockInstrument.BASS).strength(0.5F)
+                    .sound(SoundType.CROP)));
     public static final RegistryObject<Block> MAGIC_SOIL_FARMLAND = registerBlock("magic_soil_farmland",
             () -> new MagicSoilFarmland(BlockBehaviour.Properties.copy(Blocks.FARMLAND)));
     public static final RegistryObject<Block> APPLE_SIGN = BLOCKS.register("apple_sign",

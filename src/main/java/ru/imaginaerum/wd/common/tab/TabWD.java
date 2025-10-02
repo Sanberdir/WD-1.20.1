@@ -139,7 +139,6 @@ public class TabWD extends CreativeModeTab {
                         output.accept(BlocksWD.WARPED_WART.get());
                         output.accept(BlocksWD.SUGAR_SACK.get());
                         output.accept(BlocksWD.THE_PILLAGERS_CHEST.get());
-                        output.accept(BlocksWD.GOLDEN_CHEST_KING_PILLAGER.get());
                         output.accept(BlocksWD.A_BLOCK_OF_SPARKING_POLLEN.get());
                         output.accept(BlocksWD.ROSE_OF_GHOSTY_TEARS.get());
                         output.accept(BlocksWD.DRAGOLIT_GRID.get());
@@ -155,6 +154,7 @@ public class TabWD extends CreativeModeTab {
                         output.accept(BlocksWD.ROTTEN_PIE_CAGE.get());
                         output.accept(BlocksWD.MAGIC_COMPOST.get());
                         output.accept(BlocksWD.MAGIC_SOIL.get());
+                        output.accept(BlocksWD.MAGIC_SOIL_GRASS.get());
                         output.accept(BlocksWD.MAGIC_SOIL_FARMLAND.get());
                         output.accept(BlocksWD.APPLE_STAIRS.get());
                         output.accept(BlocksWD.APPLE_SLAB.get());

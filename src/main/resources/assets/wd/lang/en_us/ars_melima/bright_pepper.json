@@ -2,6 +2,8 @@
   "title": "Bright Pepper",
   "elements": [
     { "type": "TEXT", "data": "Bright pepper can be found near the fortress of Nezer" },
-    { "type": "IMAGE", "data": "wd:textures/gui/ars_melima/pages/nether_fortress.png" }
+    { "type": "IMAGE", "data": "wd:textures/gui/ars_melima/pages/nether_fortress.png" },
+    { "type": "TEXT", "data": "It can be used to make grog, potions, and healthy food, but it is also the first ancient plant to grow in magical soil." },
+    { "type": "IMAGE", "data": "wd:textures/gui/ars_melima/pages/magic_soil.png" }
   ]
 }

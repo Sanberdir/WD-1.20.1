@@ -343,9 +343,9 @@ public class ItemsWD {
     public static final RegistryObject<Item> WARPED_BONE_MEAL = ITEMS.register("warped_bone_meal",
             () -> new NetherrackBonemeal(new Item.Properties(), Blocks.WARPED_NYLIUM));
     public static final RegistryObject<Item> GRASS_BONE_MEAL = ITEMS.register("grass_bone_meal",
-            () -> new DirtBonemeal(new Item.Properties(), Blocks.GRASS_BLOCK));
+            () -> new GrassBoneMeal(new Item.Properties()));
     public static final RegistryObject<Item> MYCELIUM_BONE_MEAL = ITEMS.register("mycelium_bone_meal",
-            () -> new DirtBonemeal(new Item.Properties(), Blocks.MYCELIUM));
+            () -> new DirtBoneMeal(new Item.Properties(), Blocks.MYCELIUM));
 
     // Ванила + растения
     public static final RegistryObject<Item> WARPED_WART = ITEMS.register("warped_wart",
