@@ -45,7 +45,6 @@ import ru.imaginaerum.wd.common.blocks.entity.ModBlockEntities;
 import ru.imaginaerum.wd.common.custom_recipes.ProperBrewingRecipe;
 import ru.imaginaerum.wd.common.effects.EffectsWD;
 import ru.imaginaerum.wd.common.entities.ModEntities;
-import ru.imaginaerum.wd.client.gui.WDMenus;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 import ru.imaginaerum.wd.common.items.armor.model_layered.WDModelLayers;
 import ru.imaginaerum.wd.common.items.arrows.DispenserRegistry;
@@ -79,7 +78,6 @@ public class WD {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         if (FMLEnvironment.dist.isClient()) modEventBus.addListener(this::registerElytraLayer);
         modEventBus.addListener(this::registerLayerDefinitions);
-        WDMenus.REGISTRY_MENUS.register(modEventBus);
 
         EntityTypeInit.ENTITY_TYPES.register(modEventBus);
         ItemsWD.ITEMS.register(modEventBus);

@@ -16,27 +16,45 @@ public class ArsMelima extends Item {
         super(properties);
     }
 
+    public static final String NBT_XP = "ars_melima_xp";
+    public static final int MAX_XP = 6_000;
+
+    public static int getStoredXp(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return 0;
+        if (!stack.hasTag()) return 0;
+        return stack.getTag().getInt(NBT_XP);
+    }
+
+    public static void setStoredXp(ItemStack stack, int xp) {
+        if (stack == null || stack.isEmpty()) return;
+        int v = Math.max(0, Math.min(MAX_XP, xp));
+        stack.getOrCreateTag().putInt(NBT_XP, v);
+    }
+
+    public static int addXpToStack(ItemStack stack, int amount) {
+        if (stack == null || stack.isEmpty() || amount <= 0) return 0;
+        int cur = getStoredXp(stack);
+        int canAdd = Math.max(0, MAX_XP - cur);
+        int toAdd = Math.min(canAdd, amount);
+        if (toAdd > 0) {
+            setStoredXp(stack, cur + toAdd);
+        }
+        return toAdd;
+    }
+
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        level.playSound(
-                null, // null => всем игрокам
-                player.getX(),
-                player.getY(),
-                player.getZ(),
-                net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN,
-                net.minecraft.sounds.SoundSource.PLAYERS,
-                1.0F,
-                1.0F
-        );
-        if (level.isClientSide) {
-            openScreen();
+        ItemStack held = player.getItemInHand(hand);
 
+        if (level.isClientSide) {
+            openScreen(held);
         }
-        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
+
+        return InteractionResultHolder.sidedSuccess(held, level.isClientSide());
     }
 
     @OnlyIn(Dist.CLIENT)
-    private void openScreen() {
-        Minecraft.getInstance().setScreen(new ArsMelimaScreen());
+    private void openScreen(ItemStack stack) {
+        Minecraft.getInstance().setScreen(new ArsMelimaScreen(stack));
     }
 }

@@ -80,9 +80,18 @@ public class ArsMelimaDraws {
     }
 
     public static void drawAreaBackground(GuiGraphics g, int x, int y, int w, int h) {
-        g.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF000000);
-        g.fill(x, y, x + w, y + h, 0xFFEEEEDD);
+        int color = 0xFF222222; // чёрный
+
+        // Верхняя
+        g.fill(x - 1, y - 1, x + w + 1, y, color);
+        // Нижняя
+        g.fill(x - 1, y + h, x + w + 1, y + h + 1, color);
+        // Левая
+        g.fill(x - 1, y, x, y + h, color);
+        // Правая
+        g.fill(x + w, y, x + w + 1, y + h, color);
     }
+
 
     public static void drawScaledText(GuiGraphics graphics, Font font, String text, int x, int y, int color, float scale) {
         drawScaledText(graphics, font, Component.literal(text), x, y, color, scale);
