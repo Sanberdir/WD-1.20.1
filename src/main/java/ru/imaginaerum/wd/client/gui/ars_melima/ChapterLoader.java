@@ -13,17 +13,28 @@ import java.util.*;
 
 public class ChapterLoader {
     private static final Gson GSON = new Gson();
-    private static final String BASE = "lang";
-    private static final String SUBDIR = "ars_melima";
+    private static final String CHAPTERS_META_DIR = "ars_melima/chapters"; // папка для метаданных глав
+    private static final String CHAPTERS_CONTENT_DIR = "ars_melima/content"; // папка для содержимого глав
 
     public static List<Chapter> loadChapters() {
-        List<Chapter> out = new ArrayList<>();
+        List<ChapterMetadata> metadataList = loadChaptersMetadata();
+        List<Chapter> chapters = new ArrayList<>();
+
+        for (ChapterMetadata meta : metadataList) {
+            List<ChapterElement> elements = loadChapterContent(meta.getId());
+            chapters.add(new Chapter(meta.getId(), meta.getTitle(), elements, meta.isOpen()));
+        }
+
+        return chapters;
+    }
+
+    private static List<ChapterMetadata> loadChaptersMetadata() {
+        List<ChapterMetadata> metadataList = new ArrayList<>();
         ResourceManager manager = Minecraft.getInstance().getResourceManager();
         List<String> langs = getLanguageCandidates();
-        Set<String> seen = new HashSet<>();
 
         for (String lang : langs) {
-            String basePath = "__BASE__".equals(lang) ? "lang/" + SUBDIR : "lang/" + lang + "/" + SUBDIR;
+            String basePath = "__BASE__".equals(lang) ? CHAPTERS_META_DIR : "lang/" + lang + "/" + CHAPTERS_META_DIR;
 
             try {
                 Map<ResourceLocation, Resource> found = manager.listResources(basePath, rl -> rl.getPath().endsWith(".json"));
@@ -31,60 +42,92 @@ public class ChapterLoader {
 
                 for (Map.Entry<ResourceLocation, Resource> entry : found.entrySet()) {
                     ResourceLocation rl = entry.getKey();
-                    String uniqueKey = rl.toString();
-                    if (seen.contains(uniqueKey)) continue;
-                    seen.add(uniqueKey);
 
-                    Resource resource = entry.getValue();
-                    try (InputStream is = resource.open(); InputStreamReader reader = new InputStreamReader(is)) {
+                    try (InputStream is = entry.getValue().open(); InputStreamReader reader = new InputStreamReader(is)) {
                         JsonObject jo = JsonParser.parseReader(reader).getAsJsonObject();
-                        String title = jo.has("title") ? jo.get("title").getAsString() : rl.getPath();
-                        List<ChapterElement> elements = new ArrayList<>();
 
-                        if (jo.has("elements") && jo.get("elements").isJsonArray()) {
-                            JsonArray arr = jo.getAsJsonArray("elements");
-                            for (JsonElement el : arr) {
-                                JsonObject obj = el.getAsJsonObject();
-                                if (!obj.has("type") || !obj.has("data")) continue;
-                                ChapterElement.Type type;
-                                try {
-                                    type = ChapterElement.Type.valueOf(obj.get("type").getAsString().toUpperCase(Locale.ROOT));
-                                } catch (IllegalArgumentException e) {
-                                    continue;
-                                }
-                                elements.add(new ChapterElement(type, obj.get("data").getAsString()));
-                            }
-                        }
-
-                        // fallback: если elements пустой, пробуем content и image как один элемент
-                        if (elements.isEmpty()) {
-                            if (jo.has("content")) {
-                                elements.add(new ChapterElement(ChapterElement.Type.TEXT, jo.get("content").getAsString()));
-                            }
-                            if (jo.has("image")) {
-                                elements.add(new ChapterElement(ChapterElement.Type.IMAGE, jo.get("image").getAsString()));
-                            }
-                        }
-
-                        // id — имя файла
+                        // Извлекаем ID из имени файла
                         String path = rl.getPath();
-                        String id = path.substring(path.lastIndexOf('/') + 1);
-                        out.add(new Chapter(id, title, elements));
+                        String id = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+
+                        String title = jo.has("title") ? jo.get("title").getAsString() : id;
+                        boolean open = jo.has("status") && "open".equals(jo.get("status").getAsString());
+
+                        metadataList.add(new ChapterMetadata(id, title, open));
                     } catch (Exception e) {
-                        System.err.println("[ArsMelima] Failed to load chapter resource " + rl + " : " + e.getMessage());
-                        e.printStackTrace();
+                        System.err.println("[ArsMelima] Failed to load chapter metadata " + rl + " : " + e.getMessage());
                     }
                 }
 
-                if (!out.isEmpty()) return out;
+                if (!metadataList.isEmpty()) break; // используем первую найденную локализацию
+
             } catch (Exception e) {
-                System.err.println("[ArsMelima] Error listing/loading chapter resources in " + basePath + " : " + e.getMessage());
+                System.err.println("[ArsMelima] Error loading chapter metadata from " + basePath + " : " + e.getMessage());
             }
         }
 
-        return out;
+        return metadataList;
     }
 
+    private static List<ChapterElement> loadChapterContent(String chapterId) {
+        List<ChapterElement> elements = new ArrayList<>();
+        ResourceManager manager = Minecraft.getInstance().getResourceManager();
+        List<String> langs = getLanguageCandidates();
+
+        for (String lang : langs) {
+            String basePath = "__BASE__".equals(lang) ? CHAPTERS_CONTENT_DIR : "lang/" + lang + "/" + CHAPTERS_CONTENT_DIR;
+            String filePath = basePath + "/" + chapterId + ".json";
+            ResourceLocation rl = new ResourceLocation("wd", filePath);
+
+            try {
+                Resource resource = manager.getResource(rl).orElse(null);
+                if (resource == null) continue;
+
+                try (InputStream is = resource.open(); InputStreamReader reader = new InputStreamReader(is)) {
+                    JsonObject jo = JsonParser.parseReader(reader).getAsJsonObject();
+
+                    if (jo.has("elements") && jo.get("elements").isJsonArray()) {
+                        JsonArray arr = jo.getAsJsonArray("elements");
+                        for (JsonElement el : arr) {
+                            JsonObject obj = el.getAsJsonObject();
+                            if (!obj.has("type") || !obj.has("data")) continue;
+
+                            try {
+                                ChapterElement.Type type = ChapterElement.Type.valueOf(
+                                        obj.get("type").getAsString().toUpperCase(Locale.ROOT)
+                                );
+                                elements.add(new ChapterElement(type, obj.get("data").getAsString()));
+                            } catch (IllegalArgumentException e) {
+                                continue;
+                            }
+                        }
+                    }
+
+                    // Fallback для обратной совместимости
+                    if (elements.isEmpty()) {
+                        if (jo.has("content")) {
+                            elements.add(new ChapterElement(ChapterElement.Type.TEXT, jo.get("content").getAsString()));
+                        }
+                        if (jo.has("image")) {
+                            elements.add(new ChapterElement(ChapterElement.Type.IMAGE, jo.get("image").getAsString()));
+                        }
+                    }
+
+                } catch (Exception e) {
+                    System.err.println("[ArsMelima] Failed to load chapter content " + rl + " : " + e.getMessage());
+                }
+
+                if (!elements.isEmpty()) break; // используем первую найденную локализацию
+
+            } catch (Exception e) {
+                // Файл не найден - пробуем следующую локализацию
+            }
+        }
+
+        return elements;
+    }
+
+    // getLanguageCandidates() и normalizeLangCode() остаются без изменений
     private static List<String> getLanguageCandidates() {
         List<String> langs = new ArrayList<>();
         try {

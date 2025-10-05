@@ -1,3 +1,4 @@
+// 2. Обновленный ArsMelimaRenderer с поддержкой постраничной навигации для глав
 package ru.imaginaerum.wd.client.gui.ars_melima;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -13,34 +14,113 @@ import ru.imaginaerum.wd.client.gui.ars_melima.screens.RenderUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ru.imaginaerum.wd.client.gui.ars_melima.screens.ArsMelimaUIManager.ICONS_TEXTURE;
+
 public class ArsMelimaRenderer {
     public static final int CONTENT_PADDING = 4;
+    public static final int CHAPTERS_PER_PAGE = 10; // 5 на левой + 5 на правой
+    public static final int CHAPTERS_PER_COLUMN = 5; // Количество глав в одной колонке
 
+    // Высоты полосок
+    private static final int OPEN_STRIP_HEIGHT = 23;
+    private static final int CLOSED_STRIP_HEIGHT = 19;
+    private static final int LINE_SPACING = 3; // интервал между полосками
+    public static final int TOTAL_STRIP_HEIGHT = OPEN_STRIP_HEIGHT + LINE_SPACING; // максимальная
+    public static int calculateMaxChaptersPerColumn(int columnHeight) {
+        int availableHeight = columnHeight - CONTENT_PADDING * 2;
+        return availableHeight / TOTAL_STRIP_HEIGHT;
+    }
     public static void renderChapterList(GuiGraphics graphics, int mouseX, int mouseY,
-                                         int contentLeft, int contentTop, int contentWidth, int contentHeight,
-                                         Font font, ArsMelimaMenu menu, float textScale) {
-        int x = contentLeft + CONTENT_PADDING;
-        int y = contentTop + CONTENT_PADDING;
-        int lineHeight = 12;
+                                         int leftContentLeft, int leftContentTop, int leftContentWidth, int leftContentHeight,
+                                         int rightContentLeft, int rightContentTop, int rightContentWidth, int rightContentHeight,
+                                         Font font, ArsMelimaMenu menu, float textScale, int currentPage) {
         List<Chapter> chapters = menu.getChapters();
 
         if (chapters.isEmpty()) {
             ArsMelimaDraws.drawScaledText(graphics, font,
                     Component.translatable("screen.wd.ars_melima.no_chapters"),
-                    x, y, 0xFF222222, textScale);
+                    leftContentLeft + CONTENT_PADDING, leftContentTop + CONTENT_PADDING,
+                    0xFF222222, textScale);
             return;
         }
 
-        for (int i = 0; i < chapters.size(); i++) {
-            Chapter c = chapters.get(i);
-            int ty = y + i * lineHeight;
-            boolean hover = isPointInRect(contentLeft + 2, ty - 2,
-                    contentWidth - 4, lineHeight + 2, mouseX, mouseY);
-            int color = hover ? 0xFFD4B400 : 0xFF222222;
-            ArsMelimaDraws.drawScaledText(graphics, font, c.getTitle(), x, ty, color, textScale);
+        // Вычисляем, какие главы показывать на текущей странице
+        int startIdx = currentPage * CHAPTERS_PER_PAGE;
+        int endIdx = Math.min(startIdx + CHAPTERS_PER_PAGE, chapters.size());
+
+        // Разделяем главы между левой и правой колонками
+        int midPoint = startIdx + CHAPTERS_PER_COLUMN;
+
+        // Отрисовываем главы в левой колонке
+        renderChapterColumn(graphics, mouseX, mouseY,
+                leftContentLeft, leftContentTop, leftContentWidth, leftContentHeight,
+                font, chapters, startIdx, Math.min(midPoint, endIdx), textScale);
+
+        // Отрисовываем главы в правой колонке
+        renderChapterColumn(graphics, mouseX, mouseY,
+                rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
+                font, chapters, midPoint, endIdx, textScale);
+    }
+
+    private static void renderChapterColumn(GuiGraphics graphics, int mouseX, int mouseY,
+                                            int contentLeft, int contentTop, int contentWidth, int contentHeight,
+                                            Font font, List<Chapter> chapters, int startIdx, int endIdx, float textScale) {
+        int x = contentLeft + CONTENT_PADDING;
+        int y = contentTop + CONTENT_PADDING;
+
+        // Рассчитываем доступную высоту для глав
+        int availableHeight = contentHeight - CONTENT_PADDING * 2;
+        int maxPossibleChapters = availableHeight / TOTAL_STRIP_HEIGHT;
+
+        for (int i = startIdx; i < endIdx && i < startIdx + maxPossibleChapters; i++) {
+            Chapter chapter = chapters.get(i);
+            int stripHeight = chapter.isOpen() ? OPEN_STRIP_HEIGHT : CLOSED_STRIP_HEIGHT;
+
+            boolean hover = isPointInRect(contentLeft + 2, y,
+                    contentWidth - 4, stripHeight, mouseX, mouseY);
+
+            // Отрисовка полоски
+            renderChapterStrip(graphics, contentLeft, y, contentWidth, stripHeight, chapter.isOpen(), hover);
+
+            // Отрисовка названия (только для открытых глав)
+            if (chapter.isOpen()) {
+                int textY = y + (stripHeight - 8) / 2; // центрирование текста
+                int color = hover ? 0xFFD4B400 : 0xFF222222;
+                ArsMelimaDraws.drawScaledText(graphics, font, chapter.getTitle(), x + 24, textY, color, textScale);
+            }
+
+            // Следующая позиция с учетом интервала
+            y += stripHeight + LINE_SPACING;
         }
     }
 
+    private static void renderChapterStrip(GuiGraphics graphics, int x, int y, int width, int height,
+                                           boolean open, boolean hover) {
+        RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+
+        // Координаты в текстуре
+        int srcX = 0;
+        int srcY = open ? 19 : 42; // открытая или закрытая полоска
+        int srcWidth = 126;
+        int srcHeight = open ? 23 : 19; // разная высота для открытой/закрытой
+
+        // Отрисовка полоски - используем srcHeight для высоты на экране!
+        graphics.blit(ICONS_TEXTURE, x, y, srcX, srcY, width, srcHeight, 512, 512);
+
+        // Эффект при наведении - тоже используем srcHeight
+        if (hover) {
+            graphics.fill(x, y, x + width, y + srcHeight, 0x20FFFFFF);
+        }
+    }
+
+    public static int computeChapterPageCount(List<Chapter> chapters) {
+        if (chapters == null || chapters.isEmpty()) {
+            return 1;
+        }
+        return (chapters.size() + CHAPTERS_PER_PAGE - 1) / CHAPTERS_PER_PAGE;
+    }
+
+    // Существующие методы для рендеринга текста глав остаются без изменений
     public static void renderChapterPage(GuiGraphics graphics, int mouseX, int mouseY,
                                          Chapter chapter, int page,
                                          int contentLeft, int contentTop, int contentWidth, int contentHeight,
@@ -119,7 +199,6 @@ public class ArsMelimaRenderer {
             RenderSystem.setShaderTexture(0, texture);
         } catch (Exception e) {
             RenderSystem.setShaderTexture(0, texture);
-            // Можно добавить fallback отрисовку
         }
     }
 

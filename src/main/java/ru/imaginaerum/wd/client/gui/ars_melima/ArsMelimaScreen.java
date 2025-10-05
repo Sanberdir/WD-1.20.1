@@ -28,7 +28,7 @@ public class ArsMelimaScreen extends Screen {
         super.init();
         menu.setChapters(ChapterLoader.loadChapters());
         menu.setCurrentIndex(-1);
-        uiManager.setCurrentPage(0);
+        uiManager.setCurrentChapterPage(0);
     }
 
     @Override
