@@ -122,10 +122,19 @@ public class ArsMelimaInputHandler {
 
                 if (chapterIndexInColumn >= 0 && chapterIndexInColumn < CHAPTERS_PER_COLUMN &&
                         idx < menu.getChapters().size() && idx < startIdx + CHAPTERS_PER_COLUMN) {
-                    menu.openChapter(idx);
-                    uiManager.setCurrentTextPage(0);
-                    playPageTurnSound();
-                    return true;
+
+                    int stripY = leftContentTop + CONTENT_PADDING + chapterIndexInColumn * TOTAL_STRIP_HEIGHT;
+                    int stripHeight = OPEN_STRIP_HEIGHT;
+                    int stripX = leftContentLeft + 2;
+                    int stripWidth = leftContentWidth - 4;
+
+                    // Проверяем, попал ли клик в полосу, где появляется подсветка
+                    if (isPointInRect(stripX, stripY, stripWidth, stripHeight, mx, my)) {
+                        menu.openChapter(idx);
+                        uiManager.setCurrentTextPage(0);
+                        playPageTurnSound();
+                        return true;
+                    }
                 }
             }
 
@@ -137,11 +146,21 @@ public class ArsMelimaInputHandler {
 
                 if (chapterIndexInColumn >= 0 && chapterIndexInColumn < CHAPTERS_PER_COLUMN &&
                         idx < menu.getChapters().size() && idx < startIdx + CHAPTERS_PER_PAGE) {
-                    menu.openChapter(idx);
-                    uiManager.setCurrentTextPage(0);
-                    playPageTurnSound();
-                    return true;
+
+                    int stripY = rightContentTop + CONTENT_PADDING + chapterIndexInColumn * TOTAL_STRIP_HEIGHT;
+                    int stripHeight = OPEN_STRIP_HEIGHT;
+                    int stripX = rightContentLeft + 2;
+                    int stripWidth = rightContentWidth - 4;
+
+                    if (isPointInRect(stripX, stripY, stripWidth, stripHeight, mx, my)) {
+                        menu.openChapter(idx);
+                        uiManager.setCurrentTextPage(0);
+                        playPageTurnSound();
+                        return true;
+                    }
                 }
+
+
             }
         }
         return false;

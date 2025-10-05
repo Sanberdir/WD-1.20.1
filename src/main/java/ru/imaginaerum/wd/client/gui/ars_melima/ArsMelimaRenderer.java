@@ -22,14 +22,19 @@ public class ArsMelimaRenderer {
     public static final int CHAPTERS_PER_COLUMN = 5; // Количество глав в одной колонке
 
     // Высоты полосок
-    private static final int OPEN_STRIP_HEIGHT = 23;
-    private static final int CLOSED_STRIP_HEIGHT = 19;
+    public static final int OPEN_STRIP_HEIGHT = 23;
+    private static final int CLOSED_STRIP_HEIGHT = 18;
     private static final int LINE_SPACING = 3; // интервал между полосками
     public static final int TOTAL_STRIP_HEIGHT = OPEN_STRIP_HEIGHT + LINE_SPACING; // максимальная
+
+    // Разница в высоте между открытой и закрытой полоской для компенсации
+    private static final int HEIGHT_DIFFERENCE = OPEN_STRIP_HEIGHT - CLOSED_STRIP_HEIGHT;
+
     public static int calculateMaxChaptersPerColumn(int columnHeight) {
         int availableHeight = columnHeight - CONTENT_PADDING * 2;
         return availableHeight / TOTAL_STRIP_HEIGHT;
     }
+
     public static void renderChapterList(GuiGraphics graphics, int mouseX, int mouseY,
                                          int leftContentLeft, int leftContentTop, int leftContentWidth, int leftContentHeight,
                                          int rightContentLeft, int rightContentTop, int rightContentWidth, int rightContentHeight,
@@ -61,7 +66,13 @@ public class ArsMelimaRenderer {
                 rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
                 font, chapters, midPoint, endIdx, textScale);
     }
-
+    public static boolean isChapterTitleClicked(Chapter chapter, int mouseX, int mouseY, int textX, int renderY, Font font) {
+        String title = chapter.getTitle();
+        int textWidth = font.width(title);
+        int textY = renderY + 2;
+        return mouseX >= textX && mouseX <= textX + textWidth
+                && mouseY >= textY && mouseY <= textY + 10;
+    }
     private static void renderChapterColumn(GuiGraphics graphics, int mouseX, int mouseY,
                                             int contentLeft, int contentTop, int contentWidth, int contentHeight,
                                             Font font, List<Chapter> chapters, int startIdx, int endIdx, float textScale) {
@@ -76,21 +87,43 @@ public class ArsMelimaRenderer {
             Chapter chapter = chapters.get(i);
             int stripHeight = chapter.isOpen() ? OPEN_STRIP_HEIGHT : CLOSED_STRIP_HEIGHT;
 
-            boolean hover = isPointInRect(contentLeft + 2, y,
+            // Компенсируем разницу в высоте: для закрытых полосок добавляем отступ сверху
+            int CLOSED_STRIP_TOP_MARGIN = 3;
+
+            int renderY = y;
+            if (!chapter.isOpen()) {
+                renderY += CLOSED_STRIP_TOP_MARGIN;
+            }
+
+            boolean hover = isPointInRect(contentLeft + 2, renderY,
                     contentWidth - 4, stripHeight, mouseX, mouseY);
 
             // Отрисовка полоски
-            renderChapterStrip(graphics, contentLeft, y, contentWidth, stripHeight, chapter.isOpen(), hover);
+            renderChapterStrip(graphics, contentLeft, renderY, contentWidth, stripHeight, chapter.isOpen(), hover);
 
-            // Отрисовка названия (только для открытых глав)
+            // Отрисовка названия (только для открытых глав) с псевдо-3D эффектом
             if (chapter.isOpen()) {
-                int textY = y + (stripHeight - 8) / 2; // центрирование текста
-                int color = hover ? 0xFFD4B400 : 0xFF222222;
-                ArsMelimaDraws.drawScaledText(graphics, font, chapter.getTitle(), x + 24, textY, color, textScale);
+                int textY = renderY + (stripHeight - 8) / 2;
+                int textX = x + 24;
+
+                String title = chapter.getTitle(); // Теперь String вместо Component
+                int baseColor = hover ? 0xFFE2A65D : 0xFF5D4037;
+
+                // Многослойный псевдо-3D эффект
+                // Верх - белый
+                graphics.drawString(font, title, textX, textY - 1, 0x80FFFFFF, false);
+                // Левый - светлый
+                graphics.drawString(font, title, textX - 1, textY, 0x80DBD4B8, false);
+                // Правый - светлый
+                graphics.drawString(font, title, textX + 1, textY, 0x80DBD4B8, false);
+                // Низ - тёмный
+                graphics.drawString(font, title, textX, textY + 1, 0x80BFB38A, false);
+                // Основной текст
+                graphics.drawString(font, title, textX, textY, baseColor, false);
             }
 
             // Следующая позиция с учетом интервала
-            y += stripHeight + LINE_SPACING;
+            y += TOTAL_STRIP_HEIGHT;
         }
     }
 
@@ -100,9 +133,8 @@ public class ArsMelimaRenderer {
 
         // Координаты в текстуре
         int srcX = 0;
-        int srcY = open ? 19 : 42; // открытая или закрытая полоска
-        int srcWidth = 126;
-        int srcHeight = open ? 23 : 19; // разная высота для открытой/закрытой
+        int srcY = open ? 18 : 42; // открытая или закрытая полоска
+        int srcHeight = open ? 23 : 18; // разная высота для открытой/закрытой
 
         // Отрисовка полоски - используем srcHeight для высоты на экране!
         graphics.blit(ICONS_TEXTURE, x, y, srcX, srcY, width, srcHeight, 512, 512);
