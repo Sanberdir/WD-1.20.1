@@ -4,7 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.PacketDistributor;
-import ru.imaginaerum.wd.client.gui.ars_melima.ModNetwork;
+import ru.imaginaerum.wd.client.gui.ars_melima.NetworkCookingXp;
 import ru.imaginaerum.wd.client.gui.ars_melima.SyncCookingXpPacket;
 
 public class CookingXPManager {
@@ -84,7 +84,7 @@ public class CookingXPManager {
 
         // Отправляем клиенту, чтобы GUI обновился
         if (player instanceof ServerPlayer serverPlayer) {
-            ModNetwork.CHANNEL.send(
+            NetworkCookingXp.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> serverPlayer),
                     new SyncCookingXpPacket(xp, level)
             );

@@ -6,7 +6,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import ru.imaginaerum.wd.WD;
-import ru.imaginaerum.wd.client.gui.ars_melima.ModNetwork;
+import ru.imaginaerum.wd.client.gui.ars_melima.NetworkCookingXp;
 import ru.imaginaerum.wd.client.gui.ars_melima.SyncCookingXpPacket;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.CookingXPManager;
 
@@ -19,7 +19,7 @@ public class ModEventServerBusForgeEvents {
 
         CookingXPManager.resetXp(serverPlayer);
 
-        ModNetwork.CHANNEL.send(
+        NetworkCookingXp.CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> serverPlayer),
                 new SyncCookingXpPacket(0, 0)
         );

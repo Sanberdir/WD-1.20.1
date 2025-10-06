@@ -3,7 +3,7 @@ package ru.imaginaerum.wd.client.gui.ars_melima;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
-public class ModNetwork {
+public class NetworkCookingXp {
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new net.minecraft.resources.ResourceLocation("wd", "main"),
