@@ -4,8 +4,11 @@ package ru.imaginaerum.wd.client.gui.ars_melima.screens;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaMenu;
+import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders;
 
 import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenderer.*;
+import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.OPEN_STRIP_HEIGHT;
+import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.TOTAL_STRIP_HEIGHT;
 
 public class ArsMelimaInputHandler {
     private static final int NAV_LEFT_REL_X = 10;
@@ -74,7 +77,7 @@ public class ArsMelimaInputHandler {
     private boolean handleChapterPageArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
                                                 ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
         if (button == 0) {
-            int totalPages = ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenderer.computeChapterPageCount(menu.getChapters());
+            int totalPages = ArsMelimaRenders.computeChapterPageCount(menu.getChapters());
 
             // Левая стрелка
             if (isPointInRect(guiLeft + NAV_LEFT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {

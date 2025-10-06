@@ -1,5 +1,6 @@
 package ru.imaginaerum.wd;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.entity.ArmorStandRenderer;
@@ -26,6 +27,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -38,6 +40,8 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import ru.imaginaerum.wd.client.ClientProxy;
+import ru.imaginaerum.wd.client.gui.ars_melima.ModNetwork;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ClientCookingData;
 import ru.imaginaerum.wd.common.armor.elytra.DragoliteElytraArmorStandLayer;
 import ru.imaginaerum.wd.common.armor.elytra.DragoliteElytraLayer;
 import ru.imaginaerum.wd.common.blocks.BlocksWD;
@@ -58,10 +62,7 @@ import ru.imaginaerum.wd.common.sounds.CustomSoundEvents;
 import ru.imaginaerum.wd.common.tab.TabWD;
 import ru.imaginaerum.wd.server.CommonProxy;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -92,14 +93,15 @@ public class WD {
         ModEntitiesItem.ENTITIES.register(modEventBus);
         modEventBus.addListener(this::addCreative);
         TabWD.CREATIVE_MODE_TABS.register(modEventBus);
+        ModNetwork.registerPackets();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-
         FMLJavaModLoadingContext.get().getModEventBus().addListener((BuildCreativeModeTabContentsEvent e) -> {
             if (e.getTabKey() == TabWD.WD_TAB.getKey()) {
 
             }
         });
     }
+
     private void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
         WDModelLayers.register(event);
     }

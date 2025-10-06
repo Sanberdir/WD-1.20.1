@@ -91,12 +91,6 @@ public class ArsMelimaDraws {
         // Правая
         g.fill(x + w, y, x + w + 1, y + h, color);
     }
-
-
-    public static void drawScaledText(GuiGraphics graphics, Font font, String text, int x, int y, int color, float scale) {
-        drawScaledText(graphics, font, Component.literal(text), x, y, color, scale);
-    }
-
     public static void drawScaledText(GuiGraphics graphics, Font font, Component text, int x, int y, int color, float scale) {
         PoseStack poseStack = graphics.pose();
         poseStack.pushPose();

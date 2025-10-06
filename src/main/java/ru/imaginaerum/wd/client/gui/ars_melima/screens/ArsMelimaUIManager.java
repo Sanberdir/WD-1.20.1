@@ -2,13 +2,15 @@
 package ru.imaginaerum.wd.client.gui.ars_melima.screens;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaMenu;
-import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenderer;
+import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders;
 import ru.imaginaerum.wd.client.gui.ars_melima.Chapter;
 
 public class ArsMelimaUIManager {
@@ -24,7 +26,11 @@ public class ArsMelimaUIManager {
     private static final int BG_W = 305, BG_H = 184;
     private static final int CONTENT_X1 = 8, CONTENT_Y1 = 20, CONTENT_X2 = 137, CONTENT_Y2 = 160;
     private static final int RIGHT_CONTENT_X1 = 159, RIGHT_CONTENT_Y1 = 20, RIGHT_CONTENT_X2 = 286, RIGHT_CONTENT_Y2 = 160;
-
+    // константы (положи рядом с другими)
+    private static final int COOK_BAR_DST_X = 21; // положение в интерфейсе (относительно guiLeft)
+    private static final int COOK_BAR_DST_Y = 4;  // положение в интерфейсе (относительно guiTop)
+    private static final int COOK_BAR_WIDTH = 183;
+    private static final int COOK_BAR_HEIGHT = 5;
     public void render(GuiGraphics graphics, int mouseX, int mouseY, int screenWidth, int screenHeight,
                        ArsMelimaMenu menu, ItemStack book, Font font) {
         calculatePosition(screenWidth, screenHeight);
@@ -49,6 +55,8 @@ public class ArsMelimaUIManager {
         RenderSystem.setShaderTexture(0, TEXTURE);
         graphics.blit(TEXTURE, bgLeft, bgTop, 4, 273, BG_W, BG_H, 512, 512);
         graphics.blit(TEXTURE, guiLeft, guiTop, 8, 12, FG_W, FG_H, 512, 512);
+        // Вернём шейдер на TEXTURE (если дальше требуется)
+        RenderSystem.setShaderTexture(0, TEXTURE);
     }
 
     private void renderBookmark(GuiGraphics graphics) {
@@ -63,25 +71,66 @@ public class ArsMelimaUIManager {
     }
 
     private void renderProgressBar(GuiGraphics graphics, ItemStack book) {
+        int dstX = guiLeft + COOK_BAR_DST_X;
+        int dstY = guiTop + COOK_BAR_DST_Y;
+
+        int cookLevel = ClientCookingData.clientLevel;
+        int cookXp = ClientCookingData.clientXp;
+        int maxForLevel = CookingXPManager.getMaxForLevel(cookLevel);
+
+        float progress = maxForLevel > 0 ? Math.min(1.0f, cookXp / (float) maxForLevel) : 0f;
+        int fillW = Math.max(0, (int) Math.floor(COOK_BAR_WIDTH * progress));
+
+        // --- Фон полоски ---
         RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+        graphics.blit(ICONS_TEXTURE, dstX + 36, dstY - 12, 0, 87, COOK_BAR_WIDTH, COOK_BAR_HEIGHT, 512, 512);
 
-        int dstX = guiLeft + 13;
-        int dstY = guiTop + 162;
-
-        // Фон прогресс-бара
-        graphics.blit(ICONS_TEXTURE, dstX, dstY, 216, 96, 120, 5, 512, 512);
-
-        // Заполнение прогресс-бара
-        int xp = ru.imaginaerum.wd.common.items.custom.ArsMelima.getStoredXp(book);
-        float progress = Math.min(1.0f, xp / (float) ru.imaginaerum.wd.common.items.custom.ArsMelima.MAX_XP);
-        int fillW = Math.max(0, (int) Math.floor(120 * progress));
-
+        // --- Заполнение полоски ---
         if (fillW > 0) {
-            graphics.blit(ICONS_TEXTURE, dstX, dstY, 216, 91, fillW, 5, 512, 512);
+            graphics.blit(ICONS_TEXTURE, dstX + 36, dstY - 12, 0, 92, fillW, COOK_BAR_HEIGHT, 512, 512);
         }
 
-        RenderSystem.setShaderTexture(0, TEXTURE);
+        // --- Отрисовка уровня ---
+        String levelText = Integer.toString(cookLevel);
+        Font mcFont = Minecraft.getInstance().font;
+        int textW = mcFont.width(levelText);
+        int levelTextX = dstX + 36 + (COOK_BAR_WIDTH / 2) - (textW / 2);
+        int levelTextY = dstY - 20;
+
+        // === Цвета ===
+        int outlineColor = 0xFF2B1A0F; // тёмный контур
+        int mainColor    = 0xFFFFB74D; // яркая медь (основной текст)
+        int glowBase     = 0xFF7C4A1E; // мягкий внутренний жар
+        int glowPeak     = 0xFFFFE0B2; // вспышка света
+
+        // Пульсация свечения
+        double time = (System.currentTimeMillis() % 2000L) / 2000.0;
+        float pulse = (float) ((Math.sin(time * Math.PI * 2) + 1) / 2.0);
+        int glowColor = interpolateColor(glowBase, glowPeak, pulse);
+
+        // --- Рисуем контур ---
+        graphics.drawString(mcFont, levelText, levelTextX - 1, levelTextY, outlineColor, false);
+        graphics.drawString(mcFont, levelText, levelTextX + 1, levelTextY, outlineColor, false);
+        graphics.drawString(mcFont, levelText, levelTextX, levelTextY - 1, outlineColor, false);
+        graphics.drawString(mcFont, levelText, levelTextX, levelTextY + 1, outlineColor, false);
+
+        // --- Внутреннее свечение (пульсация) ---
+        graphics.drawString(mcFont, levelText, levelTextX, levelTextY - 1, glowColor, false);
+
+        // --- Основной слой ---
+        graphics.drawString(mcFont, levelText, levelTextX, levelTextY, mainColor, false);
     }
+
+    // --- Интерполяция цветов ---
+    private static int interpolateColor(int c1, int c2, float t) {
+        int r1 = (c1 >> 16) & 0xFF, g1 = (c1 >> 8) & 0xFF, b1 = c1 & 0xFF;
+        int r2 = (c2 >> 16) & 0xFF, g2 = (c2 >> 8) & 0xFF, b2 = c2 & 0xFF;
+        int r = (int) (r1 + (r2 - r1) * t);
+        int g = (int) (g1 + (g2 - g1) * t);
+        int b = (int) (b1 + (b2 - b1) * t);
+        return (0xFF << 24) | (r << 16) | (g << 8) | b;
+    }
+
 
     private void renderContentAreas(GuiGraphics graphics) {
         // Левая область (без изменений)
@@ -126,7 +175,7 @@ public class ArsMelimaUIManager {
         Chapter current = menu.getCurrentChapter();
         if (current == null) return;
 
-        int pageCount = ArsMelimaRenderer.computePageStarts(current, font, 0.85f,
+        int pageCount = ArsMelimaRenders.computeChapterPageCount(current, font, 0.85f,
                 getContentWidth(), getContentHeight()).size();
 
         if (pageCount > 1) {
@@ -136,7 +185,7 @@ public class ArsMelimaUIManager {
     }
 
     private void renderChapterPageArrows(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu) {
-        int totalPages = ArsMelimaRenderer.computeChapterPageCount(menu.getChapters());
+        int totalPages = ArsMelimaRenders.computeChapterPageCount(menu.getChapters());
 
         if (totalPages > 1) {
             renderLeftArrow(graphics, mouseX, mouseY, currentChapterPage > 0);
@@ -185,13 +234,13 @@ public class ArsMelimaUIManager {
 
         if (menu.getCurrentIndex() == -1) {
             // Режим списка глав - используем обе колонки с ОДИНАКОВОЙ высотой
-            ArsMelimaRenderer.renderChapterList(graphics, mouseX, mouseY,
+            ArsMelimaRenders.renderChapterList(graphics, mouseX, mouseY,
                     contentLeft, contentTop, contentWidth, contentHeight,
                     rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
                     font, menu, 0.85f, currentChapterPage);
         } else {
             // Режим просмотра текста главы
-            ArsMelimaRenderer.renderChapterPage(graphics, mouseX, mouseY, menu.getCurrentChapter(),
+            ArsMelimaRenders.renderChapterPage(graphics, mouseX, mouseY, menu.getCurrentChapter(),
                     currentTextPage, contentLeft, contentTop, contentWidth, contentHeight,
                     rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
                     font, 0.85f, TEXTURE);

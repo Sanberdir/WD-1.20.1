@@ -1,14 +1,31 @@
 package ru.imaginaerum.wd.common.events;
 
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.imaginaerum.wd.WD;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ClientCookingData;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.CookingXPManager;
 import ru.imaginaerum.wd.common.blocks.BlocksWD;
 import ru.imaginaerum.wd.common.blocks.custom.*;
 import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.MagicSoilFarmlandData;
@@ -18,6 +35,7 @@ import java.util.HashSet;
 
 @Mod.EventBusSubscriber(modid = WD.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEventBusEvents {
+
     @SubscribeEvent
     public static void onLevelTickFarmland(TickEvent.LevelTickEvent event) {
         if (event.phase == TickEvent.Phase.END && !event.level.isClientSide) {
@@ -28,6 +46,62 @@ public class ForgeEventBusEvents {
             }
         }
     }
+    @SubscribeEvent
+    public static void onXpCookedCampfire(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getLevel().isClientSide()) return;
+        if (event.getHand() != InteractionHand.MAIN_HAND) return;
+
+        var level = event.getLevel();
+        var pos = event.getPos();
+        var blockState = level.getBlockState(pos);
+        var block = blockState.getBlock();
+        if (block != Blocks.CAMPFIRE && block != Blocks.SOUL_CAMPFIRE) return;
+
+        // Проверяем заполненность костра
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof CampfireBlockEntity campfire) {
+            int filledSlots = 0;
+            for (ItemStack item : campfire.getItems()) {
+                if (!item.isEmpty()) filledSlots++;
+            }
+            if (filledSlots >= 4) return;
+        }
+
+        ItemStack stack = event.getEntity().getItemInHand(event.getHand());
+        if (stack.isEmpty()) return;
+
+        // Проверяем есть ли рецепт для этого предмета в костре
+        if (hasCampfireRecipe(level, stack)) {
+            CookingXPManager.addXp(event.getEntity(), 5);
+        }
+    }
+    private static boolean hasCampfireRecipe(Level level, ItemStack stack) {
+        // Получаем менеджер рецептов
+        RecipeManager recipeManager = level.getRecipeManager();
+
+        // Ищем рецепты костра для этого предмета
+        var recipes = recipeManager.getRecipesFor(
+                RecipeType.CAMPFIRE_COOKING,
+                new SimpleContainer(stack),
+                level
+        );
+
+        return !recipes.isEmpty();
+    }
+    @SubscribeEvent
+    public static void onItemSmelted(net.minecraftforge.event.entity.player.PlayerEvent.ItemSmeltedEvent event) {
+        Player player = event.getEntity();
+        if (player == null || player.level().isClientSide) return;
+
+        ItemStack smelted = event.getSmelting();
+
+        // Добавляем опыт за каждую приготовленную еду
+        if (smelted.isEdible()) {
+            CookingXPManager.addXp(player, 5); // например, 10 XP за приготовление еды
+        }
+    }
+
+
     private static void upgradeStagePepper(ServerLevel level) {
         PepperRegistry data = PepperRegistry.get(level);
 
