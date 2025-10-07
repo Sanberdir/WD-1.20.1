@@ -7,7 +7,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -18,10 +17,13 @@ import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders;
 import ru.imaginaerum.wd.client.gui.ars_melima.Chapter;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ArsMelimaUIManager {
     private static final ResourceLocation TEXTURE = new ResourceLocation("wd", "textures/gui/ars_melima/ars_melima.png");
     public static final ResourceLocation ICONS_TEXTURE = new ResourceLocation("wd", "textures/gui/ars_melima/ars_melima_icons.png");
-
+    private Map<String, Point> nodePositions = new HashMap<>();
     private int currentChapterPage = 0; // Текущая страница в режиме списка глав
     private int currentTextPage = 0; // Текущая страница в режиме текста главы
     private int guiLeft, guiTop;
@@ -39,7 +41,6 @@ public class ArsMelimaUIManager {
 
     // В начале класса (поля)
     private int currentProgressPage = 0; // текущая страница в режиме дерева прогресса
-
     // Геттеры/сеттеры
     public void setCurrentProgressPage(int page) { this.currentProgressPage = page; }
     public int getCurrentProgressPage() { return currentProgressPage; }
@@ -285,64 +286,208 @@ public class ArsMelimaUIManager {
                     font, 0.85f, TEXTURE);
         }
     }
+    public static class Point {
+        public final int x;
+        public final int y;
+
+        public Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+    private ProgressNode currentProgressNode = null;
+    public ProgressNode getCurrentProgressNode() {
+        return currentProgressNode;
+    }
+
+    public void setCurrentProgressNode(ProgressNode node) {
+        this.currentProgressNode = node;
+        setCurrentTextPage(0); // опционально, сброс страницы текста при выборе
+    }
     private void renderProgressTree(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
-        int x = guiLeft + 15;
-        int y = guiTop + 25;
-
-        // отрисуем n-ю ноду в колонке (показ списка по странице)
         java.util.List<ProgressNode> nodes = menu.getProgressNodes();
-        if (nodes == null || nodes.isEmpty()) {
-            graphics.blit(ArsMelimaUIManager.ICONS_TEXTURE, x, y, 0, 61, 20, 20, 512, 512);
+        if (nodes == null || nodes.isEmpty()) return;
 
-            return;
+        int startX = guiLeft + 13;
+        int startY = guiTop + 25;
+        int size = 20;
+        int spacing = 13; // расстояние между квадратиками
+
+        // --- 1) Вычисляем позиции узлов (и сохраняем их сразу в поле UIManager) ---
+        Map<String, ArsMelimaUIManager.Point> computed = new HashMap<>();
+        for (ProgressNode node : nodes) {
+            int nx, ny;
+            String parentId = node.getParentId();
+            if (parentId == null || parentId.isEmpty() || !computed.containsKey(parentId)) {
+                // Если родителя нет или ещё не вычислен — ставим рядом со стартом
+                nx = startX;
+                ny = startY;
+            } else {
+                ArsMelimaUIManager.Point parentPos = computed.get(parentId);
+                switch (node.getSide()) {
+                    case "right" -> {
+                        nx = parentPos.x + size + spacing;
+                        ny = parentPos.y;
+                    }
+                    case "left" -> {
+                        nx = parentPos.x - size - spacing;
+                        ny = parentPos.y;
+                    }
+                    case "down" -> {
+                        nx = parentPos.x;
+                        ny = parentPos.y + size + spacing;
+                    }
+                    default -> {
+                        nx = parentPos.x;
+                        ny = parentPos.y + size + spacing;
+                    }
+                }
+            }
+            // Если id совпадает, не перезаписываем (стабильность)
+            if (!computed.containsKey(node.getId())) {
+                computed.put(node.getId(), new ArsMelimaUIManager.Point(nx, ny));
+            } else {
+                // на всякий случай — обновим координаты (в редких случаях)
+                computed.put(node.getId(), new ArsMelimaUIManager.Point(nx, ny));
+            }
         }
 
-        int start = currentProgressPage * ArsMelimaRenderer.CHAPTERS_PER_PAGE;
-        int end = Math.min(start + ArsMelimaRenderer.CHAPTERS_PER_PAGE, nodes.size());
-        int row = 0;
-        int rowHeight = 24;
+        // Сохраняем позиции чтобы обработчик кликов видел актуальные координаты сразу
+        this.setNodePositions(computed);
 
-        for (int i = start; i < end; i++, row++) {
-            ProgressNode node = nodes.get(i);
+        // --- 2) Рисуем линии между родительскими и дочерними ---
+        for (ProgressNode node : nodes) {
+            if (node.getParentId() == null || node.getParentId().isEmpty()) continue;
 
-            int sx = x;
-            int sy = y + row * rowHeight;
+            ArsMelimaUIManager.Point parentPos = computed.get(node.getParentId());
+            ArsMelimaUIManager.Point childPos = computed.get(node.getId());
+            if (parentPos == null || childPos == null) continue;
 
-            // Рисуем фон/рамку и кусок ICONS_TEXTURE: src (0,61), size 20x20
+            int parentCenterX = parentPos.x + size / 2;
+            int parentCenterY = parentPos.y + size / 2;
+            int childCenterX = childPos.x + size / 2;
+            int childCenterY = childPos.y + size / 2;
+
+            final int gap = 2;
+
+            if ("right".equals(node.getSide())) {
+                int startLineX = parentPos.x + size + gap;
+                int endLineX = childPos.x - gap;
+                int w = endLineX - startLineX;
+                if (w > 0) {
+                    int lineY = ((parentCenterY + childCenterY) / 2) - 1;
+                    drawHorizontalStripTiled(graphics, startLineX, lineY, w);
+                }
+            } else if ("left".equals(node.getSide())) {
+                int startLineX = childPos.x + size + gap;
+                int endLineX = parentPos.x - gap;
+                int w = endLineX - startLineX;
+                if (w > 0) {
+                    int lineY = ((parentCenterY + childCenterY) / 2) - 1;
+                    drawHorizontalStripTiled(graphics, startLineX, lineY, w);
+                }
+            } else { // down и дефолт
+                int startLineY = parentPos.y + size + gap;
+                int endLineY = childPos.y - gap;
+                int h = endLineY - startLineY;
+                if (h > 0) {
+                    int lineX = ((parentCenterX + childCenterX) / 2) - 1;
+                    drawVerticalStripTiled(graphics, lineX, startLineY, h);
+                }
+            }
+        }
+
+        // --- 3) Рисуем квадраты, предметы, hover, selection и тултипы ---
+        ProgressNode selected = getCurrentProgressNode();
+        for (ProgressNode node : nodes) {
+            ArsMelimaUIManager.Point pos = computed.get(node.getId());
+            if (pos == null) continue;
+
+            int sx = pos.x;
+            int sy = pos.y;
+
+            // фон квадрата
             RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
-            graphics.blit(ICONS_TEXTURE, sx, sy, 0, 61, 20, 20, 512, 512);
-            RenderSystem.setShaderTexture(0, TEXTURE);
+            graphics.blit(ICONS_TEXTURE, sx, sy, 0, 61, size, size, 512, 512);
 
-            // Рендер предмета по resource-name
+            // предмет внутри квадрата
             ItemStack stack = createItemStackFromResource(node.getItemResource());
-            // центрируем предмет в 20x20 (предмет 16x16) => offset +2
             if (!stack.isEmpty()) {
                 ArsMelimaDraws.renderItem(graphics, stack, sx + 2, sy + 2);
             }
 
-            // Отрисуем название справа от иконки
+            // hover подсветка
+            if (isPointInRect(sx, sy, size, size, mouseX, mouseY)) {
+                graphics.fill(sx, sy, sx + size, sy + size, 0x80FFFFFF); // полупрозрачная белая подсветка
+            }
 
+            // выделение выбранного узла
+            if (selected != null && node.getId().equals(selected.getId())) {
+                graphics.fill(sx - 1, sy - 1, sx + size + 1, sy + size + 1, 0x80FF0000); // красная рамка
+            }
 
-            // Hover tooltip
-            if (isPointInRect(sx, sy, 20, 20, mouseX, mouseY)) {
-                if (node.getDescription() != null && !node.getDescription().isEmpty()) {
-                    graphics.renderTooltip(font, Component.literal(node.getDescription()), mouseX, mouseY);
-                }
+            // tooltip при наведении
+            if (isPointInRect(sx, sy, size, size, mouseX, mouseY) &&
+                    node.getDescription() != null && !node.getDescription().isEmpty()) {
+                graphics.renderTooltip(font, Component.literal(node.getDescription()), mouseX, mouseY);
             }
         }
     }
 
 
-
+    public void setNodePositions(Map<String, Point> positions) {
+        this.nodePositions = positions;
+    }
+    public Map<String, Point> getNodePositions() {
+        return nodePositions;
+    }
+    private void drawHorizontalStripTiled(GuiGraphics graphics, int x, int y, int width) {
+        if (width <= 0) return;
+        RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+        int tileW = 9; // размер сегмента в текстуре
+        int texU = 0, texV = 11, texH = 2;
+        int drawn = 0;
+        while (drawn < width) {
+            int take = Math.min(tileW, width - drawn);
+            // берем в текстуре всегда полную ширину tileW, но отображаем только take пикселей на экране.
+            graphics.blit(
+                    ICONS_TEXTURE,
+                    x + drawn, y,
+                    take, texH,         // destW, destH на экране
+                    texU, texV,         // tex U,V
+                    take, texH,         // texW, texH — если хотите избежать растягивания, используйте take здесь
+                    512, 512
+            );
+            drawn += take;
+        }
+    }
+ private void drawVerticalStripTiled(GuiGraphics graphics, int x, int y, int height) {
+        if (height <= 0) return;
+        RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+        int tileH = 9; // высота сегмента в текстуре
+        int texU = 0, texV = 0, texW = 2;
+        int drawn = 0;
+        while (drawn < height) {
+            int take = Math.min(tileH, height - drawn);
+            graphics.blit(
+                    ICONS_TEXTURE,
+                    x, y + drawn,
+                    texW, take,       // destW, destH
+                    texU, texV,       // tex U,V
+                    texW, take,       // texW, texH
+                    512, 512
+            );
+            drawn += take;
+        }
+    }
     private ItemStack createItemStackFromResource(String res) {
         if (res == null || res.isEmpty()) return ItemStack.EMPTY;
         try {
             Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(res));
             if (item != null) return new ItemStack(item);
         } catch (Exception ignored) {}
-        return ItemStack.EMPTY; // вместо BARRIER
+        return ItemStack.EMPTY;
     }
-
 
     private int getContentWidth() {
         return (CONTENT_X2 - CONTENT_X1) - 8;
@@ -355,7 +500,6 @@ public class ArsMelimaUIManager {
     private boolean isPointInRect(int rx, int ry, int rw, int rh, int px, int py) {
         return px >= rx && py >= ry && px < rx + rw && py < ry + rh;
     }
-
     public void setCurrentChapterPage(int page) {
         this.currentChapterPage = page;
     }

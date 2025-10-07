@@ -1,10 +1,17 @@
 package ru.imaginaerum.wd.client.gui.ars_melima.screens;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.item.ItemStack;
-import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaMenu;
-import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders;
+import ru.imaginaerum.wd.client.gui.ars_melima.*;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
+
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 
 import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenderer.*;
 import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.OPEN_STRIP_HEIGHT;
@@ -15,6 +22,9 @@ public class ArsMelimaInputHandler {
     private static final int NAV_RIGHT_REL_X = 276;
     private static final int NAV_REL_Y = 184;
 
+    /**
+     * Обработчик клика мыши — маршрутизует по режимам (дерево прогресса, текст главы, список глав).
+     */
     public boolean handleMouseClick(double mouseX, double mouseY, int button,
                                     ArsMelimaUIManager uiManager, ArsMelimaMenu menu, ItemStack book) {
         int mx = (int) Math.floor(mouseX);
@@ -26,7 +36,7 @@ public class ArsMelimaInputHandler {
             // Режим дерева прогресса
             if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
             if (handleProgressPageArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
-            return handleProgressNodesClick(mx, my, button, guiLeft, guiTop, menu, uiManager);
+            return handleProgressNodesClick(mx, my, button, uiManager, menu);
         }
 
         if (menu.getCurrentIndex() != -1) {
@@ -40,6 +50,129 @@ public class ArsMelimaInputHandler {
         }
 
         return false;
+    }
+
+    // Заменённый метод обработки клика по узлам прогресса (взято у тебя)
+    // Вставь / замени этим методом в ArsMelimaInputHandler
+    private boolean handleProgressNodesClick(int mouseX, int mouseY, int button,
+                                             ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
+        if (button != 0) return false; // только левая кнопка
+
+        Map<String, ArsMelimaUIManager.Point> positions = uiManager.getNodePositions();
+        if (positions == null || positions.isEmpty()) return false;
+
+        int size = 20; // размер кликабельного квадрата узла
+
+        for (ProgressNode node : menu.getProgressNodes()) {
+            ArsMelimaUIManager.Point pos = positions.get(node.getId());
+            if (pos == null) continue;
+
+            if (mouseX >= pos.x && mouseY >= pos.y && mouseX < pos.x + size && mouseY < pos.y + size) {
+                uiManager.setCurrentProgressNode(node);
+                String nodeId = node.getId();
+                String nodeKey = normalizeKey(nodeId);
+
+                // 1) Ищем главу через progressionIdIndex
+                int idx = menu.getChapterIndexByProgressionId(nodeId);
+
+                // 2) fallback — если вдруг не нашли через карту, ищем внутри элементов глав (редко нужно)
+                if (idx < 0) {
+                    outer:
+                    for (int i = 0; i < menu.getChapters().size(); i++) {
+                        Chapter ch = menu.getChapters().get(i);
+                        if (ch == null) continue;
+
+                        // прямое сравнение с id/title главы
+                        if (normalizeKey(ch.getId()).equals(nodeKey) || normalizeKey(ch.getTitle()).equals(nodeKey)) {
+                            idx = i;
+                            break;
+                        }
+
+                        // поиск внутри элементов типа TEXT
+                        List<ChapterElement> elems = ch.getElements();
+                        if (elems != null) {
+                            for (ChapterElement el : elems) {
+                                if (el == null || el.getType() != ChapterElement.Type.TEXT) continue;
+                                String data = el.getData() != null ? el.getData().toString() : "";
+                                if (data.isEmpty()) continue;
+                                try {
+                                    JsonObject obj = JsonParser.parseString(data).getAsJsonObject();
+                                    if (obj.has("id") && normalizeKey(obj.get("id").getAsString()).equals(nodeKey)) {
+                                        idx = i;
+                                        break outer;
+                                    }
+                                } catch (Exception ignored) {}
+                            }
+                        }
+                    }
+                }
+
+                // 3) Если всё ещё не нашли — пробуем загрузить контент напрямую из ars_melima/content/<id>.json
+                if (idx < 0) {
+                    // сначала попробуем nodeId как есть, затем вариант без namespace (после :)
+                    List<ChapterElement> content = ChapterLoader.loadChapterContent(nodeId);
+                    if ((content == null || content.isEmpty()) && nodeId != null && nodeId.contains(":")) {
+                        String shortId = nodeId.substring(nodeId.indexOf(':') + 1);
+                        content = ChapterLoader.loadChapterContent(shortId);
+                        // если нашли, заменим nodeKey и nodeId на короткий вариант для открываемой главы
+                        if (content != null && !content.isEmpty()) {
+                            nodeKey = normalizeKey(shortId);
+                            nodeId = shortId;
+                        }
+                    }
+
+                    if (content != null && !content.isEmpty()) {
+                        // Попробуем найти существующую главу
+                        int existing = -1;
+                        for (int i = 0; i < menu.getChapters().size(); i++) {
+                            Chapter ch = menu.getChapters().get(i);
+                            if (ch == null) continue;
+                            if (normalizeKey(ch.getId()).equals(normalizeKey(nodeId))) {
+                                existing = i;
+                                break;
+                            }
+                        }
+
+                        if (existing >= 0) {
+                            idx = existing;
+                        } else {
+                            // Вместо создания новой главы просто открываем её напрямую
+                            menu.openDynamicChapter(nodeId, content); // <- нужен метод для динамического открытия
+                            uiManager.setCurrentTextPage(0);
+                            playPageTurnSound();
+                            return true; // клик обработан
+                        }
+                    }
+                }
+
+                System.out.println("[ArsMelima] progress-node click id='" + nodeId + "' normalized='" + nodeKey + "' -> chapterIndex=" + idx);
+
+                if (idx >= 0) {
+                    // Закрывать progression перед открытием главы не нужно — openChapter сам установит currentIndex.
+                    // Если всё же хочешь заранее закрыть прогрессию, делай это ДО openChapter:
+                    // menu.closeProgression();
+                    menu.openChapter(idx);
+                    // menu.closeProgression(); // <- удаляем, т.к. оно сбрасывало currentIndex обратно в -1
+                    uiManager.setCurrentTextPage(0);
+                    playPageTurnSound();
+                }
+                return true; // клик обработан
+            }
+        }
+
+        return false;
+    }
+
+
+
+    // Поместите где-нибудь в ArsMelimaInputHandler (private static) ту же normalizeKey, чтобы обе стороны совпадали:
+    private static String normalizeKey(String raw) {
+        if (raw == null) return "";
+        String s = raw.trim().toLowerCase(java.util.Locale.ROOT);
+        if (s.contains(":")) s = s.substring(s.indexOf(':') + 1);
+        s = s.replace('-', '_').replace(' ', '_');
+        s = s.replaceAll("[^a-z0-9_]", "");
+        return s;
     }
 
     // --- общий back (назад в списки) ---
@@ -107,7 +240,6 @@ public class ArsMelimaInputHandler {
         return false;
     }
 
-    // --- клик по списку глав (две колонки) ---
     // --- клик по списку глав (две колонки) ---
     private boolean handleChapterListClick(int mx, int my, int button, int guiLeft, int guiTop,
                                            ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
@@ -178,7 +310,6 @@ public class ArsMelimaInputHandler {
         return false;
     }
 
-
     // --- прогресс: стрелки страниц ---
     private boolean handleProgressPageArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
                                                  ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
@@ -206,27 +337,6 @@ public class ArsMelimaInputHandler {
     private int computeProgressPageCount(java.util.List<ProgressNode> nodes) {
         if (nodes == null || nodes.isEmpty()) return 1;
         return (nodes.size() + CHAPTERS_PER_PAGE - 1) / CHAPTERS_PER_PAGE;
-    }
-
-    // --- прогресс: клик по нодам (иконка 20x20 начиная в guiLeft+30, guiTop+35, строчные ряды) ---
-    private boolean handleProgressNodesClick(int mx, int my, int button, int guiLeft, int guiTop,
-                                             ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
-        if (button != 0) return false;
-        int start = uiManager.getCurrentProgressPage() * CHAPTERS_PER_PAGE;
-        int end = Math.min(start + CHAPTERS_PER_PAGE, menu.getProgressNodes().size());
-        int x = guiLeft + 30;
-        int y = guiTop + 35;
-        int rowHeight = 24;
-        for (int i = start, row = 0; i < end; i++, row++) {
-            int rx = x;
-            int ry = y + row * rowHeight;
-            if (isPointInRect(rx, ry, 20, 20, mx, my)) {
-                // Здесь можно открыть подробности ноды. Пока — звук и true.
-                playPageTurnSound();
-                return true;
-            }
-        }
-        return false;
     }
 
     // --- утилиты ---

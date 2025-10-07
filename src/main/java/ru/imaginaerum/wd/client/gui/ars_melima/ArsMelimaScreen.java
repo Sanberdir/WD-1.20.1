@@ -27,12 +27,29 @@ public class ArsMelimaScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        menu.setChapters(ChapterLoader.loadChapters());
+
+        // 1) Chapters first — заполняется progressionIdIndex внутри menu
+        var chapters = ChapterLoader.loadChapters();
+        menu.setChapters(chapters);
+        System.out.println("[ArsMelima] Chapters loaded: " + (chapters != null ? chapters.size() : 0));
+
+        // начальное состояние
         menu.setCurrentIndex(-1);
         uiManager.setCurrentChapterPage(0);
+        uiManager.setCurrentTextPage(0);
+        uiManager.setCurrentProgressPage(0);
 
-        // Загрузка дерева прогресса
-        menu.setProgressNodes(ProgressionLoader.loadNodes());
+        // 2) Then progression nodes
+        var nodes = ProgressionLoader.loadNodes();
+        menu.setProgressNodes(nodes);
+        System.out.println("[ArsMelima] Progression nodes loaded: " + (nodes != null ? nodes.size() : 0));
+
+        // Небольшая диагностика: покажем первые несколько id (удобно при отладке)
+        if (nodes != null && !nodes.isEmpty()) {
+            for (int i = 0; i < Math.min(5, nodes.size()); i++) {
+                System.out.println("[ArsMelima] node[" + i + "] id='" + nodes.get(i).getId() + "'");
+            }
+        }
     }
 
     @Override

@@ -1,4 +1,58 @@
-{
-  "item": "minecraft:bread",
-  "description": "Приготовьте 10 блюд, чтобы получить это достижение."
-}
+[
+  {
+    "id": "root",
+    "item": "minecraft:diamond",
+    "description": "Начало ресса",
+    "parentId": "",
+    "side": "",
+    "locked": false
+  },
+  {
+    "id": "child1",
+    "item": "minecraft:iron_ingot",
+    "description": "Первый ребёнок",
+    "parentId": "root",
+    "side": "down",
+    "locked": false
+  },
+  {
+    "id": "child2",
+    "item": "minecraft:gold_ingot",
+    "description": "Второй ребёнок справа",
+    "parentId": "root",
+    "side": "right",
+    "locked": true
+  },
+  {
+    "id": "child3",
+    "item": "minecraft:gold_ingot",
+    "description": "Второй ребёнок справа",
+    "parentId": "child2",
+    "side": "right",
+    "locked": true
+  },
+  {
+    "id": "child4",
+    "item": "minecraft:gold_ingot",
+    "description": "Второй ребёнок справа",
+    "parentId": "child3",
+    "side": "right",
+    "locked": true
+  },
+  {
+    "id": "child5",
+    "item": "minecraft:gold_ingot",
+    "description": "Второй ребёнок справа",
+    "parentId": "child3",
+    "side": "down",
+    "locked": true
+  },
+  {
+    "id": "child6",
+    "item": "minecraft:gold_ingot",
+    "description": "Второй ребёнок справа",
+    "parentId": "child5",
+    "side": "down",
+    "locked": true
+  }
+]

@@ -28,14 +28,55 @@ public class ProgressionLoader {
                 for (Map.Entry<ResourceLocation, Resource> entry : found.entrySet()) {
                     ResourceLocation rl = entry.getKey();
                     try (var is = entry.getValue().open(); var reader = new InputStreamReader(is)) {
-                        JsonObject jo = JsonParser.parseReader(reader).getAsJsonObject();
+                        JsonElement je = JsonParser.parseReader(reader);
 
-                        String path = rl.getPath();
-                        String id = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
-                        String item = jo.has("item") ? jo.get("item").getAsString() : "";
-                        String description = jo.has("description") ? jo.get("description").getAsString() : "";
+                        if (je.isJsonArray()) {
+                            for (JsonElement el : je.getAsJsonArray()) {
+                                JsonObject jo = el.getAsJsonObject();
+                                String id = jo.has("id") ? jo.get("id").getAsString() : "";
 
-                        nodes.add(new ProgressNode(id, description, item));
+                                // --- fallback: если id пустой — взять basename файла (имя json без расширения) ---
+                                if (id == null || id.isEmpty()) {
+                                    String path = rl.getPath(); // e.g. "ars_melima/progression/some_id.json" or "lang/ru_ru/ars_melima/progression/some_id.json"
+                                    int slash = path.lastIndexOf('/');
+                                    int dot = path.lastIndexOf('.');
+                                    if (dot > slash && dot >= 0) {
+                                        id = path.substring(slash + 1, dot);
+                                    }
+                                }
+
+                                String item = jo.has("item") ? jo.get("item").getAsString() : "";
+                                String desc = jo.has("description") ? jo.get("description").getAsString() : "";
+                                String parentId = jo.has("parentId") ? jo.get("parentId").getAsString() : "";
+                                String side = jo.has("side") ? jo.get("side").getAsString() : "";
+                                boolean locked = jo.has("locked") && jo.get("locked").getAsBoolean();
+
+                                nodes.add(new ProgressNode(id, desc, item, parentId, side, locked));
+                            }
+                        } else if (je.isJsonObject()) {
+                            JsonObject jo = je.getAsJsonObject();
+                            String id = jo.has("id") ? jo.get("id").getAsString() : "";
+
+                            // --- fallback: если id пустой — взять basename файла ---
+                            if (id == null || id.isEmpty()) {
+                                String path = rl.getPath();
+                                int slash = path.lastIndexOf('/');
+                                int dot = path.lastIndexOf('.');
+                                if (dot > slash && dot >= 0) {
+                                    id = path.substring(slash + 1, dot);
+                                }
+                            }
+
+                            String item = jo.has("item") ? jo.get("item").getAsString() : "";
+                            String desc = jo.has("description") ? jo.get("description").getAsString() : "";
+                            String parentId = jo.has("parentId") ? jo.get("parentId").getAsString() : "";
+                            String side = jo.has("side") ? jo.get("side").getAsString() : "";
+                            boolean locked = jo.has("locked") && jo.get("locked").getAsBoolean();
+
+                            nodes.add(new ProgressNode(id, desc, item, parentId, side, locked));
+                        } else {
+                            System.err.println("[ArsMelima] JSON in " + rl + " is neither object nor array!");
+                        }
                     } catch (Exception e) {
                         System.err.println("[ArsMelima] Failed to load progression node " + rl + " : " + e.getMessage());
                     }

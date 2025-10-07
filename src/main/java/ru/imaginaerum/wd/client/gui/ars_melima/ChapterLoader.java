@@ -69,7 +69,7 @@ public class ChapterLoader {
         return metadataList;
     }
 
-    private static List<ChapterElement> loadChapterContent(String chapterId) {
+    public static List<ChapterElement> loadChapterContent(String chapterId) {
         List<ChapterElement> elements = new ArrayList<>();
         ResourceManager manager = Minecraft.getInstance().getResourceManager();
         List<String> langs = getLanguageCandidates();
