@@ -1,30 +1,30 @@
 package ru.imaginaerum.wd.common.events;
 
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 import ru.imaginaerum.wd.WD;
-import ru.imaginaerum.wd.client.gui.ars_melima.screens.ClientCookingData;
+import ru.imaginaerum.wd.client.gui.ars_melima.NetworkCookingXp;
+import ru.imaginaerum.wd.client.gui.ars_melima.SyncCookingXpPacket;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.CookingXPManager;
 import ru.imaginaerum.wd.common.blocks.BlocksWD;
 import ru.imaginaerum.wd.common.blocks.custom.*;
@@ -35,16 +35,32 @@ import java.util.HashSet;
 
 @Mod.EventBusSubscriber(modid = WD.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEventBusEvents {
-
+    private static long lastDayTime = -1;
     @SubscribeEvent
     public static void onLevelTickFarmland(TickEvent.LevelTickEvent event) {
         if (event.phase == TickEvent.Phase.END && !event.level.isClientSide) {
             long timeOfDay = event.level.getDayTime() % 24000;
-            if (timeOfDay == 0) {
+
+            if (lastDayTime > timeOfDay) {
+                // Время "обернулось" через 0 тиков
                 dryAllSoil((ServerLevel) event.level);
                 upgradeStagePepper((ServerLevel) event.level);
             }
+
+            lastDayTime = timeOfDay;
         }
+    }
+    @SubscribeEvent
+    public static void onPlayerDeath(LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
+
+        CookingXPManager.resetXp(serverPlayer);
+
+        NetworkCookingXp.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> serverPlayer),
+                new SyncCookingXpPacket(0, 0)
+        );
+
     }
     @SubscribeEvent
     public static void onXpCookedCampfire(PlayerInteractEvent.RightClickBlock event) {
@@ -100,7 +116,20 @@ public class ForgeEventBusEvents {
             CookingXPManager.addXp(player, 5); // например, 10 XP за приготовление еды
         }
     }
+    @SubscribeEvent
+    public static void onPlayerLoginXpCooking(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
 
+        // Получаем актуальные данные игрока с сервера
+        int xp = CookingXPManager.getXp(serverPlayer);
+        int level = CookingXPManager.getLevel(serverPlayer);
+
+        // Отправляем на клиент
+        NetworkCookingXp.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> serverPlayer),
+                new SyncCookingXpPacket(xp, level)
+        );
+    }
 
     private static void upgradeStagePepper(ServerLevel level) {
         PepperRegistry data = PepperRegistry.get(level);

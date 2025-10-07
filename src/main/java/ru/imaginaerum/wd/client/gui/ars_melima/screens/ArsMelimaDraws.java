@@ -111,5 +111,6 @@ public class ArsMelimaDraws {
 
     public static void renderItem(GuiGraphics graphics, ItemStack stack, int x, int y) {
         graphics.renderItem(stack, x, y);
+
     }
 }

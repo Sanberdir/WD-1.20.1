@@ -92,11 +92,6 @@ public class WD {
         TabWD.CREATIVE_MODE_TABS.register(modEventBus);
         NetworkCookingXp.registerPackets();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener((BuildCreativeModeTabContentsEvent e) -> {
-            if (e.getTabKey() == TabWD.WD_TAB.getKey()) {
-
-            }
-        });
     }
 
     private void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {

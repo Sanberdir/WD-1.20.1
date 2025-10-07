@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressionLoader;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ArsMelimaInputHandler;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ArsMelimaUIManager;
 
@@ -29,6 +30,9 @@ public class ArsMelimaScreen extends Screen {
         menu.setChapters(ChapterLoader.loadChapters());
         menu.setCurrentIndex(-1);
         uiManager.setCurrentChapterPage(0);
+
+        // Загрузка дерева прогресса
+        menu.setProgressNodes(ProgressionLoader.loadNodes());
     }
 
     @Override

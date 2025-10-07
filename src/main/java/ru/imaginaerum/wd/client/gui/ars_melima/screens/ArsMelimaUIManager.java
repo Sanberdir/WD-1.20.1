@@ -5,13 +5,18 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.registries.ForgeRegistries;
 import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaMenu;
+import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenderer;
 import ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders;
 import ru.imaginaerum.wd.client.gui.ars_melima.Chapter;
+import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
 
 public class ArsMelimaUIManager {
     private static final ResourceLocation TEXTURE = new ResourceLocation("wd", "textures/gui/ars_melima/ars_melima.png");
@@ -31,17 +36,30 @@ public class ArsMelimaUIManager {
     private static final int COOK_BAR_DST_Y = 4;  // положение в интерфейсе (относительно guiTop)
     private static final int COOK_BAR_WIDTH = 183;
     private static final int COOK_BAR_HEIGHT = 5;
+
+    // В начале класса (поля)
+    private int currentProgressPage = 0; // текущая страница в режиме дерева прогресса
+
+    // Геттеры/сеттеры
+    public void setCurrentProgressPage(int page) { this.currentProgressPage = page; }
+    public int getCurrentProgressPage() { return currentProgressPage; }
     public void render(GuiGraphics graphics, int mouseX, int mouseY, int screenWidth, int screenHeight,
                        ArsMelimaMenu menu, ItemStack book, Font font) {
         calculatePosition(screenWidth, screenHeight);
 
         renderBackground(graphics);
         renderBookmark(graphics);
-        renderProgressBar(graphics, book);
+
+        // --- показываем полоску опыта ТОЛЬКО на странице дерева прогресса ---
+        if (menu != null && menu.isProgressionOpen()) {
+            renderProgressBar(graphics, book);
+        }
+
         renderContentAreas(graphics);
         renderNavigation(graphics, mouseX, mouseY, menu, font);
         renderContent(graphics, mouseX, mouseY, menu, font);
     }
+
 
     private void calculatePosition(int screenWidth, int screenHeight) {
         guiLeft = (screenWidth - FG_W) / 2;
@@ -148,9 +166,27 @@ public class ArsMelimaUIManager {
         ArsMelimaDraws.drawAreaBackground(graphics, contentLeft, contentTop, contentWidth, contentHeight);
         ArsMelimaDraws.drawAreaBackground(graphics, rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight);
     }
+    private void renderProgressPageArrows(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu) {
+        int totalPages = computeProgressPageCount(menu.getProgressNodes());
 
+        if (totalPages > 1) {
+            renderLeftArrow(graphics, mouseX, mouseY, currentProgressPage > 0);
+            renderRightArrow(graphics, mouseX, mouseY, currentProgressPage < totalPages - 1);
+        }
+    }
+
+    private int computeProgressPageCount(java.util.List<ProgressNode> nodes) {
+        if (nodes == null || nodes.isEmpty()) return 1;
+        return (nodes.size() + ArsMelimaRenderer.CHAPTERS_PER_PAGE - 1) / ArsMelimaRenderer.CHAPTERS_PER_PAGE;
+    }
 
     private void renderNavigation(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
+        if (menu.isProgressionOpen()) {
+            renderBackArrow(graphics, mouseX, mouseY);
+            renderProgressPageArrows(graphics, mouseX, mouseY, menu);
+            return;
+        }
+
         if (menu.getCurrentIndex() != -1) {
             // Режим просмотра текста главы
             renderBackArrow(graphics, mouseX, mouseY);
@@ -231,7 +267,10 @@ public class ArsMelimaUIManager {
         int rightContentTop = guiTop + RIGHT_CONTENT_Y1;  // ТАКАЯ ЖЕ КАК У ЛЕВОЙ
         int rightContentWidth = RIGHT_CONTENT_X2 - RIGHT_CONTENT_X1;
         int rightContentHeight = RIGHT_CONTENT_Y2 - RIGHT_CONTENT_Y1; // ТАКАЯ ЖЕ КАК У ЛЕВОЙ
-
+        if (menu.isProgressionOpen()) {
+            renderProgressTree(graphics, mouseX, mouseY, menu, font);
+            return;
+        }
         if (menu.getCurrentIndex() == -1) {
             // Режим списка глав - используем обе колонки с ОДИНАКОВОЙ высотой
             ArsMelimaRenders.renderChapterList(graphics, mouseX, mouseY,
@@ -245,6 +284,63 @@ public class ArsMelimaUIManager {
                     rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
                     font, 0.85f, TEXTURE);
         }
+    }
+    private void renderProgressTree(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
+        int x = guiLeft + 15;
+        int y = guiTop + 25;
+
+        // отрисуем n-ю ноду в колонке (показ списка по странице)
+        java.util.List<ProgressNode> nodes = menu.getProgressNodes();
+        if (nodes == null || nodes.isEmpty()) {
+            graphics.blit(ArsMelimaUIManager.ICONS_TEXTURE, x, y, 0, 61, 20, 20, 512, 512);
+
+            return;
+        }
+
+        int start = currentProgressPage * ArsMelimaRenderer.CHAPTERS_PER_PAGE;
+        int end = Math.min(start + ArsMelimaRenderer.CHAPTERS_PER_PAGE, nodes.size());
+        int row = 0;
+        int rowHeight = 24;
+
+        for (int i = start; i < end; i++, row++) {
+            ProgressNode node = nodes.get(i);
+
+            int sx = x;
+            int sy = y + row * rowHeight;
+
+            // Рисуем фон/рамку и кусок ICONS_TEXTURE: src (0,61), size 20x20
+            RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+            graphics.blit(ICONS_TEXTURE, sx, sy, 0, 61, 20, 20, 512, 512);
+            RenderSystem.setShaderTexture(0, TEXTURE);
+
+            // Рендер предмета по resource-name
+            ItemStack stack = createItemStackFromResource(node.getItemResource());
+            // центрируем предмет в 20x20 (предмет 16x16) => offset +2
+            if (!stack.isEmpty()) {
+                ArsMelimaDraws.renderItem(graphics, stack, sx + 2, sy + 2);
+            }
+
+            // Отрисуем название справа от иконки
+
+
+            // Hover tooltip
+            if (isPointInRect(sx, sy, 20, 20, mouseX, mouseY)) {
+                if (node.getDescription() != null && !node.getDescription().isEmpty()) {
+                    graphics.renderTooltip(font, Component.literal(node.getDescription()), mouseX, mouseY);
+                }
+            }
+        }
+    }
+
+
+
+    private ItemStack createItemStackFromResource(String res) {
+        if (res == null || res.isEmpty()) return ItemStack.EMPTY;
+        try {
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(res));
+            if (item != null) return new ItemStack(item);
+        } catch (Exception ignored) {}
+        return ItemStack.EMPTY; // вместо BARRIER
     }
 
 
