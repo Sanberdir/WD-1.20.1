@@ -144,15 +144,18 @@ public class ForgeEventBusEvents {
         return !recipes.isEmpty();
     }
     @SubscribeEvent
-    public static void onItemSmelted(net.minecraftforge.event.entity.player.PlayerEvent.ItemSmeltedEvent event) {
+    public static void onItemSmelted(PlayerEvent.ItemSmeltedEvent event) {
         Player player = event.getEntity();
         if (player == null || player.level().isClientSide) return;
 
         ItemStack smelted = event.getSmelting();
 
-        // Добавляем опыт за каждую приготовленную еду
         if (smelted.isEdible()) {
-            CookingXPManager.addXp(player, 5); // например, 10 XP за приготовление еды
+            int count = smelted.getCount();
+            int xpPerItem = 5; // Сколько давать за 1 предмет
+            int totalXp = count * xpPerItem;
+
+            CookingXPManager.addXp(player, totalXp);
         }
     }
     @SubscribeEvent

@@ -30,31 +30,22 @@ public class RequestUnlockProgressPacket {
         ctx.get().enqueueWork(() -> {
             var player = ctx.get().getSender(); // ServerPlayer
             if (player != null) {
-                // Проверяем, хватает ли 5 уровней
                 int currentLevel = CookingXPManager.getLevel(player);
                 if (currentLevel >= 5) {
-                    // Списываем 5 уровней
                     CookingXPManager.setLevel(player, currentLevel - 5);
-
-                    // Разблокируем прогресс-узел
                     ProgressionUnlockManager.unlock(player, nodeId);
 
-                    // Синхронизация с клиентом: обновлённый XP и уровень
-                    NetworkCookingXp.CHANNEL.send(
-                            PacketDistributor.PLAYER.with(() -> player),
-                            new SyncCookingXpPacket(CookingXPManager.getXp(player), CookingXPManager.getLevel(player))
-                    );
+                    // Синхронизация XP/Level
+                    CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+                            new SyncCookingXpPacket(CookingXPManager.getXp(player), CookingXPManager.getLevel(player)));
 
-                    // Синхронизация с клиентом: список разблокированных прогрессий
-                    NetworkCookingXp.CHANNEL.send(
-                            PacketDistributor.PLAYER.with(() -> player),
-                            new SyncUnlockedProgressPacket(ProgressionUnlockManager.getUnlockedList(player))
-                    );
+                    // Синхронизация прогрессов
+                    CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+                            new SyncUnlockedProgressPacket(ProgressionUnlockManager.getUnlockedList(player)));
                 } else {
-                    // Если мало уровней, можно вывести сообщение (на клиент или через системный чат)
-                    player.displayClientMessage(
-                            net.minecraft.network.chat.Component.literal("Недостаточно кулинарных уровней (нужно 5)"), true
-                    );
+                    // Отправляем клиенту пакет для отображения текста в GUI
+                    CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+                            new SyncNotEnoughCookingLevelPacket());
                 }
             }
         });

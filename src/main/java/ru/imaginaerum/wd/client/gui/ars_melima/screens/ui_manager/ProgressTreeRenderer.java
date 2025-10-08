@@ -112,7 +112,6 @@ public class ProgressTreeRenderer {
         }
     }
 
-    // Только визуальная отрисовка узлов и тултипов. Логика клика — в ArsMelimaInputHandler.
     private static void drawNodes(ArsMelimaUIManager manager, GuiGraphics graphics,
                                   Map<String, Point> computed, java.util.List<ProgressNode> nodes,
                                   int size, int mouseX, int mouseY, net.minecraft.client.gui.Font font) {
@@ -124,13 +123,16 @@ public class ProgressTreeRenderer {
             int sy = pos.y;
             boolean locked = node.isLocked() && !ClientCookingData.isProgressUnlocked(node.getId());
 
-            // Отрисовка рамки узла
+            // Сбрасываем цвет перед рендером квадрата
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+
+            // Рамка узла
             RenderSystem.setShaderTexture(0, ArsMelimaConstants.ICONS_TEXTURE);
             graphics.blit(ArsMelimaConstants.ICONS_TEXTURE, sx, sy, 0, 61, size, size, 512, 512);
 
-            // Снижаем яркость, если узел заблокирован
+            // Затемнение для заблокированных узлов
             if (locked) {
-                RenderSystem.setShaderColor(0.5F, 0.5F, 0.5F, 1.0F);
+                graphics.fill(sx, sy, sx + size, sy + size, 0x88000000);
             }
 
             // Рендер предмета
@@ -138,26 +140,23 @@ public class ProgressTreeRenderer {
             if (!stack.isEmpty()) {
                 ArsMelimaDraws.renderItem(graphics, stack, sx + 2, sy + 2);
             } else {
-                // fallback
                 graphics.fill(sx + 2, sy + 2, sx + size - 2, sy + size - 2, 0xFFAAAAAA);
             }
 
-            // Возвращаем цвет
-            if (locked) {
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                // затемняем поверх — лёгкий overlay серого, чтобы выглядело "выцветшим"
-                graphics.fill(sx, sy, sx + size, sy + size, 0x88000000);
-            }
-
-            // hover-эффект и тултип только для открытых
+            // Hover и тултип только для открытых
             if (!locked && UIUtils.isPointInRect(sx, sy, size, size, mouseX, mouseY)) {
+                // подсветка квадрата
                 graphics.fill(sx, sy, sx + size, sy + size, 0x80FFFFFF);
+
+                // тултип всегда белый
                 if (node.getDescription() != null && !node.getDescription().isEmpty()) {
+                    RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                     graphics.renderTooltip(font, Component.literal(node.getDescription()), mouseX, mouseY);
                 }
             }
         }
     }
+
 
     private static void drawHorizontalStripTiled(GuiGraphics graphics, int x, int y, int width) {
         if (width <= 0) return;

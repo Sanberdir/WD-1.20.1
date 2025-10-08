@@ -2,10 +2,6 @@ package ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import ru.imaginaerum.wd.client.gui.ars_melima.screens.ClientCookingData;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
 public class SyncUnlockedProgressPacket {
