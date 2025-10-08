@@ -88,9 +88,9 @@ public class WD {
         CustomSoundEvents.SOUND_EVENTS.register(modEventBus);
         EffectsWD.MOB_EFFECTS.register(modEventBus);
         ModEntitiesItem.ENTITIES.register(modEventBus);
+        NetworkCookingXp.register();
         modEventBus.addListener(this::addCreative);
         TabWD.CREATIVE_MODE_TABS.register(modEventBus);
-        NetworkCookingXp.registerPackets();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 

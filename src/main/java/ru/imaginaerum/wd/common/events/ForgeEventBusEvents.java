@@ -26,6 +26,8 @@ import ru.imaginaerum.wd.WD;
 import ru.imaginaerum.wd.client.gui.ars_melima.NetworkCookingXp;
 import ru.imaginaerum.wd.client.gui.ars_melima.SyncCookingXpPacket;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.CookingXPManager;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ProgressionUnlockManager;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.SyncUnlockedProgressPacket;
 import ru.imaginaerum.wd.common.blocks.BlocksWD;
 import ru.imaginaerum.wd.common.blocks.custom.*;
 import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.MagicSoilFarmlandData;
@@ -36,6 +38,43 @@ import java.util.HashSet;
 @Mod.EventBusSubscriber(modid = WD.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEventBusEvents {
     private static long lastDayTime = -1;
+    @SubscribeEvent
+    public static void onPlayerLoginXpUnlock(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
+
+        // Получаем актуальные данные игрока с сервера
+        int xp = CookingXPManager.getXp(serverPlayer);
+        int level = CookingXPManager.getLevel(serverPlayer);
+
+        // Отправляем на клиент XP/level
+        NetworkCookingXp.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> serverPlayer),
+                new SyncCookingXpPacket(xp, level)
+        );
+
+        // Отправляем на клиент список разблокированных прогрессий
+        NetworkCookingXp.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> serverPlayer),
+                new SyncUnlockedProgressPacket(ProgressionUnlockManager.getUnlockedList(serverPlayer))
+        );
+    }
+
+    // Отправляем также при респауне (после возрождения) — чтобы при пересоздании/кліче клиент всегда получил актуальный список
+    @SubscribeEvent
+    public static void onPlayerRespawn(net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
+
+        NetworkCookingXp.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> serverPlayer),
+                new SyncCookingXpPacket(CookingXPManager.getXp(serverPlayer), CookingXPManager.getLevel(serverPlayer))
+        );
+
+        NetworkCookingXp.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> serverPlayer),
+                new SyncUnlockedProgressPacket(ProgressionUnlockManager.getUnlockedList(serverPlayer))
+        );
+    }
+
     @SubscribeEvent
     public static void onLevelTickFarmland(TickEvent.LevelTickEvent event) {
         if (event.phase == TickEvent.Phase.END && !event.level.isClientSide) {

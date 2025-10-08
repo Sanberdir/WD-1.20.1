@@ -3,13 +3,13 @@ package ru.imaginaerum.wd.client.gui.ars_melima.screens;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.item.ItemStack;
 import ru.imaginaerum.wd.client.gui.ars_melima.*;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.Point;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.RequestUnlockProgressPacket;
 
-import java.io.InputStream;
+
 import java.util.List;
 import java.util.Map;
 
@@ -58,17 +58,32 @@ public class ArsMelimaInputHandler {
                                              ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
         if (button != 0) return false; // только левая кнопка
 
-        Map<String, ArsMelimaUIManager.Point> positions = uiManager.getNodePositions();
+        Map<String, Point> positions = uiManager.getNodePositions();
         if (positions == null || positions.isEmpty()) return false;
 
         int size = 20; // размер кликабельного квадрата узла
 
         for (ProgressNode node : menu.getProgressNodes()) {
-            ArsMelimaUIManager.Point pos = positions.get(node.getId());
+            Point pos = positions.get(node.getId());
             if (pos == null) continue;
 
             if (mouseX >= pos.x && mouseY >= pos.y && mouseX < pos.x + size && mouseY < pos.y + size) {
+                // Сразу помечаем текущий выбранный узел — интерфейс сможет подсветить его (даже если он locked)
                 uiManager.setCurrentProgressNode(node);
+                // После uiManager.setCurrentProgressNode(node);
+                boolean clientUnlocked = ClientCookingData.isProgressUnlocked(node.getId());
+                boolean baseLocked = node.isLocked();
+
+// Если базово locked и клиент ещё не видел свою локальную разблокировку — отправляем запрос на сервер
+                if (baseLocked && !clientUnlocked) {
+                    // клиент → сервер: запрос на попытку разблокировки
+                    NetworkCookingXp.CHANNEL.send(
+                            net.minecraftforge.network.PacketDistributor.SERVER.noArg(),
+                            new RequestUnlockProgressPacket(node.getId())
+                    );
+                    return true;
+                }
+
                 String nodeId = node.getId();
                 String nodeKey = normalizeKey(nodeId);
 
@@ -107,14 +122,12 @@ public class ArsMelimaInputHandler {
                     }
                 }
 
-                // 3) Если всё ещё не нашли — пробуем загрузить контент напрямую из ars_melima/content/<id>.json
+                // 3) Если всё ещё не нашли — пробуем загрузить контент напрямую
                 if (idx < 0) {
-                    // сначала попробуем nodeId как есть, затем вариант без namespace (после :)
                     List<ChapterElement> content = ChapterLoader.loadChapterContent(nodeId);
                     if ((content == null || content.isEmpty()) && nodeId != null && nodeId.contains(":")) {
                         String shortId = nodeId.substring(nodeId.indexOf(':') + 1);
                         content = ChapterLoader.loadChapterContent(shortId);
-                        // если нашли, заменим nodeKey и nodeId на короткий вариант для открываемой главы
                         if (content != null && !content.isEmpty()) {
                             nodeKey = normalizeKey(shortId);
                             nodeId = shortId;
@@ -122,7 +135,6 @@ public class ArsMelimaInputHandler {
                     }
 
                     if (content != null && !content.isEmpty()) {
-                        // Попробуем найти существующую главу
                         int existing = -1;
                         for (int i = 0; i < menu.getChapters().size(); i++) {
                             Chapter ch = menu.getChapters().get(i);
@@ -136,8 +148,7 @@ public class ArsMelimaInputHandler {
                         if (existing >= 0) {
                             idx = existing;
                         } else {
-                            // Вместо создания новой главы просто открываем её напрямую
-                            menu.openDynamicChapter(nodeId, content); // <- нужен метод для динамического открытия
+                            menu.openDynamicChapter(nodeId, content);
                             uiManager.setCurrentTextPage(0);
                             playPageTurnSound();
                             return true; // клик обработан
@@ -145,14 +156,8 @@ public class ArsMelimaInputHandler {
                     }
                 }
 
-                System.out.println("[ArsMelima] progress-node click id='" + nodeId + "' normalized='" + nodeKey + "' -> chapterIndex=" + idx);
-
                 if (idx >= 0) {
-                    // Закрывать progression перед открытием главы не нужно — openChapter сам установит currentIndex.
-                    // Если всё же хочешь заранее закрыть прогрессию, делай это ДО openChapter:
-                    // menu.closeProgression();
                     menu.openChapter(idx);
-                    // menu.closeProgression(); // <- удаляем, т.к. оно сбрасывало currentIndex обратно в -1
                     uiManager.setCurrentTextPage(0);
                     playPageTurnSound();
                 }
@@ -162,6 +167,9 @@ public class ArsMelimaInputHandler {
 
         return false;
     }
+
+
+
 
 
 

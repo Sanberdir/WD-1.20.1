@@ -37,7 +37,6 @@ public class ModEventClientBusEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             // Вызвать на КЛИЕНТСКОЙ стороне
-            NetworkCookingXp.registerPackets();
         }
 
         @SubscribeEvent

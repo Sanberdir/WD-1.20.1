@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenderer.CONTENT_PADDING;
-import static ru.imaginaerum.wd.client.gui.ars_melima.screens.ArsMelimaUIManager.ICONS_TEXTURE;
+import static ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ArsMelimaConstants.ICONS_TEXTURE;
 
 public class ArsMelimaRenders {
     public static final int OPEN_STRIP_HEIGHT = 23;

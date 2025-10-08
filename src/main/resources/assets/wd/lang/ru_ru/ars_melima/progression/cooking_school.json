@@ -13,7 +13,7 @@
     "description": "Первый ребёнок",
     "parentId": "root",
     "side": "down",
-    "locked": false
+    "locked": true
   },
   {
     "id": "child2",
