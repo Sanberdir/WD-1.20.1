@@ -7,7 +7,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -32,6 +34,7 @@ import ru.imaginaerum.wd.common.blocks.BlocksWD;
 import ru.imaginaerum.wd.common.blocks.custom.*;
 import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.MagicSoilFarmlandData;
 import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.PepperRegistry;
+import ru.imaginaerum.wd.common.items.ItemsWD;
 
 import java.util.HashSet;
 
@@ -143,8 +146,11 @@ public class ForgeEventBusEvents {
 
         return !recipes.isEmpty();
     }
+
+
+
     @SubscribeEvent
-    public static void onItemSmelted(PlayerEvent.ItemSmeltedEvent event) {
+    public static void onItemSmeltedXpCooking(PlayerEvent.ItemSmeltedEvent event) {
         Player player = event.getEntity();
         if (player == null || player.level().isClientSide) return;
 
@@ -153,6 +159,30 @@ public class ForgeEventBusEvents {
         if (smelted.isEdible()) {
             int count = smelted.getCount();
             int xpPerItem = 5; // Сколько давать за 1 предмет
+            int totalXp = count * xpPerItem;
+
+            CookingXPManager.addXp(player, totalXp);
+        }
+    }
+    @SubscribeEvent
+    public static void onItemCraftingXpCooking(PlayerEvent.ItemCraftedEvent event) {
+        Player player = event.getEntity();
+        if (player == null || player.level().isClientSide) return;
+
+        ItemStack crafting = event.getCrafting();
+        Item item = crafting.getItem();
+        if (crafting.isEdible()) {
+            int count = crafting.getCount();
+            int xpPerItem = 5; // Сколько давать за 1 предмет
+            int totalXp = count * xpPerItem;
+
+            CookingXPManager.addXp(player, totalXp);
+        }
+        if (item == Items.CAKE
+                || item == ItemsWD.WIZARD_PIE.get()
+                || item == ItemsWD.ROTTEN_PIE.get()) {
+            int count = crafting.getCount();
+            int xpPerItem = 25; // Сколько давать за 1 предмет
             int totalXp = count * xpPerItem;
 
             CookingXPManager.addXp(player, totalXp);
