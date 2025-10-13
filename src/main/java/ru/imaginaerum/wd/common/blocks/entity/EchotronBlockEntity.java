@@ -172,7 +172,7 @@ public class EchotronBlockEntity extends BlockEntity
                         if (checkState.getBlock() instanceof MagicCompost) {
                             int currentStage = MagicCompost.getStage(checkState);
 
-                            if (currentStage >= 3) {
+                            if (currentStage >= 4) {
                                 // === превращаем в MagicSoil ===
                                 level.setBlock(posInArea, BlocksWD.MAGIC_SOIL.get().defaultBlockState(), 3);
 

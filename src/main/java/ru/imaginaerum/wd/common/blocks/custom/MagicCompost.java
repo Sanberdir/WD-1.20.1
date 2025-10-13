@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 public class MagicCompost extends Block {
     // Создаем свойство для стадий (0, 1, 3)
-    public static final IntegerProperty STAGE = IntegerProperty.create("stage", 0, 3);
+    public static final IntegerProperty STAGE = IntegerProperty.create("stage", 0, 4);
 
     public MagicCompost(Properties pProperties) {
         super(pProperties);
@@ -27,7 +27,7 @@ public class MagicCompost extends Block {
     }
 
     public static BlockState setStage(BlockState state, int stage) {
-        return state.setValue(STAGE, Math.min(Math.max(stage, 0), 3));
+        return state.setValue(STAGE, Math.min(Math.max(stage, 0), 4));
     }
 
     public static BlockState nextStage(BlockState state) {
@@ -41,7 +41,7 @@ public class MagicCompost extends Block {
     }
 
     public static boolean isMaxStage(BlockState state) {
-        return getStage(state) >= 3;
+        return getStage(state) >= 4;
     }
 
     public static boolean isMinStage(BlockState state) {
