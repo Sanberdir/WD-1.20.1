@@ -27,7 +27,9 @@ import net.minecraftforge.network.PacketDistributor;
 import ru.imaginaerum.wd.WD;
 import ru.imaginaerum.wd.client.gui.ars_melima.NetworkCookingXp;
 import ru.imaginaerum.wd.client.gui.ars_melima.SyncCookingXpPacket;
+import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.CookingXPManager;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ProgressionServerLoader;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ProgressionUnlockManager;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.SyncUnlockedProgressPacket;
 import ru.imaginaerum.wd.common.blocks.BlocksWD;
@@ -37,6 +39,7 @@ import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.PepperRegistry;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 
 import java.util.HashSet;
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = WD.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEventBusEvents {
@@ -44,7 +47,21 @@ public class ForgeEventBusEvents {
     @SubscribeEvent
     public static void onPlayerLoginXpUnlock(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
-
+// --- автодобавление root-нod (server-side): если в JSON root и locked==false, раскрываем их игроку ---
+        try {
+            // ProgressionServerLoader — серверный загрузчик (см. ниже), возвращает List<ProgressNode>
+            List<ProgressNode> serverNodes = ProgressionServerLoader
+                    .loadNodes(serverPlayer.server);
+            for (ProgressNode n : serverNodes) {
+                if ((n.getParentId() == null || n.getParentId().isEmpty()) && !n.isLocked()) {
+                    // если ещё не в NBT, добавим
+                    ProgressionUnlockManager.unlock(serverPlayer, n.getId());
+                }
+            }
+        } catch (Throwable t) {
+            // логируем, но не ломаем процесс логина
+            System.err.println("[ArsMelima] Failed to auto-unlock roots on login: " + t.getMessage());
+        }
         // Получаем актуальные данные игрока с сервера
         int xp = CookingXPManager.getXp(serverPlayer);
         int level = CookingXPManager.getLevel(serverPlayer);

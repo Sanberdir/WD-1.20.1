@@ -96,7 +96,7 @@ public class ItemsWD {
 
     // Книга
     public static final RegistryObject<Item> ARS_MELIMA = ITEMS.register("ars_melima",
-            () -> new ArsMelima(new Item.Properties()));
+            () -> new ArsMelima(new Item.Properties().stacksTo(1)));
 
     // Кусты
     public static final RegistryObject<Item> POISON_BERRY = ITEMS.register("poison_berry",

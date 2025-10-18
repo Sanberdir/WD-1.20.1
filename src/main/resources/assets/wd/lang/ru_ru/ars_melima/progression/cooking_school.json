@@ -2,7 +2,7 @@
   {
     "id": "root",
     "item": "minecraft:diamond",
-    "description": "Начало ресса",
+    "description": "Начало прогресса",
     "parentId": "",
     "side": "",
     "locked": false
@@ -12,14 +12,6 @@
     "item": "minecraft:iron_ingot",
     "description": "Первый ребёнок",
     "parentId": "root",
-    "side": "down",
-    "locked": true
-  },
-  {
-    "id": "child2",
-    "item": "minecraft:gold_ingot",
-    "description": "Второй ребёнок справа",
-    "parentId": "root",
     "side": "right",
     "locked": true
   },
@@ -27,7 +19,7 @@
     "id": "child3",
     "item": "minecraft:gold_ingot",
     "description": "Второй ребёнок справа",
-    "parentId": "child2",
+    "parentId": "child1",
     "side": "right",
     "locked": true
   },

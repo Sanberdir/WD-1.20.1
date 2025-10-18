@@ -116,6 +116,7 @@
   "entity.wd.projectile_star_ball": "Звёздный шар",
   "entity.wd.wool_cow": "Шерстистая корова",
   "entity.wd.wool_cow2": "Шерстистая корова",
+
   "item.wd.a_drop_of_love": "§bКапля любви",
   "item.wd.apple_boat": "Лодка из яблони",
   "item.wd.apple_chest_boat": "Грузовая лодка из яблони",
@@ -266,6 +267,8 @@
   "item.wd.wizard_pie": "§eТорт волшебника",
   "item.wd.wizard_pie_slice": "Кусочек торта волшебника",
   "tooltip.wd.pot_from_meat_goat": "Козлятина",
+  "tooltip.arsmelima.progress.parent": "Предыдущий навык не разблокирован!",
+  "tooltip.arsmelima.progress.level": "Вам нужно %s уровней кулинарии",
   "wd.cleansing_decoction": "Смывает красители и одно зачарование с предмета, который вы держите в другой руке.",
   "wd.entity_name": "Имя сущности: %s",
   "wd.entity_name_not_set": "Имя сущности: не установлено",

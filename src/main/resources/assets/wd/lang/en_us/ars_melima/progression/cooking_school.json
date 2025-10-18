@@ -12,15 +12,7 @@
     "item": "minecraft:iron_ingot",
     "description": "Первый ребёнок",
     "parentId": "root",
-    "side": "down",
-    "locked": false
-  },
-  {
-    "id": "child2",
-    "item": "minecraft:gold_ingot",
-    "description": "Второй ребёнок справа",
-    "parentId": "root",
-    "side": "right",
+    "side": "right,down",
     "locked": true
   },
   {
