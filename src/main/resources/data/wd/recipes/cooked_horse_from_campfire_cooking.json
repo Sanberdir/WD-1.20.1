@@ -3,7 +3,7 @@
   "cookingtime": 600,
   "experience": 0.35,
   "ingredient": {
-    "item": "minecraft:mushroom_on_stick"
+    "item": "wd:raw_horse"
   },
-  "result": "wizardry_delight:cooked_mushroom_on_stick"
+  "result": "wd:cooked_horse"
 }

@@ -595,8 +595,8 @@
   },
   "minecraft:polar_bear": {
     "drops": {
-      "cocked_bear_meat": {
-        "item": "wd:cocked_bear_meat",
+      "cooked_bear_meat": {
+        "item": "wd:cooked_bear_meat",
         "min_count": 1,
         "max_count": 3,
         "chance": 1
@@ -615,8 +615,8 @@
   },
   "minecraft:panda": {
     "drops": {
-      "cocked_bear_meat": {
-        "item": "wd:cocked_bear_meat",
+      "cooked_bear_meat": {
+        "item": "wd:cooked_bear_meat",
         "min_count": 1,
         "max_count": 3,
         "chance": 1
@@ -635,8 +635,8 @@
   },
   "minecraft:goat": {
     "drops": {
-      "cocked_goats_meat": {
-        "item": "wd:cocked_goats_meat",
+      "cooked_goats_meat": {
+        "item": "wd:cooked_goats_meat",
         "min_count": 1,
         "max_count": 3,
         "chance": 1
@@ -655,14 +655,14 @@
   },
   "minecraft:frog": {
     "drops": {
-      "cocked_frog": {
-        "item": "wd:cocked_frog",
+      "cooked_frog": {
+        "item": "wd:cooked_frog",
         "min_count": 1,
         "max_count": 3,
         "chance": 1
       },
-      "cocked_frog_legs": {
-        "item": "wd:cocked_frog_legs",
+      "cooked_frog_legs": {
+        "item": "wd:cooked_frog_legs",
         "min_count": 1,
         "max_count": 2,
         "chance": 0.35
@@ -675,8 +675,8 @@
   },
   "minecraft:horse": {
     "drops": {
-      "cocked_horse": {
-        "item": "wd:cocked_horse",
+      "cooked_horse": {
+        "item": "wd:cooked_horse",
         "min_count": 1,
         "max_count": 3,
         "chance": 1
@@ -695,8 +695,8 @@
   },
   "minecraft:mule": {
     "drops": {
-      "cocked_horse": {
-        "item": "wd:cocked_horse",
+      "cooked_horse": {
+        "item": "wd:cooked_horse",
         "min_count": 1,
         "max_count": 3,
         "chance": 1
@@ -715,8 +715,8 @@
   },
   "minecraft:donkey": {
     "drops": {
-      "cocked_horse": {
-        "item": "wd:cocked_horse",
+      "cooked_horse": {
+        "item": "wd:cooked_horse",
         "min_count": 1,
         "max_count": 3,
         "chance": 1

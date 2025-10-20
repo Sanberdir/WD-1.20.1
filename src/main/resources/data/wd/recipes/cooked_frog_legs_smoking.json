@@ -3,7 +3,7 @@
   "cookingtime": 100,
   "experience": 0.35,
   "ingredient": {
-    "item": "minecraft:mushroom_on_stick"
+    "item": "wd:frog_body"
   },
-  "result": "wizardry_delight:cooked_mushroom_on_stick"
+  "result": "wd:cooked_frog_legs"
 }

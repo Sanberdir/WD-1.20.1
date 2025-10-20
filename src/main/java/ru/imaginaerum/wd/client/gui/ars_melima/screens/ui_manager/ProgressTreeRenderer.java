@@ -89,7 +89,17 @@ public class ProgressTreeRenderer {
             }
         }
     }
+    // Новая вертикальная линия (4x17), TEXTURE region X4 Y0
+    public static void drawLineVertical17(GuiGraphics g, int x, int y) {
+        RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+        g.blit(ICONS_TEXTURE, x, y, 4, 17, 4, 0, 4, 17, 512, 512);
+    }
 
+    // Новая горизонтальная линия (17x4), TEXTURE region X10 Y0
+    public static void drawLineHorizontal17(GuiGraphics g, int x, int y) {
+        RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+        g.blit(ICONS_TEXTURE, x, y, 17, 4, 10, 0, 17, 4, 512, 512);
+    }
     // Простые методы отрисовки полосок (рисуют ровно переданную длину)
     public static void drawHorizontalStripTiled(GuiGraphics graphics, int x, int y, int width) {
         if (width <= 0) return;

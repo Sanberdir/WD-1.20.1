@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:campfire_cooking",
-  "cookingtime": 600,
-  "experience": 0.35,
-  "ingredient": {
-    "item": "wd:goat_meat_kebab"
-  },
-  "result": "wd:cocked_goat_meat_kebab"
-}
