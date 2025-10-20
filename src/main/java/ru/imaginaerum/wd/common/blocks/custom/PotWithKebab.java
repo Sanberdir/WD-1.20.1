@@ -58,6 +58,10 @@ public class PotWithKebab extends FacingBlock {
             tooltip.add(Component.translatable("tooltip.wd.pot_from_meat_goat")
                     .withStyle(ChatFormatting.DARK_PURPLE));
         }
+        if (stack.getItem() == BlocksWD.POT_FROM_MEAT_CAMEL.get().asItem()) {
+            tooltip.add(Component.translatable("tooltip.wd.pot_from_meat_camel")
+                    .withStyle(ChatFormatting.DARK_PURPLE));
+        }
     }
 
     @Override
@@ -66,12 +70,20 @@ public class PotWithKebab extends FacingBlock {
         if (!level.isClientSide && state.is(BlocksWD.POT_FROM_MEAT_GOAT.get())) {
             level.scheduleTick(pos, this, 14400);
         }
+        if (!level.isClientSide && state.is(BlocksWD.POT_FROM_MEAT_CAMEL.get())) {
+            level.scheduleTick(pos, this, 14400);
+        }
     }
 
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (state.is(BlocksWD.POT_FROM_MEAT_GOAT.get())) {
             level.setBlock(pos, BlocksWD.MARINADED_POT_FROM_MEAT_GOAT.get()
+                    .defaultBlockState()
+                    .setValue(FACING, state.getValue(FACING)), 3);
+        }
+        if (state.is(BlocksWD.POT_FROM_MEAT_CAMEL.get())) {
+            level.setBlock(pos, BlocksWD.MARINADED_POT_FROM_MEAT_CAMEL.get()
                     .defaultBlockState()
                     .setValue(FACING, state.getValue(FACING)), 3);
         }
@@ -96,6 +108,14 @@ public class PotWithKebab extends FacingBlock {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (state.is(BlocksWD.POT_FROM_MEAT_GOAT.get())) {
+            double x = pos.getX() + 0.5;
+            double y = pos.getY() + 1.0;
+            double z = pos.getZ() + 0.5;
+
+            // #d1d9a5 в нормализованных значениях RGB
+            level.addParticle(ParticleTypes.ENTITY_EFFECT, x, y, z, 0.8196, 0.8510, 0.6471);
+        }
+        if (state.is(BlocksWD.POT_FROM_MEAT_CAMEL.get())) {
             double x = pos.getX() + 0.5;
             double y = pos.getY() + 1.0;
             double z = pos.getZ() + 0.5;

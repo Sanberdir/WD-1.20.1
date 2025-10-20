@@ -39,13 +39,20 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.JAR.get());
                         output.accept(ItemsWD.ARS_MELIMA.get());
                         output.accept(ItemsWD.RAW_BEAR_MEAT.get());
+                        output.accept(ItemsWD.COCKED_BEAR_MEAT.get());
                         output.accept(ItemsWD.RAW_HORSE.get());
+                        output.accept(ItemsWD.COCKED_HORSE.get());
                         output.accept(ItemsWD.RAW_GOATS_MEAT.get());
                         output.accept(ItemsWD.GOAT_MEAT_KEBAB.get());
                         output.accept(ItemsWD.COCKED_GOAT_MEAT_KEBAB.get());
-                        output.accept(ItemsWD.COCKED_BEAR_MEAT.get());
-                        output.accept(ItemsWD.COCKED_HORSE.get());
+                        output.accept(ItemsWD.CAMEL_MEAT_KEBAB.get());
+                        output.accept(ItemsWD.COCKED_CAMEL_MEAT_KEBAB.get());
+                        output.accept(ItemsWD.RAW_CAMEL_MEAT.get());
+                        output.accept(ItemsWD.COCKED_CAMEL_MEAT.get());
+                        output.accept(ItemsWD.RAW_SLICING_CAMEL_MEAT.get());
+                        output.accept(ItemsWD.COCKED_SLICING_CAMEL_MEAT.get());
                         output.accept(ItemsWD.COCKED_GOATS_MEAT.get());
+                        output.accept(ItemsWD.GOATS_MEAT_PILAF.get());
                         output.accept(ItemsWD.FROG_BODY.get());
                         output.accept(ItemsWD.COCKED_FROG.get());
                         output.accept(ItemsWD.FROG_LEGS.get());
@@ -130,7 +137,9 @@ public class TabWD extends CreativeModeTab {
                         //Meats_pots
                         output.accept(BlocksWD.POT.get());
                         output.accept(BlocksWD.POT_FROM_MEAT_GOAT.get());
+                        output.accept(BlocksWD.POT_FROM_MEAT_CAMEL.get());
                         output.accept(BlocksWD.MARINADED_POT_FROM_MEAT_GOAT.get());
+                        output.accept(BlocksWD.MARINADED_POT_FROM_MEAT_CAMEL.get());
 
                         output.accept(BlocksWD.ECHOTRON.get());
                         output.accept(BlocksWD.FIRE_STEM.get());

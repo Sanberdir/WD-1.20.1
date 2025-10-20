@@ -12,7 +12,7 @@
     "item": "minecraft:iron_ingot",
     "description": "Первый ребёнок",
     "parentId": "root",
-    "side": "right,down",
+    "side": "down",
     "locked": true
   },
   {

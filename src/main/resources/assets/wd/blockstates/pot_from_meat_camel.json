@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "wd:block/pot_from_meat_camel"
+    },
+    "facing=east": {
+      "model": "wd:block/pot_from_meat_camel",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "wd:block/pot_from_meat_camel",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "wd:block/pot_from_meat_camel",
+      "y": 270
+    }
+  }
+}

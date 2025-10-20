@@ -1,0 +1,38 @@
+
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "farmersdelight:onion"
+    },
+    {
+      "item": "farmersdelight:apple_cider"
+    },
+    {
+      "item": "wd:pot"
+    },
+    {
+      "item": "wd:raw_slicing_camel_meat"
+    },
+    {
+      "item": "wd:raw_slicing_camel_meat"
+    },
+    {
+      "item": "wd:raw_slicing_camel_meat"
+    },
+    {
+      "item": "wd:raw_slicing_camel_meat"
+    },
+    {
+      "item": "wd:raw_slicing_camel_meat"
+    },
+    {
+      "item": "wd:raw_slicing_camel_meat"
+    }
+
+  ],
+  "result": {
+    "item": "wd:pot_from_meat_camel",
+    "count": 1
+  }
+}

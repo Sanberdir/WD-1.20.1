@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "wd:item/cocked_slicing_camel_meat"
+  }
+}

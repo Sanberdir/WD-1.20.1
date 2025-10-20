@@ -1,0 +1,17 @@
+{
+  "type": "farmersdelight:cutting",
+  "ingredients": [
+    {
+      "item": "wd:cocked_camel_meat"
+    }
+  ],
+  "result": [
+    {
+      "count": 2,
+      "item": "wd:cocked_slicing_camel_meat"
+    }
+  ],
+  "tool": {
+    "tag": "forge:tools/knives"
+  }
+}

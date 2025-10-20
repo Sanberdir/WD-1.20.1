@@ -132,7 +132,11 @@ public class BlocksWD {
             () -> new Pot(BlockBehaviour.Properties.of().sound(SoundType.DECORATED_POT).strength(0.7F).noOcclusion()));
     public static final RegistryObject<Block> POT_FROM_MEAT_GOAT = registerBlock("pot_from_meat_goat",
             () -> new PotWithKebab(BlockBehaviour.Properties.of().sound(SoundType.DECORATED_POT).strength(0.7F).noOcclusion()));
+    public static final RegistryObject<Block> POT_FROM_MEAT_CAMEL = registerBlock("pot_from_meat_camel",
+            () -> new PotWithKebab(BlockBehaviour.Properties.of().sound(SoundType.DECORATED_POT).strength(0.7F).noOcclusion()));
     public static final RegistryObject<Block> MARINADED_POT_FROM_MEAT_GOAT = registerBlock("marinaded_pot_from_meat_goat",
+            () -> new MarinadedPot(BlockBehaviour.Properties.of().sound(SoundType.DECORATED_POT).strength(0.7F).noOcclusion()));
+    public static final RegistryObject<Block> MARINADED_POT_FROM_MEAT_CAMEL = registerBlock("marinaded_pot_from_meat_camel",
             () -> new MarinadedPot(BlockBehaviour.Properties.of().sound(SoundType.DECORATED_POT).strength(0.7F).noOcclusion()));
 
     //Уникальные блоки

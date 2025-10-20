@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
@@ -42,6 +43,10 @@ public class MarinadedPot extends FacingBlock {
     public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
         if (stack.getItem() == BlocksWD.MARINADED_POT_FROM_MEAT_GOAT.get().asItem()) {
             tooltip.add(Component.translatable("tooltip.wd.pot_from_meat_goat")
+                    .withStyle(ChatFormatting.DARK_PURPLE));
+        }
+        if (stack.getItem() == BlocksWD.MARINADED_POT_FROM_MEAT_CAMEL.get().asItem()) {
+            tooltip.add(Component.translatable("tooltip.wd.pot_from_meat_camel")
                     .withStyle(ChatFormatting.DARK_PURPLE));
         }
     }
@@ -93,8 +98,16 @@ public class MarinadedPot extends FacingBlock {
         ItemStack itemStack = player.getItemInHand(hand);
         int currentStage = state.getValue(STAGE);
 
-        // Проверяем, что игрок использует палку и блок ещё не исчерпал все стадии
-        if (itemStack.is(Items.STICK) && currentStage < 3) {
+        // Определяем какой шашлык выдавать в зависимости от блока
+        Item kebabItem = null;
+        if (state.is(BlocksWD.MARINADED_POT_FROM_MEAT_GOAT.get())) {
+            kebabItem = ItemsWD.GOAT_MEAT_KEBAB.get();
+        } else if (state.is(BlocksWD.MARINADED_POT_FROM_MEAT_CAMEL.get())) {
+            kebabItem = ItemsWD.CAMEL_MEAT_KEBAB.get();
+        }
+
+        // Проверяем, что это нужный блок, игрок использует палку и блок ещё не исчерпал все стадии
+        if (kebabItem != null && itemStack.is(Items.STICK) && currentStage < 3) {
             if (!level.isClientSide) {
                 // Убираем одну палку
                 if (!player.isCreative()) {
@@ -105,8 +118,8 @@ public class MarinadedPot extends FacingBlock {
                 int newStage = currentStage + 1;
                 level.setBlock(pos, state.setValue(STAGE, newStage), 3);
 
-                // Даём шашлык из козлятины игроку
-                ItemStack kebabStack = new ItemStack(ItemsWD.GOAT_MEAT_KEBAB.get());
+                // Даём соответствующий шашлык игроку
+                ItemStack kebabStack = new ItemStack(kebabItem);
                 if (!player.getInventory().add(kebabStack)) {
                     // Если инвентарь полный, выпадаем предмет на землю
                     player.drop(kebabStack, false);
