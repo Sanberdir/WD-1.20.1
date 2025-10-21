@@ -25,8 +25,8 @@ public class ProgressTreeRenderer {
     // Длина видимой линии между отступами
     public static final int LINE_LENGTH = 9;
     // gap (отступ между визуальной рамкой и линией) для состояний
-    public static final int LINE_OFFSET_UNLOCKED = 2; // для разблокированной
-    public static final int LINE_OFFSET_LOCKED = 3;   // для заблокированной
+    public static final int LINE_OFFSET_UNLOCKED = 2;
+    public static final int LINE_OFFSET_LOCKED = 3;
     // реальные размеры фреймов (текстур)
     public static final int UNLOCKED_SIZE = 22;
     public static final int LOCKED_SIZE = 20;
@@ -100,6 +100,28 @@ public class ProgressTreeRenderer {
         RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
         g.blit(ICONS_TEXTURE, x, y, 17, 4, 10, 0, 17, 4, 512, 512);
     }
+    // Угол новый вниз вправо
+    public static void drawCornerDownRight(GuiGraphics g, int x, int y) {
+        RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+        g.blit(ICONS_TEXTURE, x, y, 17, 17, 28, 0, 17, 17, 512, 512);
+    }
+    // Угол новый вниз влево
+    public static void drawCornerDownLeft(GuiGraphics g, int x, int y) {
+        RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+        g.blit(ICONS_TEXTURE, x, y, 17, 17, 45, 0, 17, 17, 512, 512);
+    }
+    // Угол новый влево вниз
+    public static void drawCornerLeftDown(GuiGraphics g, int x, int y) {
+        RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+        g.blit(ICONS_TEXTURE, x, y, 17, 17, 64, 0, 17, 17, 512, 512);
+    }
+    // Угол новый вправо вниз
+    public static void drawCornerRightDown(GuiGraphics g, int x, int y) {
+        RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
+        g.blit(ICONS_TEXTURE, x, y, 17, 17, 82, 0, 17, 17, 512, 512);
+    }
+
+
     // Простые методы отрисовки полосок (рисуют ровно переданную длину)
     public static void drawHorizontalStripTiled(GuiGraphics graphics, int x, int y, int width) {
         if (width <= 0) return;

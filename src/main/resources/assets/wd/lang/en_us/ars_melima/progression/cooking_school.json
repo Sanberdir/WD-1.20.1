@@ -9,10 +9,10 @@
   },
   {
     "id": "child1",
-    "item": "minecraft:iron_ingot",
+    "item": "minecraft:stick",
     "description": "Первый ребёнок",
     "parentId": "root",
-    "side": "down",
+    "side": "right,down",
     "locked": true
   },
   {
