@@ -108,7 +108,7 @@ public class ProgressTreeRenderer {
     // Угол новый вниз влево
     public static void drawCornerDownLeft(GuiGraphics g, int x, int y) {
         RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
-        g.blit(ICONS_TEXTURE, x, y, 17, 17, 45, 0, 17, 17, 512, 512);
+        g.blit(ICONS_TEXTURE, x, y, 17, 17, 46, 0, 17, 17, 512, 512);
     }
     // Угол новый влево вниз
     public static void drawCornerLeftDown(GuiGraphics g, int x, int y) {

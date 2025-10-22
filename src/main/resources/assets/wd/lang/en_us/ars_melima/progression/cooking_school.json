@@ -12,7 +12,7 @@
     "item": "minecraft:stick",
     "description": "Первый ребёнок",
     "parentId": "root",
-    "side": "right,down",
+    "side": "down,right",
     "locked": true
   },
   {
