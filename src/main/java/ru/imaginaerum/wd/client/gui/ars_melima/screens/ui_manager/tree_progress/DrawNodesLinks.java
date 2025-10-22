@@ -203,7 +203,7 @@ public class DrawNodesLinks {
 
             String[] parts = dirRaw.split("\\s*,\\s*");
             if (parts.length == 1) {
-                // простые направления
+                // простые направленияz
                 switch (parts[0]) {
                     case "right" -> {
                         int startX = parentPos.x + NODE_SIZE + parentDelta + parentOffset;
