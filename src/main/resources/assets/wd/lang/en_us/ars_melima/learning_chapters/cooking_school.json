@@ -1,0 +1,20 @@
+[
+  {
+    "id": "cutting_techniques",
+    "title": "Техники нарезки",
+    "status": "unlocked",
+    "parent": ""
+  },
+  {
+    "id": "cooking_methods",
+    "title": "Методы приготовления",
+    "status": "locked",
+    "parent": "cutting_techniques"
+  },
+  {
+    "id": "spices_usage",
+    "title": "Использование специй",
+    "status": "locked",
+    "parent": "cooking_methods"
+  }
+]

@@ -15,7 +15,10 @@ import ru.imaginaerum.wd.client.gui.ars_melima.screens.ArsMelimaUIManager;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ClientCookingData;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.tree_progress.DrawNodesLinks;
 
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ArsMelimaConstants.ICONS_TEXTURE;
 
@@ -39,6 +42,8 @@ public class ProgressTreeRenderer {
                                           Font font) {
         List<ProgressNode> nodes = menu.getProgressNodes();
         if (nodes == null || nodes.isEmpty()) return;
+
+
 
         int startX = manager.getGuiLeft() + 7;
         int startY = manager.getGuiTop() + 25;
@@ -84,11 +89,75 @@ public class ProgressTreeRenderer {
 
             if (UIUtils.isPointInRect(drawX, drawY, frameSize, frameSize, mouseX, mouseY)) {
                 graphics.fill(drawX, drawY, drawX + frameSize, drawY + frameSize, 0x80FFFFFF);
-                Component tooltip = Component.literal(node.getDescription() != null ? node.getDescription() : "");
-                graphics.renderTooltip(font, tooltip, mouseX, mouseY);
+
+                if (unlocked) {
+                    // если открыта — показываем обычное описание
+                    Component tooltip = Component.literal(node.getDescription() != null ? node.getDescription() : "");
+                    graphics.renderTooltip(font, tooltip, mouseX, mouseY);
+                } else {
+                    // если закрыта — показываем причину (родитель/уровень/фоллбек) как translatable Component
+                    Component reason = computeLockedTooltip(node, nodes);
+                    graphics.renderTooltip(font, reason, mouseX, mouseY);
+                }
             }
+
         }
     }
+    private static Component computeLockedTooltip(ProgressNode node, List<ProgressNode> allNodes) {
+        // 1) если родитель существует и он закрыт — подсказка про родителя
+        String parentId = null;
+        try {
+            parentId = node.getParentId();
+        } catch (Exception ignored) {}
+        if (parentId != null && !parentId.isEmpty()) {
+            for (ProgressNode p : allNodes) {
+                if (p == null) continue;
+                if (parentId.equals(p.getId())) {
+                    boolean parentUnlocked = !p.isLocked() || ClientCookingData.isProgressUnlocked(p.getId());
+                    if (!parentUnlocked) return Component.translatable("screen.wd.ars_melima.open_parent");
+                    break;
+                }
+            }
+        }
+
+        // 2) пробуем получить требование уровня через reflection (разные имена методов на случай различий в модели)
+        String[] tryMethods = {"getRequiredLevel", "getLevelRequirement", "getRequiredLvl", "requiredLevel", "getLevel", "getMinLevel"};
+        for (String mName : tryMethods) {
+            try {
+                Method m = node.getClass().getMethod(mName);
+                Object v = m.invoke(node);
+                if (v instanceof Number) {
+                    int req = ((Number) v).intValue();
+                    if (req > ClientCookingData.clientLevel) return Component.translatable("screen.wd.ars_melima.need_level", req);
+                } else if (v instanceof String) {
+                    try {
+                        int req = Integer.parseInt((String) v);
+                        if (req > ClientCookingData.clientLevel) return Component.translatable("screen.wd.ars_melima.need_level", req);
+                    } catch (NumberFormatException ignored) {}
+                }
+            } catch (NoSuchMethodException ignored) {
+                // метод не найден — пробуем следующий
+            } catch (Exception ignored) {
+                // любые другие ошибки — пропускаем
+            }
+        }
+
+        // 3) fallback: попытаемся найти число в описании ноды (если есть)
+        try {
+            String desc = node.getDescription();
+            if (desc != null && !desc.isEmpty()) {
+                Matcher m = Pattern.compile("(\\d+)").matcher(desc);
+                if (m.find()) {
+                    int val = Integer.parseInt(m.group(1));
+                    if (val > ClientCookingData.clientLevel) return Component.translatable("screen.wd.ars_melima.need_level", val);
+                }
+            }
+        } catch (Exception ignored) {}
+
+        // 4) общий фоллбек
+        return Component.translatable("screen.wd.ars_melima.requires_unlock");
+    }
+
     // Новая вертикальная линия (4x17), TEXTURE region X4 Y0
     public static void drawLineVertical17(GuiGraphics g, int x, int y) {
         RenderSystem.setShaderTexture(0, ICONS_TEXTURE);

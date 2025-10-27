@@ -280,8 +280,9 @@
 
   "tooltip.wd.pot_from_meat_goat": "Goat Meat",
   "tooltip.wd.pot_from_meat_camel": "Camel Meat",
-  "tooltip.arsmelima.progress.parent": "The previous skill is not unlocked!",
-  "tooltip.arsmelima.progress.level": "You need %s cooking levels",
+  "screen.wd.ars_melima.open_parent": "Open the previous node first",
+  "screen.wd.ars_melima.need_level": "Requires level %d",
+  "screen.wd.ars_melima.requires_unlock": "Requires unlock",
   "wd.cleansing_decoction": "Washes away the dyes and one enchantment from the object that you hold in your other hand.",
   "wd.entity_name": "Entity Name: %s",
   "wd.entity_name_not_set": "Entity Name: Not set",

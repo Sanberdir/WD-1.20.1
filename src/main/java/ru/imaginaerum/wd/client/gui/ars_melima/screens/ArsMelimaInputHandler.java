@@ -9,7 +9,6 @@ import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.Point;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.RequestUnlockProgressPacket;
 
-
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +22,7 @@ public class ArsMelimaInputHandler {
     private static final int NAV_REL_Y = 184;
 
     /**
-     * Обработчик клика мыши — маршрутизует по режимам (дерево прогресса, текст главы, список глав).
+     * Обработчик клика мыши — маршрутизует по режимам (дерево прогресса, текст главы, список глав, learning chapters).
      */
     public boolean handleMouseClick(double mouseX, double mouseY, int button,
                                     ArsMelimaUIManager uiManager, ArsMelimaMenu menu, ItemStack book) {
@@ -37,9 +36,12 @@ public class ArsMelimaInputHandler {
             if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
             if (handleProgressPageArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
             return handleProgressNodesClick(mx, my, button, uiManager, menu);
-        }
-
-        if (menu.getCurrentIndex() != -1) {
+        } else if (menu.isLearningChaptersOpen()) {
+            // Режим learning chapters
+            if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
+            if (handleLearningPageArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
+            return handleLearningChaptersClick(mx, my, button, uiManager, menu);
+        } else if (menu.getCurrentIndex() != -1) {
             // Режим просмотра текста главы
             if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
             if (handleTextPageArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
@@ -53,7 +55,6 @@ public class ArsMelimaInputHandler {
     }
 
     // Заменённый метод обработки клика по узлам прогресса (взято у тебя)
-    // Вставь / замени этим методом в ArsMelimaInputHandler
     private boolean handleProgressNodesClick(int mouseX, int mouseY, int button,
                                              ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
         if (button != 0) return false; // только левая кнопка
@@ -74,7 +75,7 @@ public class ArsMelimaInputHandler {
                 boolean clientUnlocked = ClientCookingData.isProgressUnlocked(node.getId());
                 boolean baseLocked = node.isLocked();
 
-// Если базово locked и клиент ещё не видел свою локальную разблокировку — отправляем запрос на сервер
+                // Если базово locked и клиент ещё не видел свою локальную разблокировку — отправляем запрос на сервер
                 if (baseLocked && !clientUnlocked) {
                     // клиент → сервер: запрос на попытку разблокировки
                     NetworkCookingXp.CHANNEL.send(
@@ -168,19 +169,40 @@ public class ArsMelimaInputHandler {
         return false;
     }
 
+    // --- LEARNING CHAPTERS HANDLERS ---
+    private boolean handleLearningPageArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
+                                                 ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
+        if (button == 0) {
+            int totalPages = computeLearningPageCount(menu.getCurrentLearningChapters());
 
+            if (isPointInRect(guiLeft + NAV_LEFT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
+                if (uiManager.getCurrentLearningPage() > 0) {
+                    uiManager.setCurrentLearningPage(uiManager.getCurrentLearningPage() - 1);
+                    playPageTurnSound();
+                    return true;
+                }
+            }
+            if (isPointInRect(guiLeft + NAV_RIGHT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
+                if (uiManager.getCurrentLearningPage() < totalPages - 1) {
+                    uiManager.setCurrentLearningPage(uiManager.getCurrentLearningPage() + 1);
+                    playPageTurnSound();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
+    private boolean handleLearningChaptersClick(int mx, int my, int button,
+                                                ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
+        // TODO: Добавить обработку кликов по элементам learning chapters
+        // Пока просто возвращаем false
+        return false;
+    }
 
-
-
-    // Поместите где-нибудь в ArsMelimaInputHandler (private static) ту же normalizeKey, чтобы обе стороны совпадали:
-    private static String normalizeKey(String raw) {
-        if (raw == null) return "";
-        String s = raw.trim().toLowerCase(java.util.Locale.ROOT);
-        if (s.contains(":")) s = s.substring(s.indexOf(':') + 1);
-        s = s.replace('-', '_').replace(' ', '_');
-        s = s.replaceAll("[^a-z0-9_]", "");
-        return s;
+    private int computeLearningPageCount(List<LearningChapter> learningChapters) {
+        if (learningChapters == null || learningChapters.isEmpty()) return 1;
+        return (learningChapters.size() + CHAPTERS_PER_PAGE - 1) / CHAPTERS_PER_PAGE;
     }
 
     // --- общий back (назад в списки) ---
@@ -189,6 +211,8 @@ public class ArsMelimaInputHandler {
         if (button == 0 && isPointInRect(guiLeft + 140, guiTop + 184, 15, 15, mx, my)) {
             if (menu.isProgressionOpen()) {
                 menu.closeProgression();
+            } else if (menu.isLearningChaptersOpen()) {
+                menu.closeLearningChapters();
             } else {
                 menu.closeChapter();
             }
@@ -282,9 +306,10 @@ public class ArsMelimaInputHandler {
                     int stripWidth = leftContentWidth - 4;
 
                     if (isPointInRect(stripX, stripY, stripWidth, stripHeight, mx, my)) {
-                        // ВАЖНО: вместо открытия главы — открываем дерево прогресса
-                        menu.openProgression();
-                        uiManager.setCurrentProgressPage(0);
+                        // ОТКРЫВАЕМ LEARNING CHAPTERS ДЛЯ ВЫБРАННОЙ ГЛАВЫ
+                        Chapter chapter = menu.getChapters().get(idx);
+                        menu.openLearningChapters(chapter.getId());
+                        uiManager.setCurrentLearningPage(0);
                         playPageTurnSound();
                         return true;
                     }
@@ -306,9 +331,10 @@ public class ArsMelimaInputHandler {
                     int stripWidth = rightContentWidth - 4;
 
                     if (isPointInRect(stripX, stripY, stripWidth, stripHeight, mx, my)) {
-                        // ВАЖНО: вместо открытия главы — открываем дерево прогресса
-                        menu.openProgression();
-                        uiManager.setCurrentProgressPage(0);
+                        // ОТКРЫВАЕМ LEARNING CHAPTERS ДЛЯ ВЫБРАННОЙ ГЛАВЫ
+                        Chapter chapter = menu.getChapters().get(idx);
+                        menu.openLearningChapters(chapter.getId());
+                        uiManager.setCurrentLearningPage(0);
                         playPageTurnSound();
                         return true;
                     }
@@ -360,5 +386,15 @@ public class ArsMelimaInputHandler {
                     1.0F
             );
         }
+    }
+
+    // Поместите где-нибудь в ArsMelimaInputHandler (private static) ту же normalizeKey, чтобы обе стороны совпадали:
+    private static String normalizeKey(String raw) {
+        if (raw == null) return "";
+        String s = raw.trim().toLowerCase(java.util.Locale.ROOT);
+        if (s.contains(":")) s = s.substring(s.indexOf(':') + 1);
+        s = s.replace('-', '_').replace(' ', '_');
+        s = s.replaceAll("[^a-z0-9_]", "");
+        return s;
     }
 }

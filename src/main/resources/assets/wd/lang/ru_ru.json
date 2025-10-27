@@ -277,8 +277,11 @@
   "item.wd.wizard_pie_slice": "Кусочек торта волшебника",
   "tooltip.wd.pot_from_meat_goat": "Козлятина",
   "tooltip.wd.pot_from_meat_camel": "Верблюжатина",
-  "tooltip.arsmelima.progress.parent": "Предыдущий навык не разблокирован!",
-  "tooltip.arsmelima.progress.level": "Вам нужно %s уровней кулинарии",
+
+  "screen.wd.ars_melima.open_parent": "Сначала открой предыдущий узел",
+  "screen.wd.ars_melima.need_level": "Требуется уровень %d",
+  "screen.wd.ars_melima.requires_unlock": "Требуется разблокировка",
+
   "wd.cleansing_decoction": "Смывает красители и одно зачарование с предмета, который вы держите в другой руке.",
   "wd.entity_name": "Имя сущности: %s",
   "wd.entity_name_not_set": "Имя сущности: не установлено",

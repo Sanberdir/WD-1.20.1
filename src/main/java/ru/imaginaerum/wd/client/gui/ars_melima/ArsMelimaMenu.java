@@ -4,14 +4,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ArsMelimaMenu {
     public static final int PROGRESSION_INDEX = -2; // новый "индекс" для режима дерева прогресса
+    public static final int LEARNING_CHAPTERS_INDEX = -3; // новое состояние для learning chapters
 
     private final List<Chapter> chapters = new ArrayList<>();
     private final List<ProgressNode> progressNodes = new ArrayList<>();
@@ -23,7 +20,48 @@ public class ArsMelimaMenu {
     // НОВОЕ: мапа progression-id -> индекс главы (строится по содержимому главы)
     private final Map<String, Integer> progressionIdIndex = new HashMap<>();
 
+    // Кэш для learning chapters
+    private final Map<String, List<LearningChapter>> learningChaptersCache = new HashMap<>();
+    private String currentLearningChapterId = null; // ID главы, для которой показываем learning chapters
+
+    private Chapter dynamicChapter = null;
+
     public ArsMelimaMenu() { }
+
+    public List<LearningChapter> getLearningChapters(String chapterId) {
+        return learningChaptersCache.computeIfAbsent(chapterId,
+                id -> LearningChapterLoader.loadLearningChapters(id));
+    }
+
+    public void clearLearningChaptersCache() {
+        learningChaptersCache.clear();
+    }
+
+    // === LEARNING CHAPTERS METHODS ===
+    public void openLearningChapters(String chapterId) {
+        this.currentLearningChapterId = chapterId;
+        this.currentIndex = LEARNING_CHAPTERS_INDEX;
+    }
+
+    public void closeLearningChapters() {
+        this.currentLearningChapterId = null;
+        this.currentIndex = -1;
+    }
+
+    public boolean isLearningChaptersOpen() {
+        return this.currentIndex == LEARNING_CHAPTERS_INDEX;
+    }
+
+    public String getCurrentLearningChapterId() {
+        return currentLearningChapterId;
+    }
+
+    public List<LearningChapter> getCurrentLearningChapters() {
+        if (currentLearningChapterId != null) {
+            return getLearningChapters(currentLearningChapterId);
+        }
+        return Collections.emptyList();
+    }
 
     public void setChapters(List<Chapter> list) {
         chapters.clear();
@@ -77,7 +115,6 @@ public class ArsMelimaMenu {
                 " chapters. normalizedKeys=" + normalizedChapterIndex.keySet() +
                 " progressionKeys=" + progressionIdIndex.keySet());
     }
-
 
     /**
      * Основной поиск главы по "ключу" (используется старым кодом).
@@ -180,8 +217,6 @@ public class ArsMelimaMenu {
         if (idx >= 0 && idx < chapters.size()) this.currentIndex = idx;
     }
 
-    private Chapter dynamicChapter = null;
-
     /**
      * Открывает динамическую главу (не добавляя её в основной список chapters)
      * @param id идентификатор главы
@@ -210,22 +245,12 @@ public class ArsMelimaMenu {
         return null;
     }
 
-    /**
-     * Закрывает динамическую главу
-     */
-    public void closeDynamicChapter() {
-        dynamicChapter = null;
-        this.currentIndex = -1;
-    }
     public void closeChapter() { this.currentIndex = -1; }
-
 
     // --- progression helpers ---
     public void openProgression() { this.currentIndex = PROGRESSION_INDEX; }
     public void closeProgression() { this.currentIndex = -1; }
     public boolean isProgressionOpen() { return this.currentIndex == PROGRESSION_INDEX; }
-
-
 
     // Нормализация: lower, убрать namespace перед двоеточием, заменить дефисы/пробелы на '_',
     // оставить только a-z0-9_ для стабильного сравнения.

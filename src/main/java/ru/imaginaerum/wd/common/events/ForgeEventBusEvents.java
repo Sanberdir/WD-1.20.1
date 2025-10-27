@@ -1,6 +1,5 @@
 package ru.imaginaerum.wd.common.events;
 
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,93 +37,134 @@ import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.MagicSoilFarmland
 import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.PepperRegistry;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 
-import java.util.HashSet;
-import java.util.List;
-
 @Mod.EventBusSubscriber(modid = WD.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEventBusEvents {
+
     private static long lastDayTime = -1;
+    private static int tickCounter = 0;
+    private static final int CHECK_INTERVAL = 20; // раз в ~1 секунду
+
+    // --- Авто-открытие root-нодов и синхронизация XP ---
     @SubscribeEvent
     public static void onPlayerLoginXpUnlock(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
-// --- автодобавление root-нod (server-side): если в JSON root и locked==false, раскрываем их игроку ---
+
         try {
-            // ProgressionServerLoader — серверный загрузчик (см. ниже), возвращает List<ProgressNode>
-            List<ProgressNode> serverNodes = ProgressionServerLoader
-                    .loadNodes(serverPlayer.server);
+            var serverNodes = ProgressionServerLoader.loadNodes(serverPlayer.server);
             for (ProgressNode n : serverNodes) {
                 if ((n.getParentId() == null || n.getParentId().isEmpty()) && !n.isLocked()) {
-                    // если ещё не в NBT, добавим
                     ProgressionUnlockManager.unlock(serverPlayer, n.getId());
                 }
             }
         } catch (Throwable t) {
-            // логируем, но не ломаем процесс логина
             System.err.println("[ArsMelima] Failed to auto-unlock roots on login: " + t.getMessage());
         }
-        // Получаем актуальные данные игрока с сервера
-        int xp = CookingXPManager.getXp(serverPlayer);
-        int level = CookingXPManager.getLevel(serverPlayer);
 
-        // Отправляем на клиент XP/level
-        NetworkCookingXp.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> serverPlayer),
-                new SyncCookingXpPacket(xp, level)
-        );
-
-        // Отправляем на клиент список разблокированных прогрессий
-        NetworkCookingXp.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> serverPlayer),
-                new SyncUnlockedProgressPacket(ProgressionUnlockManager.getUnlockedList(serverPlayer))
-        );
+        syncXpAndProgress(serverPlayer);
     }
 
-    // Отправляем также при респауне (после возрождения) — чтобы при пересоздании/кліче клиент всегда получил актуальный список
     @SubscribeEvent
-    public static void onPlayerRespawn(net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent event) {
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
-
-        NetworkCookingXp.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> serverPlayer),
-                new SyncCookingXpPacket(CookingXPManager.getXp(serverPlayer), CookingXPManager.getLevel(serverPlayer))
-        );
-
-        NetworkCookingXp.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> serverPlayer),
-                new SyncUnlockedProgressPacket(ProgressionUnlockManager.getUnlockedList(serverPlayer))
-        );
+        syncXpAndProgress(serverPlayer);
     }
 
+    private static void syncXpAndProgress(ServerPlayer player) {
+        int xp = CookingXPManager.getXp(player);
+        int level = CookingXPManager.getLevel(player);
+
+        NetworkCookingXp.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+                new SyncCookingXpPacket(xp, level));
+
+        NetworkCookingXp.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+                new SyncUnlockedProgressPacket(ProgressionUnlockManager.getUnlockedList(player)));
+    }
+
+    // --- Работа с фермой и перцами ---
     @SubscribeEvent
     public static void onLevelTickFarmland(TickEvent.LevelTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && !event.level.isClientSide) {
-            long timeOfDay = event.level.getDayTime() % 24000;
+        if (event.phase != TickEvent.Phase.END || event.level.isClientSide) return;
 
-            if (lastDayTime > timeOfDay) {
-                // Время "обернулось" через 0 тиков
-                dryAllSoil((ServerLevel) event.level);
-                upgradeStagePepper((ServerLevel) event.level);
+        long timeOfDay = event.level.getDayTime() % 24000;
+        if (lastDayTime > timeOfDay && event.level instanceof ServerLevel serverLevel) {
+            dryAllSoil(serverLevel);
+            upgradeStagePepper(serverLevel);
+        }
+        lastDayTime = timeOfDay;
+    }
+
+    @SubscribeEvent
+    public static void tickMoistSoil(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+
+        tickCounter++;
+        if (tickCounter < CHECK_INTERVAL) return;
+        tickCounter = 0;
+
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            if (!level.isRaining()) continue;
+            MagicSoilFarmlandData data = MagicSoilFarmlandData.get(level);
+
+            var iterator = data.getFarmlands().iterator();
+            while (iterator.hasNext()) {
+                BlockPos pos = iterator.next();
+                if (!level.hasChunkAt(pos)) continue;
+
+                BlockState state = level.getBlockState(pos);
+                if (state.is(BlocksWD.MAGIC_SOIL_FARMLAND.get()) && !state.getValue(MagicSoilFarmland.MOIST)) {
+                    level.setBlock(pos, state.setValue(MagicSoilFarmland.MOIST, true), 2);
+                }
             }
-
-            lastDayTime = timeOfDay;
         }
     }
-    @SubscribeEvent
-    public static void onPlayerDeath(LivingDeathEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
 
-        CookingXPManager.resetXp(serverPlayer);
+    private static void dryAllSoil(ServerLevel level) {
+        MagicSoilFarmlandData data = MagicSoilFarmlandData.get(level);
+        var iterator = data.getFarmlands().iterator();
 
-        NetworkCookingXp.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> serverPlayer),
-                new SyncCookingXpPacket(0, 0)
-        );
+        while (iterator.hasNext()) {
+            BlockPos pos = iterator.next();
+            if (!level.hasChunkAt(pos)) continue;
 
+            BlockState state = level.getBlockState(pos);
+            if (state.is(BlocksWD.MAGIC_SOIL_FARMLAND.get())) {
+                if (state.getValue(MagicSoilFarmland.MOIST)) {
+                    level.setBlock(pos, state.setValue(MagicSoilFarmland.MOIST, false), 3);
+                } else {
+                    level.setBlock(pos, BlocksWD.MAGIC_SOIL.get().defaultBlockState(), 3);
+                    iterator.remove();
+                }
+            } else {
+                iterator.remove();
+            }
+        }
     }
+
+    private static void upgradeStagePepper(ServerLevel level) {
+        PepperRegistry data = PepperRegistry.get(level);
+        var iterator = data.getPepperBlocks().iterator();
+
+        while (iterator.hasNext()) {
+            BlockPos pos = iterator.next();
+            if (!level.hasChunkAt(pos)) continue;
+
+            BlockState state = level.getBlockState(pos);
+            if (state.is(BlocksWD.BRIGHT_PEPPER_SEEDS.get())) {
+                int currentStage = state.getValue(BrightPepperSeeds.STAGE);
+                final int MAX_STAGE = 12;
+                if (currentStage < MAX_STAGE) {
+                    level.setBlock(pos, state.setValue(BrightPepperSeeds.STAGE, currentStage + 1), 2);
+                }
+            } else {
+                iterator.remove();
+            }
+        }
+    }
+
+    // --- XP за крафт и кулинарию ---
     @SubscribeEvent
     public static void onXpCookedCampfire(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getLevel().isClientSide()) return;
-        if (event.getHand() != InteractionHand.MAIN_HAND) return;
+        if (event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND) return;
 
         var level = event.getLevel();
         var pos = event.getPos();
@@ -132,39 +172,23 @@ public class ForgeEventBusEvents {
         var block = blockState.getBlock();
         if (block != Blocks.CAMPFIRE && block != Blocks.SOUL_CAMPFIRE) return;
 
-        // Проверяем заполненность костра
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof CampfireBlockEntity campfire) {
             int filledSlots = 0;
-            for (ItemStack item : campfire.getItems()) {
-                if (!item.isEmpty()) filledSlots++;
-            }
+            for (ItemStack item : campfire.getItems()) if (!item.isEmpty()) filledSlots++;
             if (filledSlots >= 4) return;
         }
 
         ItemStack stack = event.getEntity().getItemInHand(event.getHand());
         if (stack.isEmpty()) return;
-
-        // Проверяем есть ли рецепт для этого предмета в костре
-        if (hasCampfireRecipe(level, stack)) {
-            CookingXPManager.addXp(event.getEntity(), 5);
-        }
+        if (hasCampfireRecipe(level, stack)) CookingXPManager.addXp(event.getEntity(), 5);
     }
+
     private static boolean hasCampfireRecipe(Level level, ItemStack stack) {
-        // Получаем менеджер рецептов
         RecipeManager recipeManager = level.getRecipeManager();
-
-        // Ищем рецепты костра для этого предмета
-        var recipes = recipeManager.getRecipesFor(
-                RecipeType.CAMPFIRE_COOKING,
-                new SimpleContainer(stack),
-                level
-        );
-
+        var recipes = recipeManager.getRecipesFor(RecipeType.CAMPFIRE_COOKING, new SimpleContainer(stack), level);
         return !recipes.isEmpty();
     }
-
-
 
     @SubscribeEvent
     public static void onItemSmeltedXpCooking(PlayerEvent.ItemSmeltedEvent event) {
@@ -172,15 +196,12 @@ public class ForgeEventBusEvents {
         if (player == null || player.level().isClientSide) return;
 
         ItemStack smelted = event.getSmelting();
-
         if (smelted.isEdible()) {
-            int count = smelted.getCount();
-            int xpPerItem = 5; // Сколько давать за 1 предмет
-            int totalXp = count * xpPerItem;
-
+            int totalXp = smelted.getCount() * 5;
             CookingXPManager.addXp(player, totalXp);
         }
     }
+
     @SubscribeEvent
     public static void onItemCraftingXpCooking(PlayerEvent.ItemCraftedEvent event) {
         Player player = event.getEntity();
@@ -188,111 +209,19 @@ public class ForgeEventBusEvents {
 
         ItemStack crafting = event.getCrafting();
         Item item = crafting.getItem();
-        if (crafting.isEdible()) {
-            int count = crafting.getCount();
-            int xpPerItem = 5; // Сколько давать за 1 предмет
-            int totalXp = count * xpPerItem;
 
-            CookingXPManager.addXp(player, totalXp);
-        }
-        if (item == Items.CAKE
-                || item == ItemsWD.WIZARD_PIE.get()
-                || item == ItemsWD.ROTTEN_PIE.get()) {
-            int count = crafting.getCount();
-            int xpPerItem = 25; // Сколько давать за 1 предмет
-            int totalXp = count * xpPerItem;
-
-            CookingXPManager.addXp(player, totalXp);
-        }
+        if (crafting.isEdible()) CookingXPManager.addXp(player, crafting.getCount() * 5);
+        if (item == Items.CAKE || item == ItemsWD.WIZARD_PIE.get() || item == ItemsWD.ROTTEN_PIE.get())
+            CookingXPManager.addXp(player, crafting.getCount() * 25);
     }
+
     @SubscribeEvent
-    public static void onPlayerLoginXpCooking(PlayerEvent.PlayerLoggedInEvent event) {
+    public static void onPlayerDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
-
-        // Получаем актуальные данные игрока с сервера
-        int xp = CookingXPManager.getXp(serverPlayer);
-        int level = CookingXPManager.getLevel(serverPlayer);
-
-        // Отправляем на клиент
-        NetworkCookingXp.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> serverPlayer),
-                new SyncCookingXpPacket(xp, level)
-        );
+        CookingXPManager.resetXp(serverPlayer);
+        NetworkCookingXp.CHANNEL.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new SyncCookingXpPacket(0, 0));
     }
 
-    private static void upgradeStagePepper(ServerLevel level) {
-        PepperRegistry data = PepperRegistry.get(level);
-
-        for (BlockPos pos : new HashSet<>(data.getPepperBlocks())) {
-            if (!level.hasChunkAt(pos)) continue;
-
-            BlockState state = level.getBlockState(pos);
-
-            // Если блок всё ещё перец — пробуем увеличить стадию
-            if (state.is(BlocksWD.BRIGHT_PEPPER_SEEDS.get())) {
-                int currentStage = state.getValue(BrightPepperSeeds.STAGE);
-                final int MAX_STAGE = 12;
-
-                if (currentStage < MAX_STAGE) {
-                    int nextStage = currentStage + 1;
-                    BlockState newState = state.setValue(BrightPepperSeeds.STAGE, nextStage);
-
-                    // Флаг 2 — только обновляем клиент без соседних апдейтов
-                    level.setBlock(pos, newState, 2);
-                }
-            } else {
-                // Если блока уже нет, убираем из SavedData
-                data.remove(pos);
-            }
-        }
-    }
-
-
-    private static void dryAllSoil(ServerLevel level) {
-        MagicSoilFarmlandData data = MagicSoilFarmlandData.get(level);
-
-        // создаём копию, чтобы безопасно удалять элементы
-        for (BlockPos pos : new HashSet<>(data.getFarmlands())) {
-            if (!level.hasChunkAt(pos)) continue;
-
-            BlockState state = level.getBlockState(pos);
-
-            // проверяем, что это наш MagicSoilFarmland
-            if (state.is(BlocksWD.MAGIC_SOIL_FARMLAND.get())) {
-                if (state.getValue(MagicSoilFarmland.MOIST)) {
-                    // сушим
-                    level.setBlock(pos, state.setValue(MagicSoilFarmland.MOIST, false), 3);
-                } else {
-                    // превращаем в обычную землю
-                    level.setBlock(pos, BlocksWD.MAGIC_SOIL.get().defaultBlockState(), 3);
-                    data.remove(pos); // удаляем из сохранённого списка
-                }
-            } else {
-                // если блок уже не farmland, убираем из списка
-                data.remove(pos);
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void tickMoistSoil(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-
-        for (ServerLevel level : event.getServer().getAllLevels()) {
-            if (!level.isRaining()) continue;
-
-            MagicSoilFarmlandData data = MagicSoilFarmlandData.get(level);
-            for (BlockPos pos : new HashSet<>(data.getFarmlands())) {
-                if (!level.hasChunkAt(pos)) continue;
-
-                BlockState state = level.getBlockState(pos);
-                if (state.is(BlocksWD.MAGIC_SOIL_FARMLAND.get())
-                        && !state.getValue(MagicSoilFarmland.MOIST)) {
-                    level.setBlock(pos, state.setValue(MagicSoilFarmland.MOIST, true), 2);
-                }
-            }
-        }
-    }
     @SubscribeEvent
     public static void onLivingDeath(LivingDeathEvent event) {
         DragolitBlock.onEntityDeath(event.getEntity(), event.getSource());
