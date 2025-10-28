@@ -156,70 +156,74 @@ public class ArsMelimaUIManager {
     }
 
     // Метод для рендеринга списка learning chapters (аналогично renderChapterList)
+    // В методе renderLearningChaptersList изменим координаты рендеринга полосок:
     private void renderLearningChaptersList(GuiGraphics graphics, int mouseX, int mouseY,
                                             int leftContentLeft, int leftContentTop, int leftContentWidth, int leftContentHeight,
                                             int rightContentLeft, int rightContentTop, int rightContentWidth, int rightContentHeight,
                                             Font font, List<LearningChapter> learningChapters, float scale, int currentPage) {
 
-        int chaptersPerPage = CHAPTERS_PER_PAGE; // Используем ту же константу
+        int chaptersPerPage = CHAPTERS_PER_PAGE;
         int startIdx = currentPage * chaptersPerPage;
         int endIdx = Math.min(startIdx + chaptersPerPage, learningChapters.size());
 
-        // Левая колонка
+        // Левая колонка - полоски у левой границы
         for (int i = startIdx; i < startIdx + CHAPTERS_PER_COLUMN && i < endIdx; i++) {
             LearningChapter lc = learningChapters.get(i);
             int stripY = leftContentTop + CONTENT_PADDING + (i - startIdx) * TOTAL_STRIP_HEIGHT;
 
-            renderLearningChapterStrip(graphics, lc, leftContentLeft + 2, stripY,
-                    leftContentWidth - 4, OPEN_STRIP_HEIGHT, font, scale,
+            // Полоска начинается строго от левой границы контента
+            renderLearningChapterStrip(graphics, lc, leftContentLeft, stripY,
+                    leftContentWidth, OPEN_STRIP_HEIGHT, font, scale,
                     mouseX, mouseY);
         }
 
-        // Правая колонка
+        // Правая колонка - полоски у левой границы правой колонки
         for (int i = startIdx + CHAPTERS_PER_COLUMN; i < endIdx; i++) {
             LearningChapter lc = learningChapters.get(i);
             int columnIndex = i - (startIdx + CHAPTERS_PER_COLUMN);
             int stripY = rightContentTop + CONTENT_PADDING + columnIndex * TOTAL_STRIP_HEIGHT;
 
-            renderLearningChapterStrip(graphics, lc, rightContentLeft + 2, stripY,
-                    rightContentWidth - 4, OPEN_STRIP_HEIGHT, font, scale,
+            // Полоска начинается строго от левой границы правой контентной области
+            renderLearningChapterStrip(graphics, lc, rightContentLeft, stripY,
+                    rightContentWidth, OPEN_STRIP_HEIGHT, font, scale,
                     mouseX, mouseY);
         }
     }
 
-    // Метод для рендеринга полоски learning chapter (аналогично рендерингу обычной главы)
+    // Обновленный метод renderLearningChapterStrip:
     private void renderLearningChapterStrip(GuiGraphics graphics, LearningChapter lc,
                                             int x, int y, int width, int height,
                                             Font font, float scale,
                                             int mouseX, int mouseY) {
 
-        // Выбираем текстуру в зависимости от статуса
         boolean isUnlocked = lc.isUnlocked();
-        boolean isHovered = isPointInRect(x, y, width, height, mouseX, mouseY);
 
-        // Цвет текста в зависимости от статуса
-        int textColor = isUnlocked ? 0x000000 : 0x888888; // черный для разблокированных, серый для заблокированных
+        // Hitbox также смещаем к левой границе
+        boolean hover = isPointInRect(x, y, width, height, mouseX, mouseY);
 
-        // Рендерим фон полоски (можно использовать существующие текстуры)
-        if (isHovered && isUnlocked) {
-            // Подсветка при наведении на разблокированную главу
-            graphics.fill(x, y, x + width, y + height, 0x40FFFFFF); // полупрозрачный белый
-        }
+        // Рисуем фон полоски от левой границы (x) на всю ширину (width)
+        ArsMelimaRenders.renderChapterStrip(graphics, x, y, width, height,
+                /* openLikeChapter = */ isUnlocked,
+                /* hoverLikeChapter = */ hover && isUnlocked);
 
-        // Рендерим текст
-        graphics.drawString(font, lc.getTitle(), x + 5, y + 5, textColor, false);
+        // Для locked learning — текст не рисуем
+        if (!isUnlocked) return;
 
-        // Рендерим статус (иконка замка или галочки)
-        String statusIcon = isUnlocked ? "✓" : "🔒";
-        graphics.drawString(font, statusIcon, x + width - 15, y + 5, textColor, false);
+        // Текст выравниваем относительно левой границы полоски
+        int stripHeight = height;
+        int textY = y + (stripHeight - 8) / 2;
+        int textX = x + CONTENT_PADDING + 24; // Отступ от левой границы полоски
 
-        // Если есть родительская глава, показываем стрелку наследования
-        if (lc.getParent() != null && !lc.getParent().isEmpty()) {
-            graphics.drawString(font, "←", x + width - 30, y + 5, 0x666666, false);
-        }
+        String title = lc.getTitle() == null || lc.getTitle().isEmpty() ? lc.getId() : lc.getTitle();
+        int baseColor = hover ? 0xFFE2A65D : 0xFF5D4037;
+
+        graphics.drawString(font, title, textX,     textY - 1, 0x80FFFFFF, false);
+        graphics.drawString(font, title, textX - 1, textY,     0x80DBD4B8, false);
+        graphics.drawString(font, title, textX + 1, textY,     0x80DBD4B8, false);
+        graphics.drawString(font, title, textX,     textY + 1, 0x80BFB38A, false);
+        graphics.drawString(font, title, textX,     textY,     baseColor,  false);
     }
 
-    // Добавь этот вспомогательный метод в класс
     private boolean isPointInRect(int rx, int ry, int rw, int rh, int px, int py) {
         return px >= rx && py >= ry && px < rx + rw && py < ry + rh;
     }

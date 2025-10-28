@@ -66,8 +66,8 @@ public class ArsMelimaRenders {
     // ─────────────────────────────────────────────
     // Отрисовка полоски главы
     // ─────────────────────────────────────────────
-    private static void renderChapterStrip(GuiGraphics graphics, int x, int y, int width, int height,
-                                           boolean open, boolean hover) {
+    public static void renderChapterStrip(GuiGraphics graphics, int x, int y, int width, int height,
+                                          boolean open, boolean hover) {
         RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
         int srcX = 0;
         int srcY = open ? 18 : 42;

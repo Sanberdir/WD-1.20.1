@@ -1,9 +1,7 @@
 package ru.imaginaerum.wd.client.gui.ars_melima;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
-import ru.imaginaerum.wd.client.gui.ars_melima.screens.ClientCookingData;
 
 import java.util.function.Supplier;
 
