@@ -11,6 +11,8 @@ import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.RequestUnlockP
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenderer.*;
 import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.OPEN_STRIP_HEIGHT;
@@ -21,9 +23,6 @@ public class ArsMelimaInputHandler {
     private static final int NAV_RIGHT_REL_X = 276;
     private static final int NAV_REL_Y = 184;
 
-    /**
-     * Обработчик клика мыши — маршрутизует по режимам (дерево прогресса, текст главы, список глав, learning chapters).
-     */
     public boolean handleMouseClick(double mouseX, double mouseY, int button,
                                     ArsMelimaUIManager uiManager, ArsMelimaMenu menu, ItemStack book) {
         int mx = (int) Math.floor(mouseX);
@@ -32,52 +31,45 @@ public class ArsMelimaInputHandler {
         int guiTop = uiManager.getGuiTop();
 
         if (menu.isProgressionOpen()) {
-            // Режим дерева прогресса
             if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
-            if (handleProgressPageArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
+            if (handlePageArrowClick(mx, my, button, guiLeft, guiTop, uiManager::getCurrentProgressPage,
+                    uiManager::setCurrentProgressPage, computeProgressPageCount(menu.getProgressNodes()))) return true;
             return handleProgressNodesClick(mx, my, button, uiManager, menu);
         } else if (menu.isLearningChaptersOpen()) {
-            // Режим learning chapters
             if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
-            if (handleLearningPageArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
+            if (handlePageArrowClick(mx, my, button, guiLeft, guiTop, uiManager::getCurrentLearningPage,
+                    uiManager::setCurrentLearningPage, computeLearningPageCount(menu.getCurrentLearningChapters()))) return true;
             return handleLearningChaptersClick(mx, my, button, uiManager, menu);
         } else if (menu.getCurrentIndex() != -1) {
-            // Режим просмотра текста главы
             if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
-            if (handleTextPageArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
+            if (handlePageArrowClick(mx, my, button, guiLeft, guiTop, uiManager::getCurrentTextPage,
+                    uiManager::setCurrentTextPage, Integer.MAX_VALUE)) return true;
         } else {
-            // Режим списка глав
-            if (handleChapterPageArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
+            if (handlePageArrowClick(mx, my, button, guiLeft, guiTop, uiManager::getCurrentChapterPage,
+                    uiManager::setCurrentChapterPage, ArsMelimaRenders.computeChapterPageCount(menu.getChapters()))) return true;
             return handleChapterListClick(mx, my, button, guiLeft, guiTop, menu, uiManager);
         }
 
         return false;
     }
 
-    // Заменённый метод обработки клика по узлам прогресса (взято у тебя)
     private boolean handleProgressNodesClick(int mouseX, int mouseY, int button,
                                              ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
-        if (button != 0) return false; // только левая кнопка
-
+        if (button != 0) return false;
         Map<String, Point> positions = uiManager.getNodePositions();
         if (positions == null || positions.isEmpty()) return false;
 
-        int size = 20; // размер кликабельного квадрата узла
-
+        int size = 20;
         for (ProgressNode node : menu.getProgressNodes()) {
             Point pos = positions.get(node.getId());
             if (pos == null) continue;
 
-            if (mouseX >= pos.x && mouseY >= pos.y && mouseX < pos.x + size && mouseY < pos.y + size) {
-                // Сразу помечаем текущий выбранный узел — интерфейс сможет подсветить его (даже если он locked)
+            if (isPointInRect(pos.x, pos.y, size, size, mouseX, mouseY)) {
                 uiManager.setCurrentProgressNode(node);
-                // После uiManager.setCurrentProgressNode(node);
                 boolean clientUnlocked = ClientCookingData.isProgressUnlocked(node.getId());
                 boolean baseLocked = node.isLocked();
 
-                // Если базово locked и клиент ещё не видел свою локальную разблокировку — отправляем запрос на сервер
                 if (baseLocked && !clientUnlocked) {
-                    // клиент → сервер: запрос на попытку разблокировки
                     NetworkCookingXp.CHANNEL.send(
                             net.minecraftforge.network.PacketDistributor.SERVER.noArg(),
                             new RequestUnlockProgressPacket(node.getId())
@@ -85,333 +77,165 @@ public class ArsMelimaInputHandler {
                     return true;
                 }
 
-                String nodeId = node.getId();
-                String nodeKey = normalizeKey(nodeId);
-
-                // 1) Ищем главу через progressionIdIndex
-                int idx = menu.getChapterIndexByProgressionId(nodeId);
-
-                // 2) fallback — если вдруг не нашли через карту, ищем внутри элементов глав (редко нужно)
-                if (idx < 0) {
-                    outer:
-                    for (int i = 0; i < menu.getChapters().size(); i++) {
-                        Chapter ch = menu.getChapters().get(i);
-                        if (ch == null) continue;
-
-                        // прямое сравнение с id/title главы
-                        if (normalizeKey(ch.getId()).equals(nodeKey) || normalizeKey(ch.getTitle()).equals(nodeKey)) {
-                            idx = i;
-                            break;
-                        }
-
-                        // поиск внутри элементов типа TEXT
-                        List<ChapterElement> elems = ch.getElements();
-                        if (elems != null) {
-                            for (ChapterElement el : elems) {
-                                if (el == null || el.getType() != ChapterElement.Type.TEXT) continue;
-                                String data = el.getData() != null ? el.getData().toString() : "";
-                                if (data.isEmpty()) continue;
-                                try {
-                                    JsonObject obj = JsonParser.parseString(data).getAsJsonObject();
-                                    if (obj.has("id") && normalizeKey(obj.get("id").getAsString()).equals(nodeKey)) {
-                                        idx = i;
-                                        break outer;
-                                    }
-                                } catch (Exception ignored) {}
-                            }
-                        }
-                    }
-                }
-
-                // 3) Если всё ещё не нашли — пробуем загрузить контент напрямую
-                if (idx < 0) {
-                    List<ChapterElement> content = ChapterLoader.loadChapterContent(nodeId);
-                    if ((content == null || content.isEmpty()) && nodeId != null && nodeId.contains(":")) {
-                        String shortId = nodeId.substring(nodeId.indexOf(':') + 1);
-                        content = ChapterLoader.loadChapterContent(shortId);
-                        if (content != null && !content.isEmpty()) {
-                            nodeKey = normalizeKey(shortId);
-                            nodeId = shortId;
-                        }
-                    }
-
-                    if (content != null && !content.isEmpty()) {
-                        int existing = -1;
-                        for (int i = 0; i < menu.getChapters().size(); i++) {
-                            Chapter ch = menu.getChapters().get(i);
-                            if (ch == null) continue;
-                            if (normalizeKey(ch.getId()).equals(normalizeKey(nodeId))) {
-                                existing = i;
-                                break;
-                            }
-                        }
-
-                        if (existing >= 0) {
-                            idx = existing;
-                        } else {
-                            menu.openDynamicChapter(nodeId, content);
-                            uiManager.setCurrentTextPage(0);
-                            playPageTurnSound();
-                            return true; // клик обработан
-                        }
-                    }
-                }
-
-                if (idx >= 0) {
-                    menu.openChapter(idx);
-                    uiManager.setCurrentTextPage(0);
-                    playPageTurnSound();
-                }
-                return true; // клик обработан
-            }
-        }
-
-        return false;
-    }
-
-    // --- LEARNING CHAPTERS HANDLERS ---
-    private boolean handleLearningPageArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
-                                                 ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
-        if (button == 0) {
-            int totalPages = computeLearningPageCount(menu.getCurrentLearningChapters());
-
-            if (isPointInRect(guiLeft + NAV_LEFT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
-                if (uiManager.getCurrentLearningPage() > 0) {
-                    uiManager.setCurrentLearningPage(uiManager.getCurrentLearningPage() - 1);
-                    playPageTurnSound();
-                    return true;
-                }
-            }
-            if (isPointInRect(guiLeft + NAV_RIGHT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
-                if (uiManager.getCurrentLearningPage() < totalPages - 1) {
-                    uiManager.setCurrentLearningPage(uiManager.getCurrentLearningPage() + 1);
-                    playPageTurnSound();
-                    return true;
-                }
+                handleChapterByNode(node.getId(), menu, uiManager);
+                return true;
             }
         }
         return false;
     }
 
-    // Заменить существующий handleLearningChaptersClick(...) на этот метод
+    private void handleChapterByNode(String nodeId, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
+        String nodeKey = normalizeKey(nodeId);
+        int idx = menu.getChapterIndexByProgressionId(nodeId);
+
+        if (idx < 0) {
+            outer:
+            for (int i = 0; i < menu.getChapters().size(); i++) {
+                Chapter ch = menu.getChapters().get(i);
+                if (ch == null) continue;
+                if (normalizeKey(ch.getId()).equals(nodeKey) || normalizeKey(ch.getTitle()).equals(nodeKey)) {
+                    idx = i; break;
+                }
+                List<ChapterElement> elems = ch.getElements();
+                if (elems != null) {
+                    for (ChapterElement el : elems) {
+                        if (el == null || el.getType() != ChapterElement.Type.TEXT) continue;
+                        String data = el.getData() != null ? el.getData().toString() : "";
+                        if (data.isEmpty()) continue;
+                        try {
+                            JsonObject obj = JsonParser.parseString(data).getAsJsonObject();
+                            if (obj.has("id") && normalizeKey(obj.get("id").getAsString()).equals(nodeKey)) {
+                                idx = i; break outer;
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                }
+            }
+        }
+
+        if (idx < 0) {
+            List<ChapterElement> content = ChapterLoader.loadChapterContent(nodeId);
+            if ((content == null || content.isEmpty()) && nodeId != null && nodeId.contains(":")) {
+                String shortId = nodeId.substring(nodeId.indexOf(':') + 1);
+                content = ChapterLoader.loadChapterContent(shortId);
+                if (content != null && !content.isEmpty()) nodeId = shortId;
+            }
+
+            if (content != null && !content.isEmpty()) {
+                menu.openDynamicChapter(nodeId, content);
+                uiManager.setCurrentTextPage(0);
+                playPageTurnSound();
+                return;
+            }
+        }
+
+        if (idx >= 0) {
+            menu.openChapter(idx);
+            uiManager.setCurrentTextPage(0);
+            playPageTurnSound();
+        }
+    }
+
+    // --- ОБЩИЙ КЛИК ПО КОЛОНКАМ (LEFT/RIGHT) ---
+    private <T> boolean handleColumnClick(int mx, int my, int colLeft, int colTop, int colWidth, int startIdx,
+                                          List<T> list, Consumer<T> onClick) {
+        int relativeY = my - (colTop + CONTENT_PADDING);
+        int indexInCol = relativeY / TOTAL_STRIP_HEIGHT;
+        int idx = startIdx + indexInCol;
+        if (indexInCol < 0 || indexInCol >= CHAPTERS_PER_COLUMN || idx >= list.size()) return false;
+
+        int stripX = colLeft + 2;
+        int stripY = colTop + CONTENT_PADDING + indexInCol * TOTAL_STRIP_HEIGHT;
+        int stripWidth = colWidth - 4;
+        int stripHeight = OPEN_STRIP_HEIGHT;
+
+        if (!isPointInRect(stripX, stripY, stripWidth, stripHeight, mx, my)) return false;
+
+        onClick.accept(list.get(idx));
+        return true;
+    }
+
     private boolean handleLearningChaptersClick(int mx, int my, int button,
                                                 ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
         if (button != 0) return false;
-
-        int leftContentLeft = uiManager.getGuiLeft() + 8;
-        int leftContentTop = uiManager.getGuiTop() + 20;
-        int leftContentWidth = 137 - 8;
-        int leftContentHeight = 160 - 20;
-
-        int rightContentLeft = uiManager.getGuiLeft() + 159;
-        int rightContentTop = uiManager.getGuiTop() + 20;
-        int rightContentWidth = leftContentWidth;
-        int rightContentHeight = leftContentHeight;
-
         List<LearningChapter> list = menu.getCurrentLearningChapters();
         if (list == null || list.isEmpty()) return false;
-
+        int guiLeft = uiManager.getGuiLeft();
+        int guiTop = uiManager.getGuiTop();
         int currentPage = uiManager.getCurrentLearningPage();
         int startIdx = currentPage * CHAPTERS_PER_PAGE;
 
-        // Левая колонка
-        if (isPointInRect(leftContentLeft, leftContentTop, leftContentWidth, leftContentHeight, mx, my)) {
-            int relativeY = my - (leftContentTop + CONTENT_PADDING);
-            int chapterIndexInColumn = relativeY / TOTAL_STRIP_HEIGHT;
-            int idx = startIdx + chapterIndexInColumn;
+        int leftColX = guiLeft + 8;
+        int rightColX = guiLeft + 159;
+        int colY = guiTop + 20;
+        int colWidth = 129;
 
-            if (chapterIndexInColumn >= 0 && chapterIndexInColumn < CHAPTERS_PER_COLUMN &&
-                    idx < list.size() && idx < startIdx + CHAPTERS_PER_COLUMN) {
+        return handleColumnClick(mx, my, leftColX, colY, colWidth, startIdx, list, lc -> openLearningChapter((LearningChapter) lc, menu, uiManager)) ||
+                handleColumnClick(mx, my, rightColX, colY, colWidth, startIdx + CHAPTERS_PER_COLUMN, list, lc -> openLearningChapter((LearningChapter) lc, menu, uiManager));
+    }
 
-                int stripY = leftContentTop + CONTENT_PADDING + chapterIndexInColumn * TOTAL_STRIP_HEIGHT;
-                int stripX = leftContentLeft + 2;
-                int stripWidth = leftContentWidth;
-                int stripHeight = OPEN_STRIP_HEIGHT;
+    private void openLearningChapter(LearningChapter lc, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
+        if (!lc.isUnlocked()) { playPageTurnSound(); return; }
+        int found = menu.getChapterIndexByNormalizedKey(lc.getId());
+        if (found >= 0) { menu.openChapter(found); uiManager.setCurrentTextPage(0); playPageTurnSound(); return; }
 
-                if (isPointInRect(stripX, stripY, stripWidth, stripHeight, mx, my)) {
-                    LearningChapter lc = list.get(idx);
-                    if (!lc.isUnlocked()) {
-                        // Поглощаем клик — заблокировано
-                        playPageTurnSound();
-                        return true;
-                    }
-
-                    // Если есть обычная глава с таким id — откроем её
-                    int found = menu.getChapterIndexByNormalizedKey(lc.getId());
-                    if (found >= 0) {
-                        menu.openChapter(found);
-                        uiManager.setCurrentTextPage(0);
-                        playPageTurnSound();
-                        return true;
-                    }
-
-                    // Иначе пробуем загрузить содержимое и открыть динамическую главу
-                    String effectiveId = lc.getId();
-                    List<ChapterElement> content = ChapterLoader.loadChapterContent(effectiveId);
-                    if ((content == null || content.isEmpty()) && effectiveId != null && effectiveId.contains(":")) {
-                        String shortId = effectiveId.substring(effectiveId.indexOf(':') + 1);
-                        List<ChapterElement> shortContent = ChapterLoader.loadChapterContent(shortId);
-                        if (shortContent != null && !shortContent.isEmpty()) {
-                            effectiveId = shortId;
-                            content = shortContent;
-                        }
-                    }
-
-                    if (content != null && !content.isEmpty()) {
-                        menu.openDynamicChapter(effectiveId, content);
-                        uiManager.setCurrentTextPage(0);
-                        playPageTurnSound();
-                        return true;
-                    }
-
-                    // Ничего не найдено — просто поглощаем клик
-                    return true;
-                }
-            }
+        String id = lc.getId();
+        List<ChapterElement> content = ChapterLoader.loadChapterContent(id);
+        if ((content == null || content.isEmpty()) && id.contains(":")) {
+            String shortId = id.substring(id.indexOf(':') + 1);
+            List<ChapterElement> shortContent = ChapterLoader.loadChapterContent(shortId);
+            if (shortContent != null && !shortContent.isEmpty()) { id = shortId; content = shortContent; }
         }
 
-        // Правая колонка
-        if (isPointInRect(rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight, mx, my)) {
-            int relativeY = my - (rightContentTop + CONTENT_PADDING);
-            int chapterIndexInColumn = relativeY / TOTAL_STRIP_HEIGHT;
-            int idx = startIdx + CHAPTERS_PER_COLUMN + chapterIndexInColumn;
-
-            if (chapterIndexInColumn >= 0 && chapterIndexInColumn < CHAPTERS_PER_COLUMN &&
-                    idx < list.size() && idx < startIdx + CHAPTERS_PER_PAGE) {
-
-                int stripY = rightContentTop + CONTENT_PADDING + chapterIndexInColumn * TOTAL_STRIP_HEIGHT;
-                int stripX = rightContentLeft + 2;
-                int stripWidth = rightContentWidth - 4;
-                int stripHeight = OPEN_STRIP_HEIGHT;
-
-                if (isPointInRect(stripX, stripY, stripWidth, stripHeight, mx, my)) {
-                    LearningChapter lc = list.get(idx);
-                    if (!lc.isUnlocked()) {
-                        playPageTurnSound();
-                        return true;
-                    }
-
-                    int found = menu.getChapterIndexByNormalizedKey(lc.getId());
-                    if (found >= 0) {
-                        menu.openChapter(found);
-                        uiManager.setCurrentTextPage(0);
-                        playPageTurnSound();
-                        return true;
-                    }
-
-                    String effectiveId = lc.getId();
-                    List<ChapterElement> content = ChapterLoader.loadChapterContent(effectiveId);
-                    if ((content == null || content.isEmpty()) && effectiveId != null && effectiveId.contains(":")) {
-                        String shortId = effectiveId.substring(effectiveId.indexOf(':') + 1);
-                        List<ChapterElement> shortContent = ChapterLoader.loadChapterContent(shortId);
-                        if (shortContent != null && !shortContent.isEmpty()) {
-                            effectiveId = shortId;
-                            content = shortContent;
-                        }
-                    }
-
-                    if (content != null && !content.isEmpty()) {
-                        menu.openDynamicChapter(effectiveId, content);
-                        uiManager.setCurrentTextPage(0);
-                        playPageTurnSound();
-                        return true;
-                    }
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        if (content != null && !content.isEmpty()) { menu.openDynamicChapter(id, content); uiManager.setCurrentTextPage(0); playPageTurnSound(); }
+        else { playPageTurnSound(); }
     }
 
     private boolean handleChapterListClick(int mx, int my, int button, int guiLeft, int guiTop,
                                            ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
-        // Левая область
-        int leftContentLeft = guiLeft + 8;
-        int leftContentTop = guiTop + 20;
-        int leftContentWidth = 137 - 8;    // 129 пикселей
-        int leftContentHeight = 160 - 20;  // 140 пикселей
+        if (button != 0) return false;
+        List<Chapter> list = menu.getChapters();
+        int currentPage = uiManager.getCurrentChapterPage();
+        int startIdx = currentPage * CHAPTERS_PER_PAGE;
 
-        // Правая область
-        int rightContentLeft = guiLeft + 159;
-        int rightContentTop = guiTop + 20;
-        int rightContentWidth = leftContentWidth;
-        int rightContentHeight = leftContentHeight;
+        int leftColX = guiLeft + 8;
+        int rightColX = guiLeft + 159;
+        int colY = guiTop + 20;
+        int colWidth = 129;
 
-        if (button == 0) {
-            int currentPage = uiManager.getCurrentChapterPage();
-            int startIdx = currentPage * CHAPTERS_PER_PAGE;
+        return handleColumnClick(mx, my, leftColX, colY, colWidth, startIdx, list, ch -> {
+            menu.openLearningChapters(ch.getId());
+            uiManager.setCurrentLearningPage(0);
+            playPageTurnSound();
+        }) ||
+                handleColumnClick(mx, my, rightColX, colY, colWidth, startIdx + CHAPTERS_PER_COLUMN, list, ch -> {
+                    menu.openLearningChapters(ch.getId());
+                    uiManager.setCurrentLearningPage(0);
+                    playPageTurnSound();
+                });
+    }
 
-            // Левая колонка
-            if (isPointInRect(leftContentLeft, leftContentTop, leftContentWidth, leftContentHeight, mx, my)) {
-                int relativeY = my - (leftContentTop + CONTENT_PADDING);
-                int chapterIndexInColumn = relativeY / TOTAL_STRIP_HEIGHT;
-                int idx = startIdx + chapterIndexInColumn;
-
-                if (chapterIndexInColumn >= 0 && chapterIndexInColumn < CHAPTERS_PER_COLUMN &&
-                        idx < menu.getChapters().size() && idx < startIdx + CHAPTERS_PER_COLUMN) {
-
-                    int stripY = leftContentTop + CONTENT_PADDING + chapterIndexInColumn * TOTAL_STRIP_HEIGHT;
-                    int stripHeight = OPEN_STRIP_HEIGHT;
-                    int stripX = leftContentLeft + 2;
-                    int stripWidth = leftContentWidth - 4;
-
-                    if (isPointInRect(stripX, stripY, stripWidth, stripHeight, mx, my)) {
-                        // ОТКРЫВАЕМ LEARNING CHAPTERS ДЛЯ ВЫБРАННОЙ ГЛАВЫ
-                        Chapter chapter = menu.getChapters().get(idx);
-                        menu.openLearningChapters(chapter.getId());
-                        uiManager.setCurrentLearningPage(0);
-                        playPageTurnSound();
-                        return true;
-                    }
-                }
-            }
-
-            // Правая колонка
-            if (isPointInRect(rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight, mx, my)) {
-                int relativeY = my - (rightContentTop + CONTENT_PADDING);
-                int chapterIndexInColumn = relativeY / TOTAL_STRIP_HEIGHT;
-                int idx = startIdx + CHAPTERS_PER_COLUMN + chapterIndexInColumn;
-
-                if (chapterIndexInColumn >= 0 && chapterIndexInColumn < CHAPTERS_PER_COLUMN &&
-                        idx < menu.getChapters().size() && idx < startIdx + CHAPTERS_PER_PAGE) {
-
-                    int stripY = rightContentTop + CONTENT_PADDING + chapterIndexInColumn * TOTAL_STRIP_HEIGHT;
-                    int stripHeight = OPEN_STRIP_HEIGHT;
-                    int stripX = rightContentLeft + 2;
-                    int stripWidth = rightContentWidth - 4;
-
-                    if (isPointInRect(stripX, stripY, stripWidth, stripHeight, mx, my)) {
-                        // ОТКРЫВАЕМ LEARNING CHAPTERS ДЛЯ ВЫБРАННОЙ ГЛАВЫ
-                        Chapter chapter = menu.getChapters().get(idx);
-                        menu.openLearningChapters(chapter.getId());
-                        uiManager.setCurrentLearningPage(0);
-                        playPageTurnSound();
-                        return true;
-                    }
-                }
-            }
+    // --- ОБЩАЯ НАВИГАЦИЯ СТРЕЛКАМИ ---
+    private boolean handlePageArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
+                                         Supplier<Integer> getPage, Consumer<Integer> setPage, int totalPages) {
+        if (button != 0) return false;
+        if (isPointInRect(guiLeft + NAV_LEFT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
+            int p = getPage.get();
+            if (p > 0) { setPage.accept(p - 1); playPageTurnSound(); return true; }
+        }
+        if (isPointInRect(guiLeft + NAV_RIGHT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
+            int p = getPage.get();
+            if (p < totalPages - 1) { setPage.accept(p + 1); playPageTurnSound(); return true; }
         }
         return false;
     }
 
-    private int computeLearningPageCount(List<LearningChapter> learningChapters) {
-        if (learningChapters == null || learningChapters.isEmpty()) return 1;
-        return (learningChapters.size() + CHAPTERS_PER_PAGE - 1) / CHAPTERS_PER_PAGE;
-    }
-
-    // --- общий back (назад в списки) ---
     private boolean handleBackArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
                                          ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
         if (button == 0 && isPointInRect(guiLeft + 140, guiTop + 184, 15, 15, mx, my)) {
-            if (menu.isProgressionOpen()) {
-                menu.closeProgression();
-            } else if (menu.isLearningChaptersOpen()) {
-                menu.closeLearningChapters();
-            } else {
-                menu.closeChapter();
-            }
+            if (menu.isProgressionOpen()) menu.closeProgression();
+            else if (menu.isLearningChaptersOpen()) menu.closeLearningChapters();
+            else menu.closeChapter();
             uiManager.setCurrentTextPage(0);
             playPageTurnSound();
             return true;
@@ -419,87 +243,14 @@ public class ArsMelimaInputHandler {
         return false;
     }
 
-    // --- навигация по страницам текста главы ---
-    private boolean handleTextPageArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
-                                             ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
-        if (button == 0) {
-            // Левая стрелка
-            if (isPointInRect(guiLeft + NAV_LEFT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
-                if (uiManager.getCurrentTextPage() > 0) {
-                    uiManager.setCurrentTextPage(uiManager.getCurrentTextPage() - 1);
-                    playPageTurnSound();
-                    return true;
-                }
-            }
-            // Правая стрелка
-            if (isPointInRect(guiLeft + NAV_RIGHT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
-                // вычисление pageCount производится в UIManager при рендере; здесь позволим инкремент, UI проверит границы
-                uiManager.setCurrentTextPage(uiManager.getCurrentTextPage() + 1);
-                playPageTurnSound();
-                return true;
-            }
-        }
-        return false;
+    private int computeLearningPageCount(List<LearningChapter> list) {
+        return (list == null || list.isEmpty()) ? 1 : (list.size() + CHAPTERS_PER_PAGE - 1) / CHAPTERS_PER_PAGE;
     }
 
-    // --- навигация по страницам списка глав ---
-    private boolean handleChapterPageArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
-                                                ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
-        if (button == 0) {
-            int totalPages = ArsMelimaRenders.computeChapterPageCount(menu.getChapters());
-
-            // Левая стрелка
-            if (isPointInRect(guiLeft + NAV_LEFT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
-                if (uiManager.getCurrentChapterPage() > 0) {
-                    uiManager.setCurrentChapterPage(uiManager.getCurrentChapterPage() - 1);
-                    playPageTurnSound();
-                    return true;
-                }
-            }
-            // Правая стрелка
-            if (isPointInRect(guiLeft + NAV_RIGHT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
-                if (uiManager.getCurrentChapterPage() < totalPages - 1) {
-                    uiManager.setCurrentChapterPage(uiManager.getCurrentChapterPage() + 1);
-                    playPageTurnSound();
-                    return true;
-                }
-            }
-        }
-        return false;
+    private int computeProgressPageCount(List<ProgressNode> nodes) {
+        return (nodes == null || nodes.isEmpty()) ? 1 : (nodes.size() + CHAPTERS_PER_PAGE - 1) / CHAPTERS_PER_PAGE;
     }
 
-    // --- клик по списку глав (две колонки) ---
-
-    // --- прогресс: стрелки страниц ---
-    private boolean handleProgressPageArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
-                                                 ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
-        if (button == 0) {
-            int totalPages = computeProgressPageCount(menu.getProgressNodes());
-
-            if (isPointInRect(guiLeft + NAV_LEFT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
-                if (uiManager.getCurrentProgressPage() > 0) {
-                    uiManager.setCurrentProgressPage(uiManager.getCurrentProgressPage() - 1);
-                    playPageTurnSound();
-                    return true;
-                }
-            }
-            if (isPointInRect(guiLeft + NAV_RIGHT_REL_X, guiTop + NAV_REL_Y, 12, 7, mx, my)) {
-                if (uiManager.getCurrentProgressPage() < totalPages - 1) {
-                    uiManager.setCurrentProgressPage(uiManager.getCurrentProgressPage() + 1);
-                    playPageTurnSound();
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private int computeProgressPageCount(java.util.List<ProgressNode> nodes) {
-        if (nodes == null || nodes.isEmpty()) return 1;
-        return (nodes.size() + CHAPTERS_PER_PAGE - 1) / CHAPTERS_PER_PAGE;
-    }
-
-    // --- утилиты ---
     private boolean isPointInRect(int rx, int ry, int rw, int rh, int px, int py) {
         return px >= rx && py >= ry && px < rx + rw && py < ry + rh;
     }
@@ -508,19 +259,16 @@ public class ArsMelimaInputHandler {
         if (Minecraft.getInstance().player != null) {
             Minecraft.getInstance().player.playSound(
                     net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN,
-                    1.0F,
-                    1.0F
+                    1.0F, 1.0F
             );
         }
     }
 
-    // Поместите где-нибудь в ArsMelimaInputHandler (private static) ту же normalizeKey, чтобы обе стороны совпадали:
     private static String normalizeKey(String raw) {
         if (raw == null) return "";
         String s = raw.trim().toLowerCase(java.util.Locale.ROOT);
         if (s.contains(":")) s = s.substring(s.indexOf(':') + 1);
         s = s.replace('-', '_').replace(' ', '_');
-        s = s.replaceAll("[^a-z0-9_]", "");
-        return s;
+        return s.replaceAll("[^a-z0-9_]", "");
     }
 }
