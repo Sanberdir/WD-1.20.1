@@ -22,7 +22,7 @@ public class ChapterLoader {
 
         for (ChapterMetadata meta : metadataList) {
             List<ChapterElement> elements = loadChapterContent(meta.getId());
-            chapters.add(new Chapter(meta.getId(), meta.getTitle(), elements, meta.isOpen()));
+            chapters.add(new Chapter(meta.getId(), meta.getTitle(), elements, meta.isOpen(), meta.getIcon()));
         }
 
         return chapters;
@@ -52,8 +52,9 @@ public class ChapterLoader {
 
                         String title = jo.has("title") ? jo.get("title").getAsString() : id;
                         boolean open = jo.has("status") && "open".equals(jo.get("status").getAsString());
+                        String icon = jo.has("icon") ? jo.get("icon").getAsString() : "";
 
-                        metadataList.add(new ChapterMetadata(id, title, open));
+                        metadataList.add(new ChapterMetadata(id, title, open, icon));
                     } catch (Exception e) {
                         System.err.println("[ArsMelima] Failed to load chapter metadata " + rl + " : " + e.getMessage());
                     }

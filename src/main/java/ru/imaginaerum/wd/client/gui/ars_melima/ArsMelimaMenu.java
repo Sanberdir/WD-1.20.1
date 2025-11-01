@@ -225,8 +225,8 @@ public class ArsMelimaMenu {
     public void openDynamicChapter(String id, List<ChapterElement> elements) {
         if (id == null || elements == null || elements.isEmpty()) return;
 
-        // Создаём временную главу с флагом open=true
-        dynamicChapter = new Chapter(id, id, elements, true);
+        // Создаём временную главу с флагом open=true и без иконки
+        dynamicChapter = new Chapter(id, id, elements, true, null);
 
         // Устанавливаем currentIndex в специальное значение для динамической главы
         this.currentIndex = PROGRESSION_INDEX - 1; // любое уникальное отрицательное значение, отличное от PROGRESSION_INDEX

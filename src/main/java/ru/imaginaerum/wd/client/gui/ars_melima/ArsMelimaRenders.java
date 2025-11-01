@@ -1,11 +1,17 @@
 package ru.imaginaerum.wd.client.gui.ars_melima;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Font;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.Registry;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ArsMelimaDraws;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.Column;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.RenderUnit;
@@ -21,6 +27,9 @@ public class ArsMelimaRenders {
     private static final int CLOSED_STRIP_HEIGHT = 18;
     private static final int LINE_SPACING = 3;
     public static final int TOTAL_STRIP_HEIGHT = OPEN_STRIP_HEIGHT + LINE_SPACING;
+
+    private static final int ITEM_ICON_SIZE = 16; // стандартный размер иконки предмета
+    private static final int ITEM_ICON_LEFT_GAP = 4; // отступ от левой границы контента
 
     // ─────────────────────────────────────────────
     // Рендер списка глав (одной колонки)
@@ -46,9 +55,12 @@ public class ArsMelimaRenders {
 
             renderChapterStrip(graphics, contentLeft, renderY, contentWidth, stripHeight, chapter.isOpen(), hover);
 
+            // --- отрисовка иконки предмета слева по центру по Y (если задана)
+            drawChapterIconIfPresent(graphics, chapter, contentLeft, renderY, stripHeight);
+
             if (chapter.isOpen()) {
                 int textY = renderY + (stripHeight - 8) / 2;
-                int textX = x + 24;
+                int textX = x + 24; // смещение текста вправо, чтобы не пересекаться с иконкой
                 String title = chapter.getTitle();
                 int baseColor = hover ? 0xFFE2A65D : 0xFF5D4037;
 
@@ -296,5 +308,34 @@ public class ArsMelimaRenders {
 
     private static boolean isPointInRect(int rx, int ry, int rw, int rh, int px, int py) {
         return px >= rx && py >= ry && px < rx + rw && py < ry + rh;
+    }
+
+    // -------------------------------------------------
+    // Вспомогательная логика: рендер иконки предмета
+    // -------------------------------------------------
+    private static void drawChapterIconIfPresent(GuiGraphics graphics, Chapter chapter, int contentLeft, int renderY, int stripHeight) {
+        if (chapter == null) return;
+        String iconRes = chapter.getIcon();
+        if (iconRes == null || iconRes.isEmpty()) return;
+
+        try {
+            ResourceLocation itemRL = new ResourceLocation(iconRes);
+            Item item = BuiltInRegistries.ITEM.getOptional(itemRL).orElse(Items.AIR);
+            if (item == Items.AIR) return;
+
+            ItemStack stack = new ItemStack(item, 1);
+
+            int iconX = contentLeft + CONTENT_PADDING + ITEM_ICON_LEFT_GAP - 5;
+            int iconY = renderY + (stripHeight - ITEM_ICON_SIZE) / 2;
+
+            // Рисуем иконку предмета через GuiGraphics (правильный путь в 1.20+)
+            graphics.renderItem(stack, iconX, iconY);
+
+            // Если нужно отрисовать количество/декорации (число, зачарование), использовать:
+            // graphics.renderItemDecorations(Minecraft.getInstance().font, stack, iconX, iconY);
+
+        } catch (Exception e) {
+            // молча пропускаем, чтобы GUI не крашнулся
+        }
     }
 }
