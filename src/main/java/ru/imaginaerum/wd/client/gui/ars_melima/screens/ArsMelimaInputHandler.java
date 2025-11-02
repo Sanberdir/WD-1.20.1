@@ -44,6 +44,10 @@ public class ArsMelimaInputHandler {
             if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
             if (handlePageArrowClick(mx, my, button, guiLeft, guiTop, uiManager::getCurrentTextPage,
                     uiManager::setCurrentTextPage, Integer.MAX_VALUE)) return true;
+        } else if (menu.isTasksOpen()) {
+            if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, menu, uiManager)) return true;
+            // Задачи не требуют пагинации, просто отображаем список
+            return false; // или добавьте обработку кликов по задачам если нужно
         } else {
             if (handlePageArrowClick(mx, my, button, guiLeft, guiTop, uiManager::getCurrentChapterPage,
                     uiManager::setCurrentChapterPage, ArsMelimaRenders.computeChapterPageCount(menu.getChapters()))) return true;
@@ -175,20 +179,15 @@ public class ArsMelimaInputHandler {
     }
 
     private void openLearningChapter(LearningChapter lc, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
-        if (!lc.isUnlocked()) { playPageTurnSound(); return; }
-        int found = menu.getChapterIndexByNormalizedKey(lc.getId());
-        if (found >= 0) { menu.openChapter(found); uiManager.setCurrentTextPage(0); playPageTurnSound(); return; }
-
-        String id = lc.getId();
-        List<ChapterElement> content = ChapterLoader.loadChapterContent(id);
-        if ((content == null || content.isEmpty()) && id.contains(":")) {
-            String shortId = id.substring(id.indexOf(':') + 1);
-            List<ChapterElement> shortContent = ChapterLoader.loadChapterContent(shortId);
-            if (shortContent != null && !shortContent.isEmpty()) { id = shortId; content = shortContent; }
+        if (!lc.isUnlocked()) {
+            playPageTurnSound();
+            return;
         }
 
-        if (content != null && !content.isEmpty()) { menu.openDynamicChapter(id, content); uiManager.setCurrentTextPage(0); playPageTurnSound(); }
-        else { playPageTurnSound(); }
+        // Вместо поиска главы открываем задачи для этого learning chapter
+        menu.openTasks(lc.getId());
+        uiManager.setCurrentTaskPage(0); // если будет пагинация задач
+        playPageTurnSound();
     }
 
     private boolean handleChapterListClick(int mx, int my, int button, int guiLeft, int guiTop,
@@ -233,16 +232,21 @@ public class ArsMelimaInputHandler {
     private boolean handleBackArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
                                          ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
         if (button == 0 && isPointInRect(guiLeft + 140, guiTop + 184, 15, 15, mx, my)) {
-            if (menu.isProgressionOpen()) menu.closeProgression();
-            else if (menu.isLearningChaptersOpen()) menu.closeLearningChapters();
-            else menu.closeChapter();
+            if (menu.isProgressionOpen()) {
+                menu.closeProgression();
+            } else if (menu.isTasksOpen()) {
+                menu.closeTasks(); // ДОБАВЛЕНО: закрываем задачи
+            } else if (menu.isLearningChaptersOpen()) {
+                menu.closeLearningChapters();
+            } else {
+                menu.closeChapter();
+            }
             uiManager.setCurrentTextPage(0);
             playPageTurnSound();
             return true;
         }
         return false;
     }
-
     private int computeLearningPageCount(List<LearningChapter> list) {
         return (list == null || list.isEmpty()) ? 1 : (list.size() + CHAPTERS_PER_PAGE - 1) / CHAPTERS_PER_PAGE;
     }

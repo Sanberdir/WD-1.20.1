@@ -82,42 +82,45 @@ public class FireRod extends Block implements IPlantable {
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
-        BlockState blockBelow = world.getBlockState(pos.below());
+        BlockPos belowPos = pos.below();
+        BlockState blockBelow = world.getBlockState(belowPos);
 
-        // Проверка поддержки растений блоком снизу (может вызвать NPE!)
-        if (blockBelow.canSustainPlant(world, pos.below(), Direction.UP, this)) {
-            return true;
-        }
-
-        // Если блок ниже такой же
+        // Растение может стоять на себе
         if (blockBelow.is(this)) {
             return true;
         }
 
-        // Проверка специальных блоков
-        if (blockBelow.is(BlockTags.NYLIUM) || blockBelow.is(Blocks.NETHERRACK) ||
-                blockBelow.is(Blocks.GRAVEL) || blockBelow.is(Blocks.BASALT) ||
-                blockBelow.is(Blocks.BLACKSTONE) || blockBelow.is(Blocks.STONE) ||
-                blockBelow.is(Blocks.COBBLESTONE) || blockBelow.is(Blocks.ANDESITE) ||
-                blockBelow.is(Blocks.DIORITE) || blockBelow.is(Blocks.GRANITE) ||
-                blockBelow.is(Blocks.DEEPSLATE) || blockBelow.is(Blocks.TUFF) ||
-                blockBelow.is(Blocks.CALCITE) || blockBelow.is(Blocks.BLACKSTONE) ||
-                blockBelow.is(Blocks.BASALT) || blockBelow.is(Blocks.SMOOTH_BASALT)) {
+        // Проверка — подходит ли блок под основание
+        boolean validBase =
+                blockBelow.is(Blocks.NETHERRACK) ||
+                        blockBelow.is(Blocks.BASALT) ||
+                        blockBelow.is(Blocks.BLACKSTONE) ||
+                        blockBelow.is(Blocks.MAGMA_BLOCK) ||
+                        blockBelow.is(Blocks.CRIMSON_NYLIUM) ||
+                        blockBelow.is(Blocks.WARPED_NYLIUM) ||
+                        blockBelow.is(Blocks.SOUL_SOIL) ||
+                        blockBelow.is(Blocks.SOUL_SAND);
 
-            BlockPos belowPos = pos.below();
+        if (!validBase) {
+            return false;
+        }
 
-            // Проверка наличия лавы по соседству
-            for (Direction direction : Direction.Plane.HORIZONTAL) {
-                FluidState neighborFluid = world.getFluidState(belowPos.relative(direction));
-                if (neighborFluid.is(Fluids.LAVA) || neighborFluid.is(Fluids.FLOWING_LAVA)) {
-                    return true;
-                }
+        // Если это магма — разрешаем всегда
+        if (blockBelow.is(Blocks.MAGMA_BLOCK)) {
+            return true;
+        }
+
+        // Для всех остальных блоков — нужна лава по соседству
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            FluidState neighborFluid = world.getFluidState(belowPos.relative(direction));
+            if (neighborFluid.is(Fluids.LAVA) || neighborFluid.is(Fluids.FLOWING_LAVA)) {
+                return true;
             }
         }
 
-        // Магма-блок всегда поддерживает
-        return blockBelow.is(Blocks.MAGMA_BLOCK);
+        return false;
     }
+
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

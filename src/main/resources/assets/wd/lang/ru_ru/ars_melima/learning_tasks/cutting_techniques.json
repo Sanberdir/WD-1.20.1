@@ -1,0 +1,11 @@
+{
+  "learning_chapter": "cutting_techniques",
+  "tasks": [
+    {
+      "id": "bread_3",
+      "item": "minecraft:bread",
+      "count": 3,
+      "recipe_type": "crafting"
+    }
+  ]
+}

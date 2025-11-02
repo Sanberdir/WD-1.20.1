@@ -1,6 +1,10 @@
 package ru.imaginaerum.wd.common.events;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -23,9 +27,9 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.registries.ForgeRegistries;
 import ru.imaginaerum.wd.WD;
-import ru.imaginaerum.wd.client.gui.ars_melima.NetworkCookingXp;
-import ru.imaginaerum.wd.client.gui.ars_melima.SyncCookingXpPacket;
+import ru.imaginaerum.wd.client.gui.ars_melima.*;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.CookingXPManager;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ProgressionServerLoader;
@@ -36,6 +40,8 @@ import ru.imaginaerum.wd.common.blocks.custom.*;
 import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.MagicSoilFarmlandData;
 import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.PepperRegistry;
 import ru.imaginaerum.wd.common.items.ItemsWD;
+
+import java.util.*;
 
 @Mod.EventBusSubscriber(modid = WD.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEventBusEvents {
@@ -139,7 +145,50 @@ public class ForgeEventBusEvents {
             }
         }
     }
+    // В класс ForgeEventBusEvents добавить:
+    @SubscribeEvent
+    public static void onPlayerLoginTasks(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
 
+        // Принудительно загружаем задачи для нужной главы
+        String chapterId = "cutting_techniques";
+        List<Task> tasks = TaskManager.getTasksForChapter(serverPlayer.getServer(), chapterId);
+        System.out.println("[ArsMelima] Preloaded " + tasks.size() + " tasks for chapter: " + chapterId);
+
+        // Синхронизируем прогресс
+        syncAllTaskProgress(serverPlayer);
+    }
+
+    private static void syncAllTaskProgress(ServerPlayer player) {
+        Map<String, Map<String, Integer>> allProgress = new HashMap<>();
+
+        // Собираем прогресс по всем главам и задачам
+        MinecraftServer server = player.getServer();
+        if (server != null) {
+            for (String chapterId : TaskManager.getLoadedChapterIds()) {
+                List<Task> tasks = TaskManager.getTasksForChapter(server, chapterId);
+                Map<String, Integer> chapterProgress = new HashMap<>();
+
+                for (Task task : tasks) {
+                    // Используем новую схему хранения с chapterId
+                    int progress = ServerTaskStorage.getProgress(player, chapterId, task.getId());
+                    chapterProgress.put(task.getId(), progress);
+                }
+
+                if (!chapterProgress.isEmpty()) {
+                    allProgress.put(chapterId, chapterProgress);
+                }
+            }
+        }
+
+        // Отправляем на клиент
+        NetworkCookingXp.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new SyncAllTaskProgressPacket(allProgress)
+        );
+
+        System.out.println("[ArsMelima] Synced all task progress to player: " + allProgress.size() + " chapters");
+    }
     private static void upgradeStagePepper(ServerLevel level) {
         PepperRegistry data = PepperRegistry.get(level);
         var iterator = data.getPepperBlocks().iterator();
@@ -201,7 +250,87 @@ public class ForgeEventBusEvents {
             CookingXPManager.addXp(player, totalXp);
         }
     }
+    @SubscribeEvent
+    public static void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            ItemStack result = event.getCrafting();
+            if (!result.isEmpty()) {
+                handleCrafting(serverPlayer, result, result.getCount(), "crafting");
+            }
+        }
+    }
 
+    @SubscribeEvent
+    public static void onItemSmelted(PlayerEvent.ItemSmeltedEvent event) {
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            ItemStack result = event.getSmelting();
+            if (!result.isEmpty()) {
+                handleCrafting(serverPlayer, result, result.getCount(), "smelting");
+            }
+        }
+    }
+
+    // В методе handleCrafting в ForgeEventBusEvents исправить:
+    private static void handleCrafting(ServerPlayer player, ItemStack result, int count, String recipeType) {
+        String itemId = ForgeRegistries.ITEMS.getKey(result.getItem()).toString();
+        List<Task> tasks = TaskManager.getTasksByItem(itemId);
+
+        for (Task task : tasks) {
+            if (task.getRecipeType().equals(recipeType)) {
+                String learningChapterId = findLearningChapterForTask(task, player.getServer());
+
+                if (learningChapterId != null) {
+                    int currentProgress = ServerTaskStorage.getProgress(player, learningChapterId, task.getId());
+                    int requiredCount = task.getRequiredCount();
+
+                    // Если задача уже выполнена - пропускаем
+                    if (currentProgress >= requiredCount) {
+                        continue;
+                    }
+
+                    // Вычисляем сколько можно добавить
+                    int maxPossibleIncrement = requiredCount - currentProgress;
+                    int actualIncrement = Math.min(count, maxPossibleIncrement);
+
+                    if (actualIncrement > 0) {
+                        int newProgress = ServerTaskStorage.incrementProgress(
+                                player, learningChapterId, task.getId(), actualIncrement
+                        );
+
+                        syncProgressToClient(player, task, newProgress, learningChapterId);
+
+                        System.out.println("[ArsMelima] Task progress updated: " + learningChapterId + "/" + task.getId() +
+                                " +" + actualIncrement + " = " + newProgress + "/" + requiredCount);
+
+                        if (newProgress >= requiredCount) {
+                            System.out.println("[ArsMelima] TASK COMPLETED: " + learningChapterId + "/" + task.getId());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void syncProgressToClient(ServerPlayer player, Task task, int progress, String learningChapterId) {
+        NetworkCookingXp.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new SyncTaskProgressPacket(learningChapterId, task.getId(), progress)
+        );
+    }
+
+    private static String findLearningChapterForTask(Task task, MinecraftServer server) {
+        if (server == null) return null;
+
+        for (String chapterId : TaskManager.getLoadedChapterIds()) {
+            List<Task> chapterTasks = TaskManager.getTasksForChapter(server, chapterId);
+            for (Task t : chapterTasks) {
+                if (t.getId().equals(task.getId())) {
+                    return chapterId;
+                }
+            }
+        }
+        return null;
+    }
     @SubscribeEvent
     public static void onItemCraftingXpCooking(PlayerEvent.ItemCraftedEvent event) {
         Player player = event.getEntity();

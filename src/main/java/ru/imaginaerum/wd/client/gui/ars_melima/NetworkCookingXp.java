@@ -34,5 +34,25 @@ public class NetworkCookingXp {
                 RequestUnlockProgressPacket::encode,
                 RequestUnlockProgressPacket::decode,
                 RequestUnlockProgressPacket::handle);
+
+        // === ДОБАВЛЯЕМ ПАКЕТЫ ДЛЯ СИСТЕМЫ ЗАДАЧ ===
+
+        // Server → Client: синхронизация прогресса одной задачи
+        CHANNEL.registerMessage(id++, SyncTaskProgressPacket.class,
+                SyncTaskProgressPacket::encode,
+                SyncTaskProgressPacket::decode,
+                SyncTaskProgressPacket::handle);
+
+        // Server → Client: синхронизация всего прогресса задач при входе
+        CHANNEL.registerMessage(id++, SyncAllTaskProgressPacket.class,
+                SyncAllTaskProgressPacket::encode,
+                SyncAllTaskProgressPacket::decode,
+                SyncAllTaskProgressPacket::handle);
+
+        // Можно также добавить пакет для запроса обновления прогресса с клиента на сервер, если нужно
+        // CHANNEL.registerMessage(id++, RequestTaskUpdatePacket.class,
+        //         RequestTaskUpdatePacket::encode,
+        //         RequestTaskUpdatePacket::decode,
+        //         RequestTaskUpdatePacket::handle);
     }
 }

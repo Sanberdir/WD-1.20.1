@@ -28,6 +28,54 @@ public class ArsMelimaMenu {
 
     public ArsMelimaMenu() { }
 
+    // В ArsMelimaMenu добавить:
+    public static final int TASKS_INDEX = -4; // новое состояние для списка задач
+
+    private final Map<String, List<Task>> tasksCache = new HashMap<>();
+    private String currentTaskChapterId = null;
+
+    public void openTasks(String learningChapterId) {
+        this.currentTaskChapterId = learningChapterId;
+        this.currentIndex = TASKS_INDEX;
+    }
+
+    public void closeTasks() {
+        this.currentTaskChapterId = null;
+        this.currentIndex = LEARNING_CHAPTERS_INDEX; // возврат к learning chapters
+    }
+
+    public boolean isTasksOpen() {
+        return this.currentIndex == TASKS_INDEX;
+    }
+
+    public String getCurrentTaskChapterId() {
+        return currentTaskChapterId;
+    }
+
+    public List<Task> getCurrentTasks() {
+        if (currentTaskChapterId != null) {
+            return getTasks(currentTaskChapterId);
+        }
+        return Collections.emptyList();
+    }
+
+    public List<Task> getTasks(String learningChapterId) {
+        List<Task> tasks = tasksCache.computeIfAbsent(learningChapterId, id -> {
+            List<Task> loadedTasks = TaskLoader.loadTasks(id);
+            System.out.println("[ArsMelima] Loaded " + loadedTasks.size() + " tasks for chapter: " + id);
+            for (Task task : loadedTasks) {
+                System.out.println("  - " + task.getId() + ": " + task.getItemId() + " x" + task.getRequiredCount());
+            }
+            return loadedTasks;
+        });
+        return tasks;
+    }
+
+    public void clearTasksCache() {
+        tasksCache.clear();
+    }
+
+
     public List<LearningChapter> getLearningChapters(String chapterId) {
         return learningChaptersCache.computeIfAbsent(chapterId,
                 id -> LearningChapterLoader.loadLearningChapters(id));

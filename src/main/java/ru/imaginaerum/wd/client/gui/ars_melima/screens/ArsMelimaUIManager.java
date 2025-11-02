@@ -3,6 +3,7 @@ package ru.imaginaerum.wd.client.gui.ars_melima.screens;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import ru.imaginaerum.wd.client.gui.ars_melima.*;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
@@ -26,6 +27,14 @@ public class ArsMelimaUIManager {
     private int currentProgressPage = 0;
     private int currentLearningPage = 0; // НОВОЕ: страница для learning chapters
 
+    private int currentTaskPage = 0; // ДОБАВИТЬ: страница для задач
+    public void setCurrentTaskPage(int page) {
+        this.currentTaskPage = page;
+    }
+
+    public int getCurrentTaskPage() {
+        return currentTaskPage;
+    }
     private final NodePositionsStore nodePositionsStore = new NodePositionsStore();
     private ProgressNode currentProgressNode = null;
 
@@ -113,7 +122,10 @@ public class ArsMelimaUIManager {
             ProgressTreeRenderer.renderProgressTree(this, graphics, mouseX, mouseY, menu, font);
             return;
         }
-
+        if (menu.isTasksOpen()) {
+            renderTasks(graphics, mouseX, mouseY, menu, font);
+            return;
+        }
         if (menu.isLearningChaptersOpen()) {
             // НОВОЕ: рендерим learning chapters
             renderLearningChapters(graphics, mouseX, mouseY, menu, font);
@@ -132,7 +144,72 @@ public class ArsMelimaUIManager {
                     font, 0.85f, ArsMelimaConstants.TEXTURE);
         }
     }
+    private void renderTasks(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
+        int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
+        int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
+        int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
+        int contentHeight = ArsMelimaConstants.CONTENT_Y2 - ArsMelimaConstants.CONTENT_Y1;
 
+        List<Task> tasks = menu.getCurrentTasks();
+        String chapterId = menu.getCurrentTaskChapterId();
+
+        int y = contentTop + CONTENT_PADDING;
+
+        for (Task task : tasks) {
+            renderTaskStrip(graphics, task, chapterId, contentLeft, y, contentWidth, font);
+            y += TOTAL_STRIP_HEIGHT;
+
+            // Если не помещается - прерываем
+            if (y + TOTAL_STRIP_HEIGHT > contentTop + contentHeight) break;
+        }
+    }
+
+    private void renderTaskStrip(GuiGraphics graphics, Task task, String chapterId,
+                                 int x, int y, int width, Font font) {
+        // Получаем прогресс
+        int progress = ClientTaskData.getTaskProgress(chapterId, task.getId());
+        int required = task.getRequiredCount();
+
+        // Ограничиваем отображаемый прогресс
+        int displayProgress = Math.min(progress, required);
+        boolean completed = displayProgress >= required;
+
+        // Рисуем фон полоски
+        ArsMelimaRenders.renderChapterStrip(graphics, x, y, width, OPEN_STRIP_HEIGHT, true, false);
+
+        // Рисуем иконку предмета
+        drawTaskItemIcon(graphics, task, x + CONTENT_PADDING, y + (OPEN_STRIP_HEIGHT - 16) / 2);
+
+        // Текст задачи
+        int textY = y + (OPEN_STRIP_HEIGHT - 8) / 2;
+        int textX = x + CONTENT_PADDING + 24;
+
+        String itemName = getItemDisplayName(task.getItem());
+        String progressText = displayProgress + "/" + required; // Используем ограниченное значение
+
+        // Цвет текста: серый если выполнено, обычный если нет
+        int textColor = completed ? 0xFF888888 : 0xFF5D4037;
+        int progressColor = completed ? 0xFF666666 : 0xFF8B4513;
+
+        // Название предмета
+        graphics.drawString(font, itemName, textX, textY, textColor, false);
+
+        // Прогресс справа
+        int progressWidth = font.width(progressText);
+        graphics.drawString(font, progressText, x + width - CONTENT_PADDING - progressWidth, textY, progressColor, false);
+    }
+
+    private void drawTaskItemIcon(GuiGraphics graphics, Task task, int x, int y) {
+        Item item = task.getItem();
+        if (item != null) {
+            graphics.renderItem(new ItemStack(item), x, y);
+        }
+    }
+
+    private String getItemDisplayName(Item item) {
+        if (item == null) return "Unknown Item";
+        return new ItemStack(item).getHoverName().getString();
+    }
     // НОВЫЙ МЕТОД: рендеринг learning chapters
     // НОВЫЙ МЕТОД: рендеринг learning chapters как обычных глав
     private void renderLearningChapters(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {

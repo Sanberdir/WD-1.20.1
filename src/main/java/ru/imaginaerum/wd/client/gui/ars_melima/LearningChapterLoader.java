@@ -60,7 +60,7 @@ public class LearningChapterLoader {
     }
 
     // Используем тот же метод getLanguageCandidates() что и в ChapterLoader
-    private static List<String> getLanguageCandidates() {
+    public static List<String> getLanguageCandidates() {
         List<String> langs = new ArrayList<>();
         try {
             Object sel = null;
