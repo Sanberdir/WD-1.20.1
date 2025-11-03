@@ -180,23 +180,34 @@ public class ArsMelimaUIManager {
         // Рисуем иконку предмета
         drawTaskItemIcon(graphics, task, x + CONTENT_PADDING, y + (OPEN_STRIP_HEIGHT - 16) / 2);
 
-        // Текст задачи
-        int textY = y + (OPEN_STRIP_HEIGHT - 8) / 2;
+        // Текст задачи - уменьшаем шрифт в 2 раза
+        int textY = y + (OPEN_STRIP_HEIGHT - 4) / 2; // Уменьшаем высоту текста
         int textX = x + CONTENT_PADDING + 24;
 
         String itemName = getItemDisplayName(task.getItem());
-        String progressText = displayProgress + "/" + required; // Используем ограниченное значение
+        String progressText = displayProgress + "/" + required;
 
         // Цвет текста: серый если выполнено, обычный если нет
         int textColor = completed ? 0xFF888888 : 0xFF5D4037;
         int progressColor = completed ? 0xFF666666 : 0xFF8B4513;
 
-        // Название предмета
-        graphics.drawString(font, itemName, textX, textY, textColor, false);
+        // Сохраняем текущую позцию и масштабируем
+        graphics.pose().pushPose();
+        graphics.pose().translate(textX, textY, 0);
+        graphics.pose().scale(0.7f, 0.7f, 1.0f); // Уменьшаем в 2 раза
 
-        // Прогресс справа
-        int progressWidth = font.width(progressText);
-        graphics.drawString(font, progressText, x + width - CONTENT_PADDING - progressWidth, textY, progressColor, false);
+        // Название предмета
+        graphics.drawString(font, itemName, 0, 0, textColor, false);
+        graphics.pose().popPose();
+
+        // Прогресс справа - также уменьшаем
+        graphics.pose().pushPose();
+        int progressWidth = (int)(font.width(progressText) * 0.5f);
+        int progressX = x + width - CONTENT_PADDING - progressWidth;
+        graphics.pose().translate(progressX, textY, 0);
+        graphics.pose().scale(0.5f, 0.5f, 1.0f);
+        graphics.drawString(font, progressText, 0, 0, progressColor, false);
+        graphics.pose().popPose();
     }
 
     private void drawTaskItemIcon(GuiGraphics graphics, Task task, int x, int y) {

@@ -1,12 +1,10 @@
 package ru.imaginaerum.wd.client.gui.ars_melima;
 
-
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.*;
-
 
 public class TaskManager {
     // chapterId -> tasks
@@ -16,25 +14,111 @@ public class TaskManager {
 
     public static synchronized List<Task> getTasksForChapter(MinecraftServer server, String chapterId) {
         if (chapterId == null || chapterId.isEmpty()) return Collections.emptyList();
+
+        System.out.println("[ArsMelima] TaskManager.getTasksForChapter: " + chapterId);
+        System.out.println("[ArsMelima] Cached chapters: " + chapterTasks.keySet());
+
         if (chapterTasks.containsKey(chapterId)) {
-            System.out.println("[ArsMelima] Returning cached tasks for chapter: " + chapterId + " (" + chapterTasks.get(chapterId).size() + " tasks)");
-            return chapterTasks.get(chapterId);
+            List<Task> cachedTasks = chapterTasks.get(chapterId);
+            System.out.println("[ArsMelima] Returning CACHED tasks for chapter: " + chapterId + " (" + cachedTasks.size() + " tasks)");
+
+            // Детальная информация о кэшированных задачах
+            for (Task task : cachedTasks) {
+                System.out.println("[ArsMelima] Cached task: " + task.getId() + " types: " + task.getRecipeTypes());
+            }
+            return cachedTasks;
         }
 
+        System.out.println("[ArsMelima] No cache found, loading tasks for chapter: " + chapterId);
         ResourceManager manager = server.getResourceManager();
         List<Task> tasks = ServerTaskLoader.loadTasks(manager, chapterId);
+
+        // ОЧИСТКА СТАРОГО КЭША перед обновлением
+        clearChapterCache(chapterId);
+
         chapterTasks.put(chapterId, tasks);
 
-        // ДОБАВИТЬ ОТЛАДОЧНЫЙ ВЫВОД ДЛЯ ИНДЕКСАЦИИ
+        // Обновляем индекс
         System.out.println("[ArsMelima] Indexing " + tasks.size() + " tasks for chapter: " + chapterId);
         for (Task t : tasks) {
             String itemKey = t.getItemId().toLowerCase(Locale.ROOT);
             itemIndex.computeIfAbsent(itemKey, k -> new ArrayList<>()).add(t);
-            System.out.println("[ArsMelima]   Indexed task '" + t.getId() + "' for item: " + itemKey);
+            System.out.println("[ArsMelima]   Indexed task '" + t.getId() + "' for item: " + itemKey + " types: " + t.getRecipeTypes());
         }
 
         return tasks;
     }
+
+    public static synchronized List<Task> getTasksByItem(String itemId) {
+        if (itemId == null) {
+            System.out.println("[ArsMelima] WARNING: getTasksByItem called with null itemId");
+            return Collections.emptyList();
+        }
+
+        String itemKey = itemId.toLowerCase(Locale.ROOT);
+        List<Task> tasks = itemIndex.getOrDefault(itemKey, Collections.emptyList());
+
+        System.out.println("[ArsMelima] TaskManager.getTasksByItem '" + itemKey + "' -> " + tasks.size() + " tasks");
+        System.out.println("[ArsMelima] Available items in index: " + itemIndex.keySet());
+
+        for (Task task : tasks) {
+            System.out.println("[ArsMelima] Found task: " + task.getId() + " types: " + task.getRecipeTypes());
+        }
+
+        return tasks;
+    }
+
+    /**
+     * Очистка кэша для конкретной главы
+     */
+    public static synchronized void clearChapterCache(String chapterId) {
+        if (chapterId == null) return;
+
+        System.out.println("[ArsMelima] Clearing cache for chapter: " + chapterId);
+
+        // Удаляем из chapterTasks
+        List<Task> removedTasks = chapterTasks.remove(chapterId);
+        if (removedTasks != null) {
+            System.out.println("[ArsMelima] Removed " + removedTasks.size() + " tasks from chapter cache");
+        }
+
+        // Перестраиваем itemIndex
+        itemIndex.clear();
+        for (Map.Entry<String, List<Task>> entry : chapterTasks.entrySet()) {
+            for (Task task : entry.getValue()) {
+                String itemKey = task.getItemId().toLowerCase(Locale.ROOT);
+                itemIndex.computeIfAbsent(itemKey, k -> new ArrayList<>()).add(task);
+            }
+        }
+
+        System.out.println("[ArsMelima] Cache cleared. Now " + chapterTasks.size() + " chapters and " + itemIndex.size() + " items in index");
+    }
+
+    /**
+     * Принудительное обновление задач для главы
+     */
+    public static synchronized void reloadTasksForChapter(MinecraftServer server, String chapterId) {
+        System.out.println("[ArsMelima] 🔄 FORCED RELOAD of tasks for chapter: " + chapterId);
+        clearChapterCache(chapterId);
+        getTasksForChapter(server, chapterId); // Это перезагрузит задачи
+    }
+
+    public static synchronized void registerChapterTasks(String chapterId, List<Task> tasks) {
+        if (chapterId == null || tasks == null) return;
+
+        System.out.println("[ArsMelima] Manually registering " + tasks.size() + " tasks for chapter: " + chapterId);
+
+        // Очищаем старый кэш
+        clearChapterCache(chapterId);
+
+        chapterTasks.put(chapterId, tasks);
+        for (Task t : tasks) {
+            String itemKey = t.getItemId().toLowerCase(Locale.ROOT);
+            itemIndex.computeIfAbsent(itemKey, k -> new ArrayList<>()).add(t);
+            System.out.println("[ArsMelima]   Registered task: " + t.getId() + " types: " + t.getRecipeTypes());
+        }
+    }
+
     public static synchronized Set<String> getLoadedChapterIds() {
         return new HashSet<>(chapterTasks.keySet());
     }
@@ -46,38 +130,9 @@ public class TaskManager {
         }
         return allTasks;
     }
-    public static synchronized List<Task> getTasksByItem(String itemId) {
-        if (itemId == null) return Collections.emptyList();
-        String itemKey = itemId.toLowerCase(Locale.ROOT);
-        List<Task> tasks = itemIndex.getOrDefault(itemKey, Collections.emptyList());
-        System.out.println("[ArsMelima] Found " + tasks.size() + " tasks for item: " + itemKey);
-        System.out.println("[ArsMelima] Available items in index: " + itemIndex.keySet());
-        return tasks;
-    }
-    public static synchronized void registerChapterTasks(String chapterId, List<Task> tasks) {
-        if (chapterId == null || tasks == null) return;
-        chapterTasks.put(chapterId, tasks);
-        for (Task t : tasks) {
-            itemIndex.computeIfAbsent(t.getItemId().toLowerCase(java.util.Locale.ROOT), k -> new ArrayList<>()).add(t);
-        }
-    }
 
-    // -----------------------
-    // Compatibility helpers
-    // -----------------------
-
-    /**
-     * Совместимая версия, используемая в старом коде: TaskManager.getTasksForPlayer(serverPlayer)
-     * Возвращает уникальный список всех задач, известных серверу (объединённый индекс).
-     * Подойдёт для обхода/поиска задач в обработчиках событий.
-     */
+    // Совместимый метод для старого кода
     public static synchronized List<Task> getTasksForPlayer(ServerPlayer player) {
-        if (player == null) return Collections.emptyList();
-        // Собираем все уникальные задачи из itemIndex
-        Set<Task> set = new LinkedHashSet<>();
-        for (List<Task> lst : itemIndex.values()) {
-            set.addAll(lst);
-        }
-        return new ArrayList<>(set);
+        return getAllTasks();
     }
 }

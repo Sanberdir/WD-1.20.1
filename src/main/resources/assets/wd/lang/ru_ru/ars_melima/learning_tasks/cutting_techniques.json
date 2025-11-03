@@ -3,9 +3,15 @@
   "tasks": [
     {
       "id": "bread_3",
+      "item": "wd:cocked_horse",
+      "count": 3,
+      "recipe_types": ["crafting", "smelting", "campfire_cooking", "smoking", "stonecutting"]
+    },
+    {
+      "id": "bread_2",
       "item": "minecraft:bread",
       "count": 3,
-      "recipe_type": "crafting"
+      "recipe_types": ["crafting", "smelting", "campfire_cooking", "smoking", "stonecutting"]
     }
   ]
 }

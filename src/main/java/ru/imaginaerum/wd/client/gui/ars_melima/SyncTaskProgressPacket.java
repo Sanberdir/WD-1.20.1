@@ -14,23 +14,27 @@ public class SyncTaskProgressPacket {
         this.learningChapterId = learningChapterId;
         this.taskId = taskId;
         this.progress = progress;
+        System.out.println("[ArsMelima] SyncTaskProgressPacket created: " + learningChapterId + "/" + taskId + " = " + progress);
     }
 
     public static void encode(SyncTaskProgressPacket packet, FriendlyByteBuf buffer) {
         buffer.writeUtf(packet.learningChapterId);
         buffer.writeUtf(packet.taskId);
         buffer.writeInt(packet.progress);
+        System.out.println("[ArsMelima] Encoding SyncTaskProgressPacket: " + packet.learningChapterId + "/" + packet.taskId + " = " + packet.progress);
     }
 
     public static SyncTaskProgressPacket decode(FriendlyByteBuf buffer) {
-        return new SyncTaskProgressPacket(
-                buffer.readUtf(),
-                buffer.readUtf(),
-                buffer.readInt()
-        );
+        String chapterId = buffer.readUtf();
+        String taskId = buffer.readUtf();
+        int progress = buffer.readInt();
+        System.out.println("[ArsMelima] Decoding SyncTaskProgressPacket: " + chapterId + "/" + taskId + " = " + progress);
+        return new SyncTaskProgressPacket(chapterId, taskId, progress);
     }
 
     public static void handle(SyncTaskProgressPacket packet, Supplier<NetworkEvent.Context> context) {
+        System.out.println("[ArsMelima] Handling SyncTaskProgressPacket on CLIENT: " + packet.learningChapterId + "/" + packet.taskId + " = " + packet.progress);
+
         context.get().enqueueWork(() -> {
             ClientTaskData.updateTaskProgress(packet.learningChapterId, packet.taskId, packet.progress);
         });

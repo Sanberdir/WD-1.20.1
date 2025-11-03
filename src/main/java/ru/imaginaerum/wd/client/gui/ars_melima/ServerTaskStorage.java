@@ -10,81 +10,164 @@ public class ServerTaskStorage {
         CompoundTag persistent = player.getPersistentData();
         if (!persistent.contains(ROOT_TAG)) {
             persistent.put(ROOT_TAG, new CompoundTag());
+            System.out.println("[ArsMelima] Created new root tag for player: " + player.getName().getString());
         }
         return persistent.getCompound(ROOT_TAG);
     }
 
-    // Оригинальные методы (chapterId + taskId)
+    /**
+     * Получение прогресса с указанием главы
+     */
     public static int getProgress(ServerPlayer player, String chapterId, String taskId) {
-        if (player == null || chapterId == null || taskId == null) return 0;
+        if (player == null || chapterId == null || taskId == null) {
+            System.out.println("[ArsMelima] ERROR: getProgress called with null parameters");
+            return 0;
+        }
+
         CompoundTag root = getRoot(player);
-        if (!root.contains(chapterId)) return 0;
-        CompoundTag ch = root.getCompound(chapterId);
-        return ch.getInt(taskId);
+
+        // Проверяем существование chapter
+        if (!root.contains(chapterId)) {
+            System.out.println("[ArsMelima] Chapter not found: " + chapterId + " for player: " + player.getName().getString());
+            System.out.println("[ArsMelima] Available chapters: " + root.getAllKeys());
+            return 0;
+        }
+
+        CompoundTag chapterTag = root.getCompound(chapterId);
+        int progress = chapterTag.getInt(taskId);
+
+        System.out.println("[ArsMelima] ServerTaskStorage READ: " + chapterId + "/" + taskId + " = " + progress);
+        return progress;
     }
 
+    /**
+     * Установка прогресса с указанием главы
+     */
     public static void setProgress(ServerPlayer player, String chapterId, String taskId, int value) {
-        if (player == null || chapterId == null || taskId == null) return;
+        if (player == null || chapterId == null || taskId == null) {
+            System.out.println("[ArsMelima] ERROR: setProgress called with null parameters");
+            return;
+        }
+
         CompoundTag root = getRoot(player);
-        CompoundTag ch = root.contains(chapterId) ? root.getCompound(chapterId) : new CompoundTag();
-        ch.putInt(taskId, value);
-        root.put(chapterId, ch);
+        CompoundTag chapterTag = root.contains(chapterId) ? root.getCompound(chapterId) : new CompoundTag();
+
+        int oldValue = chapterTag.getInt(taskId);
+        chapterTag.putInt(taskId, value);
+        root.put(chapterId, chapterTag);
+        player.getPersistentData().put(ROOT_TAG, root);
+
+        System.out.println("[ArsMelima] ServerTaskStorage WRITE: " + chapterId + "/" + taskId +
+                " " + oldValue + " -> " + value + " for player: " + player.getName().getString());
+
+        // Сохраняем изменения
         player.getPersistentData().put(ROOT_TAG, root);
     }
 
+    /**
+     * Увеличение прогресса с указанием главы
+     */
     public static int incrementProgress(ServerPlayer player, String chapterId, String taskId, int delta) {
+        if (player == null || chapterId == null || taskId == null) {
+            System.out.println("[ArsMelima] ERROR: incrementProgress called with null parameters");
+            return 0;
+        }
+
         int prev = getProgress(player, chapterId, taskId);
         int next = Math.max(0, prev + delta);
         setProgress(player, chapterId, taskId, next);
+
+        System.out.println("[ArsMelima] ServerTaskStorage INCREMENT: " + chapterId + "/" + taskId +
+                " " + prev + " + " + delta + " = " + next);
+
         return next;
     }
 
+    /**
+     * Получение ВСЕГО прогресса игрока (для синхронизации)
+     */
+    public static CompoundTag getAllProgress(ServerPlayer player) {
+        if (player == null) return new CompoundTag();
+
+        CompoundTag root = getRoot(player);
+        System.out.println("[ArsMelima] ServerTaskStorage getAllProgress: " + root.getAllKeys().size() + " chapters");
+
+        for (String chapterId : root.getAllKeys()) {
+            CompoundTag chapter = root.getCompound(chapterId);
+            System.out.println("[ArsMelima] Chapter " + chapterId + " has " + chapter.getAllKeys().size() + " tasks");
+            for (String taskId : chapter.getAllKeys()) {
+                System.out.println("[ArsMelima]   " + taskId + " = " + chapter.getInt(taskId));
+            }
+        }
+
+        return root.copy();
+    }
+
+    /**
+     * Инициализация прогресса для главы (если не существует)
+     */
+    public static void initializeChapter(ServerPlayer player, String chapterId) {
+        if (player == null || chapterId == null) return;
+
+        CompoundTag root = getRoot(player);
+        if (!root.contains(chapterId)) {
+            root.put(chapterId, new CompoundTag());
+            player.getPersistentData().put(ROOT_TAG, root);
+            System.out.println("[ArsMelima] Initialized chapter: " + chapterId + " for player: " + player.getName().getString());
+        }
+    }
+
     // -----------------------
-    // Compatibility overloads
+    // Совместимые методы (старая схема)
     // -----------------------
 
     /**
      * Совместимый getProgress(player, taskId)
-     * Сначала пытается взять плоский ключ root.getInt(taskId),
-     * затем ищет в каждой chapter-compound (если задача там хранится).
      */
     public static int getProgress(ServerPlayer player, String taskId) {
         if (player == null || taskId == null) return 0;
+
         CompoundTag root = getRoot(player);
 
         // 1) плоский ключ
         if (root.contains(taskId)) {
-            return root.getInt(taskId);
+            int progress = root.getInt(taskId);
+            System.out.println("[ArsMelima] Found flat progress: " + taskId + " = " + progress);
+            return progress;
         }
 
         // 2) поиск по всем chapter-ключам
-        for (String key : root.getAllKeys()) {
-            // пропускаем плоские int-ключи, ищем только compound'ы
-            if (!root.get(key).getClass().equals(CompoundTag.class)) continue;
-            CompoundTag ch = root.getCompound(key);
-            if (ch.contains(taskId)) return ch.getInt(taskId);
+        for (String chapterId : root.getAllKeys()) {
+            if (!root.get(chapterId).getClass().equals(CompoundTag.class)) continue;
+            CompoundTag ch = root.getCompound(chapterId);
+            if (ch.contains(taskId)) {
+                int progress = ch.getInt(taskId);
+                System.out.println("[ArsMelima] Found chapter progress: " + chapterId + "/" + taskId + " = " + progress);
+                return progress;
+            }
         }
 
+        System.out.println("[ArsMelima] No progress found for task: " + taskId);
         return 0;
     }
 
     /**
      * Совместимый setProgress(player, taskId, value)
-     * Если taskId уже есть внутри какого-то chapter-compound — обновляем там.
-     * Иначе — записываем как плоский ключ root.putInt(taskId, value).
      */
     public static void setProgress(ServerPlayer player, String taskId, int value) {
         if (player == null || taskId == null) return;
+
         CompoundTag root = getRoot(player);
 
         // 1) найти в каких-то chapter-compound — если найдено, обновить там
-        for (String key : root.getAllKeys()) {
-            if (!root.get(key).getClass().equals(CompoundTag.class)) continue;
-            CompoundTag ch = root.getCompound(key);
+        for (String chapterId : root.getAllKeys()) {
+            if (!root.get(chapterId).getClass().equals(CompoundTag.class)) continue;
+            CompoundTag ch = root.getCompound(chapterId);
             if (ch.contains(taskId)) {
                 ch.putInt(taskId, value);
-                root.put(key, ch);
+                root.put(chapterId, ch);
                 player.getPersistentData().put(ROOT_TAG, root);
+                System.out.println("[ArsMelima] Updated chapter progress: " + chapterId + "/" + taskId + " = " + value);
                 return;
             }
         }
@@ -92,6 +175,7 @@ public class ServerTaskStorage {
         // 2) иначе — плоская запись
         root.putInt(taskId, value);
         player.getPersistentData().put(ROOT_TAG, root);
+        System.out.println("[ArsMelima] Updated flat progress: " + taskId + " = " + value);
     }
 
     public static int incrementProgress(ServerPlayer player, String taskId, int delta) {
@@ -102,11 +186,12 @@ public class ServerTaskStorage {
     }
 
     /**
-     * Совместимый save — в простейшей реализации no-op,
-     * т.к. player.getPersistentData() автоматически сохраняется сервером.
-     * Оставлен для совместимости с кодом, который вызывает ServerTaskStorage.save(player).
+     * Принудительное сохранение
      */
     public static void save(ServerPlayer player) {
-        // intentionally empty — persistentData сохраняется сервером
+        if (player != null) {
+            // PersistentData автоматически сохраняется, но можно принудительно синхронизировать
+            System.out.println("[ArsMelima] ServerTaskStorage saved for player: " + player.getName().getString());
+        }
     }
 }
