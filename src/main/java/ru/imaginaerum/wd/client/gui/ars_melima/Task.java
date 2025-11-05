@@ -27,10 +27,6 @@ public class Task {
     public int getRequiredCount() { return requiredCount; }
     public List<String> getRecipeTypes() { return Collections.unmodifiableList(recipeTypes); }
 
-    // Для обратной совместимости
-    public String getRecipeType() {
-        return recipeTypes.isEmpty() ? "crafting" : recipeTypes.get(0);
-    }
 
     public Item getItem() {
         try {

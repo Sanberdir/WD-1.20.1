@@ -94,45 +94,9 @@ public class TaskManager {
         System.out.println("[ArsMelima] Cache cleared. Now " + chapterTasks.size() + " chapters and " + itemIndex.size() + " items in index");
     }
 
-    /**
-     * Принудительное обновление задач для главы
-     */
-    public static synchronized void reloadTasksForChapter(MinecraftServer server, String chapterId) {
-        System.out.println("[ArsMelima] 🔄 FORCED RELOAD of tasks for chapter: " + chapterId);
-        clearChapterCache(chapterId);
-        getTasksForChapter(server, chapterId); // Это перезагрузит задачи
-    }
-
-    public static synchronized void registerChapterTasks(String chapterId, List<Task> tasks) {
-        if (chapterId == null || tasks == null) return;
-
-        System.out.println("[ArsMelima] Manually registering " + tasks.size() + " tasks for chapter: " + chapterId);
-
-        // Очищаем старый кэш
-        clearChapterCache(chapterId);
-
-        chapterTasks.put(chapterId, tasks);
-        for (Task t : tasks) {
-            String itemKey = t.getItemId().toLowerCase(Locale.ROOT);
-            itemIndex.computeIfAbsent(itemKey, k -> new ArrayList<>()).add(t);
-            System.out.println("[ArsMelima]   Registered task: " + t.getId() + " types: " + t.getRecipeTypes());
-        }
-    }
-
     public static synchronized Set<String> getLoadedChapterIds() {
         return new HashSet<>(chapterTasks.keySet());
     }
 
-    public static synchronized List<Task> getAllTasks() {
-        List<Task> allTasks = new ArrayList<>();
-        for (List<Task> tasks : chapterTasks.values()) {
-            allTasks.addAll(tasks);
-        }
-        return allTasks;
-    }
 
-    // Совместимый метод для старого кода
-    public static synchronized List<Task> getTasksForPlayer(ServerPlayer player) {
-        return getAllTasks();
-    }
 }

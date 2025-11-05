@@ -1,10 +1,10 @@
 {
-  "learning_chapter": "cutting_techniques",
+  "learning_chapter": "cooking_methods",
   "tasks": [
     {
-      "id": "bread_2",
-      "item": "minecraft:bread",
-      "count": 3,
+      "id": "gold",
+      "item": "minecraft:golden_carrot",
+      "count": 4,
       "recipe_types": ["crafting", "smelting", "campfire_cooking", "smoking", "stonecutting"]
     }
   ]

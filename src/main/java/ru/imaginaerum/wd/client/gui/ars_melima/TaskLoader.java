@@ -324,20 +324,6 @@ public class TaskLoader {
         return type.trim().toLowerCase(Locale.ROOT).replace(" ", "_");
     }
 
-    /**
-     * Проверка валидности itemId
-     */
-    private static boolean isValidItemId(String itemId) {
-        if (itemId == null || itemId.isEmpty()) {
-            return false;
-        }
-        try {
-            String[] parts = itemId.split(":");
-            return parts.length == 2 && !parts[0].isEmpty() && !parts[1].isEmpty();
-        } catch (Exception e) {
-            return false;
-        }
-    }
 
     private static boolean matchesChapterId(String declared, String requested) {
         if (declared == null || requested == null) return false;
