@@ -125,7 +125,7 @@ public class ServerTaskLoader {
                             recipeTypes.add("crafting");
                         }
 
-                        Task task = new Task(id, itemId, count, recipeTypes);
+                        Task task = new Task(id, itemId, count, recipeTypes, learningChapterId);
                         tasks.add(task);
                         parsedTasks++;
                         foundValidTasks = true;
@@ -218,7 +218,7 @@ public class ServerTaskLoader {
                                     recipeTypes = Arrays.asList("crafting", "smelting", "campfire_cooking", "smoking", "stonecutting");
                                 }
 
-                                Task task = new Task(id, itemId, count, recipeTypes);
+                                Task task = new Task(id, itemId, count, recipeTypes, learningChapterId);
                                 tasks.add(task);
                                 System.out.println("[ArsMelima] ✅ Server loaded from base: " + id + " - " + itemId + " types: " + recipeTypes);
                             }
@@ -332,11 +332,22 @@ public class ServerTaskLoader {
     private static List<Task> createDebugTasks(String chapterId) {
         List<Task> debugTasks = new ArrayList<>();
 
-        debugTasks.add(new Task("bread_3", "minecraft:bread", 3,
-                Arrays.asList("crafting", "smelting", "campfire_cooking", "smoking", "stonecutting")));
+        // Добавляем задачу для golden_carrot в главу cooking_methods
+        if ("cooking_methods".equals(chapterId)) {
+            Task goldenCarrotTask = new Task(
+                    "gold",
+                    "minecraft:golden_carrot",
+                    5,
+                    Arrays.asList("crafting", "smelting"),
+                    chapterId
+            );
+            debugTasks.add(goldenCarrotTask);
+            System.out.println("[ArsMelima] 🛠️ Server created DEBUG task for golden_carrot in cooking_methods");
+        }
 
-        System.out.println("[ArsMelima] 🛠️ Server created DEBUG task: bread_3 with types: " + debugTasks.get(0).getRecipeTypes());
+        // Добавляем другие debug задачи по необходимости...
 
+        System.out.println("[ArsMelima] 🛠️ Server created " + debugTasks.size() + " DEBUG tasks for chapter: " + chapterId);
         return debugTasks;
     }
 }

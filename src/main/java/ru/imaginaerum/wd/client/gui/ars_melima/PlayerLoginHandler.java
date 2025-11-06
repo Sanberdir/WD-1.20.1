@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// В существующий класс или создать новый:
 public class PlayerLoginHandler {
 
     @SubscribeEvent
@@ -27,11 +26,15 @@ public class PlayerLoginHandler {
             Map<String, Integer> chapterProgress = new HashMap<>();
 
             for (Task task : tasks) {
-                int progress = ServerTaskStorage.getProgress(player, task.getId());
+                // ИСПРАВЛЕНИЕ: используем метод с указанием главы
+                int progress = ServerTaskStorage.getProgress(player, chapterId, task.getId());
                 chapterProgress.put(task.getId(), progress);
+                System.out.println("[ArsMelima] Sync progress: " + chapterId + "/" + task.getId() + " = " + progress);
             }
 
-            allProgress.put(chapterId, chapterProgress);
+            if (!chapterProgress.isEmpty()) {
+                allProgress.put(chapterId, chapterProgress);
+            }
         }
 
         // Отправляем на клиент
@@ -40,6 +43,7 @@ public class PlayerLoginHandler {
                 new SyncAllTaskProgressPacket(allProgress)
         );
 
-        System.out.println("[ArsMelima] Synced all task progress to player: " + allProgress.size() + " chapters");
+        System.out.println("[ArsMelima] Synced all task progress to player: " + allProgress.size() + " chapters, " +
+                allProgress.values().stream().mapToInt(Map::size).sum() + " tasks total");
     }
 }

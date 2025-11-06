@@ -194,7 +194,7 @@ public class ArsMelimaUIManager {
         // Сохраняем текущую позцию и масштабируем
         graphics.pose().pushPose();
         graphics.pose().translate(textX, textY, 0);
-        graphics.pose().scale(0.7f, 0.7f, 1.0f); // Уменьшаем в 2 раза
+        graphics.pose().scale(0.7f, 0.7f, 1.0f);
 
         // Название предмета
         graphics.drawString(font, itemName, 0, 0, textColor, false);
@@ -221,7 +221,6 @@ public class ArsMelimaUIManager {
         if (item == null) return "Unknown Item";
         return new ItemStack(item).getHoverName().getString();
     }
-    // НОВЫЙ МЕТОД: рендеринг learning chapters
     // НОВЫЙ МЕТОД: рендеринг learning chapters как обычных глав
     private void renderLearningChapters(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
         int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
@@ -244,7 +243,6 @@ public class ArsMelimaUIManager {
     }
 
     // Метод для рендеринга списка learning chapters (аналогично renderChapterList)
-    // В методе renderLearningChaptersList изменим координаты рендеринга полосок:
     private void renderLearningChaptersList(GuiGraphics graphics, int mouseX, int mouseY,
                                             int leftContentLeft, int leftContentTop, int leftContentWidth, int leftContentHeight,
                                             int rightContentLeft, int rightContentTop, int rightContentWidth, int rightContentHeight,
@@ -278,7 +276,7 @@ public class ArsMelimaUIManager {
         }
     }
 
-    // Обновленный метод renderLearningChapterStrip:
+    // Обновленный метод renderLearningChapterStrip с уменьшенным шрифтом:
     private void renderLearningChapterStrip(GuiGraphics graphics, LearningChapter lc,
                                             int x, int y, int width, int height,
                                             Font font, float scale,
@@ -299,17 +297,25 @@ public class ArsMelimaUIManager {
 
         // Текст выравниваем относительно левой границы полоски
         int stripHeight = height;
-        int textY = y + (stripHeight - 8) / 2;
+        int textY = y + (stripHeight - 6) / 2; // Уменьшаем высоту текста для маленького шрифта
         int textX = x + CONTENT_PADDING + 24; // Отступ от левой границы полоски
 
         String title = lc.getTitle() == null || lc.getTitle().isEmpty() ? lc.getId() : lc.getTitle();
         int baseColor = hover ? 0xFFE2A65D : 0xFF5D4037;
 
-        graphics.drawString(font, title, textX,     textY - 1, 0x80FFFFFF, false);
-        graphics.drawString(font, title, textX - 1, textY,     0x80DBD4B8, false);
-        graphics.drawString(font, title, textX + 1, textY,     0x80DBD4B8, false);
-        graphics.drawString(font, title, textX,     textY + 1, 0x80BFB38A, false);
-        graphics.drawString(font, title, textX,     textY,     baseColor,  false);
+        // Сохраняем текущую позцию и масштабируем шрифт (уменьшаем в 0.7 раза)
+        graphics.pose().pushPose();
+        graphics.pose().translate(textX, textY, 0);
+        graphics.pose().scale(0.7f, 0.7f, 1.0f);
+
+        // Рисуем текст с обводкой уменьшенным шрифтом
+        graphics.drawString(font, title, 0, -1, 0x80FFFFFF, false);
+        graphics.drawString(font, title, -1, 0, 0x80DBD4B8, false);
+        graphics.drawString(font, title, 1, 0, 0x80DBD4B8, false);
+        graphics.drawString(font, title, 0, 1, 0x80BFB38A, false);
+        graphics.drawString(font, title, 0, 0, baseColor, false);
+
+        graphics.pose().popPose();
     }
 
     private boolean isPointInRect(int rx, int ry, int rw, int rh, int px, int py) {

@@ -53,6 +53,9 @@ public class ForgeEventBusEvents {
         if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
 
         try {
+            // ПРЕДВАРИТЕЛЬНАЯ ЗАГРУЗКА ВСЕХ ГЛАВ
+            TaskManager.preloadAllChapters(serverPlayer.server);
+
             // Авто-разблокировка корневых нодов
             var serverNodes = ProgressionServerLoader.loadNodes(serverPlayer.server);
             for (ProgressNode n : serverNodes) {
@@ -101,19 +104,24 @@ public class ForgeEventBusEvents {
         if (server != null) {
             System.out.println("[ArsMelima] Starting task progress sync for player: " + player.getName().getString());
 
-            String chapterId = "cutting_techniques";
-            List<Task> tasks = TaskManager.getTasksForChapter(server, chapterId);
-            Map<String, Integer> chapterProgress = new HashMap<>();
+            // Синхронизируем все загруженные главы
+            for (String chapterId : TaskManager.getLoadedChapterIds()) {
+                List<Task> tasks = TaskManager.getTasksForChapter(server, chapterId);
+                Map<String, Integer> chapterProgress = new HashMap<>();
 
-            for (Task task : tasks) {
-                ServerTaskStorage.initializeChapter(player, chapterId);
-                int progress = ServerTaskStorage.getProgress(player, chapterId, task.getId());
-                chapterProgress.put(task.getId(), progress);
-                System.out.println("[ArsMelima] Sync: " + chapterId + "/" + task.getId() + " = " + progress);
-            }
+                for (Task task : tasks) {
+                    // Инициализируем главу если нужно
+                    ServerTaskStorage.initializeChapter(player, chapterId);
 
-            if (!chapterProgress.isEmpty()) {
-                allProgress.put(chapterId, chapterProgress);
+                    // Используем метод с указанием главы
+                    int progress = ServerTaskStorage.getProgress(player, chapterId, task.getId());
+                    chapterProgress.put(task.getId(), progress);
+                    System.out.println("[ArsMelima] Sync: " + chapterId + "/" + task.getId() + " = " + progress);
+                }
+
+                if (!chapterProgress.isEmpty()) {
+                    allProgress.put(chapterId, chapterProgress);
+                }
             }
         }
 
@@ -121,6 +129,8 @@ public class ForgeEventBusEvents {
                 PacketDistributor.PLAYER.with(() -> player),
                 new SyncAllTaskProgressPacket(allProgress)
         );
+
+        System.out.println("[ArsMelima] Full sync completed: " + allProgress.size() + " chapters");
     }
 
     // === ОБРАБОТКА КРАФТА И ПЛАВКИ ===
@@ -239,6 +249,7 @@ public class ForgeEventBusEvents {
         }
     }
     // === ОСНОВНАЯ ЛОГИКА ОБРАБОТКИ ===
+    // === ОСНОВНАЯ ЛОГИКА ОБРАБОТКИ ===
     private static void handleCrafting(ServerPlayer player, ItemStack result, int count, String recipeType) {
         String itemId = ForgeRegistries.ITEMS.getKey(result.getItem()).toString();
 
@@ -252,13 +263,15 @@ public class ForgeEventBusEvents {
             return;
         }
 
-        List<Task> tasks = TaskManager.getTasksByItem(itemId);
+        // ИСПРАВЛЕНИЕ: используем принудительную загрузку всех глав
+        List<Task> tasks = TaskManager.getTasksByItemWithForceLoad(player.getServer(), itemId);
         System.out.println("[ArsMelima] Found " + tasks.size() + " tasks for item: " + itemId);
 
         for (Task task : tasks) {
             System.out.println("[ArsMelima] Checking task: " + task.getId());
             System.out.println("[ArsMelima] Task recipe types: " + task.getRecipeTypes());
             System.out.println("[ArsMelima] Current recipe type: " + recipeType);
+            System.out.println("[ArsMelima] Task chapter: " + task.getChapterId());
 
             if (task.matchesRecipeType(recipeType)) {
                 System.out.println("[ArsMelima] ✓ Task matches recipe type!");
@@ -271,38 +284,25 @@ public class ForgeEventBusEvents {
     }
 
     private static void processTask(ServerPlayer player, Task task, int count, String recipeType) {
-        String chapterId = "cutting_techniques";
+        String chapterId = task.getChapterId();
+
+        // ВАЖНО: инициализируем главу перед работой с прогрессом
         ServerTaskStorage.initializeChapter(player, chapterId);
 
         int currentProgress = ServerTaskStorage.getProgress(player, chapterId, task.getId());
         int requiredCount = task.getRequiredCount();
-
-        System.out.println("[ArsMelima] Current progress: " + currentProgress + "/" + requiredCount);
-
-        if (currentProgress >= requiredCount) {
-            System.out.println("[ArsMelima] Task already completed: " + task.getId());
-            return;
-        }
-
         int maxPossibleIncrement = requiredCount - currentProgress;
         int actualIncrement = Math.min(count, maxPossibleIncrement);
 
         if (actualIncrement > 0) {
-            int newProgress = ServerTaskStorage.incrementProgress(
-                    player, chapterId, task.getId(), actualIncrement
-            );
-
+            int newProgress = ServerTaskStorage.incrementProgress(player, chapterId, task.getId(), actualIncrement);
             syncProgressToClient(player, task, newProgress, chapterId);
 
-            System.out.println("[ArsMelima] SUCCESS: " + chapterId + "/" + task.getId() +
-                    " +" + actualIncrement + " = " + newProgress + "/" + requiredCount +
-                    " (via " + recipeType + ")");
-
-            if (newProgress >= requiredCount) {
-                System.out.println("[ArsMelima] TASK COMPLETED: " + task.getId());
-            }
+            System.out.println("[ArsMelima] Task progress updated: " + chapterId + "/" + task.getId() +
+                    " " + currentProgress + " + " + actualIncrement + " = " + newProgress);
         }
     }
+
 
     private static void syncProgressToClient(ServerPlayer player, Task task, int progress, String chapterId) {
         NetworkCookingXp.CHANNEL.send(

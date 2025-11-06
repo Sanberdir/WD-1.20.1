@@ -188,6 +188,36 @@ public class ArsMelimaInputHandler {
         menu.openTasks(lc.getId());
         uiManager.setCurrentTaskPage(0); // если будет пагинация задач
         playPageTurnSound();
+
+        // --- НОВОЕ: если все задачи в этой learning chapter выполнены, разблокировать дочерние ---
+        try {
+            boolean completed = isLearningChapterCompleted(lc.getId());
+            if (completed) {
+                List<LearningChapter> siblings = menu.getCurrentLearningChapters();
+                if (siblings != null) {
+                    for (LearningChapter child : siblings) {
+                        if (child != null && lc.getId().equals(child.getParent()) && child.isLocked()) {
+                            menu.unlockLearningChapter(child.getId());
+                            System.out.println("[ArsMelima] Auto-unlocked child learning chapter: " + child.getId());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[ArsMelima] Error while checking/unlocking child learning chapters: " + e.getMessage());
+        }
+    }
+    private boolean isLearningChapterCompleted(String chapterId) {
+        if (chapterId == null || chapterId.isEmpty()) return false;
+
+        List<Task> tasks = TaskLoader.loadTasks(chapterId);
+        if (tasks == null || tasks.isEmpty()) return false; // либо true — по вашему выбору. Здесь считаем что отсутствие задач = не выполнено.
+
+        for (Task t : tasks) {
+            int progress = ClientTaskData.getTaskProgress(chapterId, t.getId());
+            if (progress < t.getRequiredCount()) return false;
+        }
+        return true;
     }
 
     private boolean handleChapterListClick(int mx, int my, int button, int guiLeft, int guiTop,

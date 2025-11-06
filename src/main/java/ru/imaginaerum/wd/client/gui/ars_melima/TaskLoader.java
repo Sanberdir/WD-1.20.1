@@ -131,7 +131,7 @@ public class TaskLoader {
                         }
 
                         // Создаем задачу
-                        Task task = new Task(id, itemId, count, recipeTypes);
+                        Task task = new Task(id, itemId, count, recipeTypes, learningChapterId);
                         tasks.add(task);
                         parsedTasks++;
                         foundValidTasks = true;
@@ -231,7 +231,7 @@ public class TaskLoader {
                                     recipeTypes = Arrays.asList("crafting", "smelting", "campfire_cooking", "smoking", "stonecutting");
                                 }
 
-                                Task task = new Task(id, itemId, count, recipeTypes);
+                                Task task = new Task(id, itemId, count, recipeTypes, learningChapterId);
                                 tasks.add(task);
                                 System.out.println("[ArsMelima] ✅ Loaded from base: " + id + " - " + itemId + " types: " + recipeTypes);
                             }
@@ -344,9 +344,7 @@ public class TaskLoader {
     private static List<Task> createDebugTasks(String chapterId) {
         List<Task> debugTasks = new ArrayList<>();
 
-        // ОСНОВНАЯ ЗАДАЧА ДЛЯ ТЕСТИРОВАНИЯ
-        debugTasks.add(new Task("bread_3", "minecraft:bread", 3,
-                Arrays.asList("crafting", "smelting", "campfire_cooking", "smoking", "stonecutting")));
+
 
         System.out.println("[ArsMelima] 🛠️ Created DEBUG task: bread_3 with types: " + debugTasks.get(0).getRecipeTypes());
 

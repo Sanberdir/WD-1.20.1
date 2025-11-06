@@ -71,11 +71,6 @@ public class ArsMelimaMenu {
         return tasks;
     }
 
-    public void clearTasksCache() {
-        tasksCache.clear();
-    }
-
-
     public List<LearningChapter> getLearningChapters(String chapterId) {
         return learningChaptersCache.computeIfAbsent(chapterId,
                 id -> LearningChapterLoader.loadLearningChapters(id));
@@ -294,6 +289,42 @@ public class ArsMelimaMenu {
     }
 
     public void closeChapter() { this.currentIndex = -1; }
+    /**
+     * Разблокирует learning chapter по ID.
+     * Меняет статус на "unlocked" и очищает кэш, чтобы обновить отображение.
+     */
+    public void unlockLearningChapter(String id) {
+        if (id == null || id.isEmpty()) return;
+
+        boolean changed = false;
+
+        for (Map.Entry<String, List<LearningChapter>> entry : learningChaptersCache.entrySet()) {
+            List<LearningChapter> list = entry.getValue();
+            if (list == null) continue;
+
+            for (LearningChapter lc : list) {
+                if (lc != null && id.equals(lc.getId()) && lc.isLocked()) {
+                    lc.unlock();
+
+                    changed = true;
+                    System.out.println("[ArsMelima] Learning chapter unlocked: " + id);
+                }
+            }
+        }
+
+        if (changed) {
+            // Если у нас открыт экран learning chapters, обновим кэш для визуального обновления
+            markLearningChaptersDirty();
+        }
+    }
+
+    /**
+     * Заглушка для обновления кэша UI после разблокировки learning chapters.
+     */
+    private void markLearningChaptersDirty() {
+        // Если UI реализует обновление, можно вызывать ArsMelimaUIManager.requestRefresh();
+        System.out.println("[ArsMelima] markLearningChaptersDirty() — cache marked for refresh.");
+    }
 
     // --- progression helpers ---
     public void openProgression() { this.currentIndex = PROGRESSION_INDEX; }
@@ -313,4 +344,6 @@ public class ArsMelimaMenu {
         s = s.replaceAll("[^a-z0-9_]", "");
         return s;
     }
+
+    
 }

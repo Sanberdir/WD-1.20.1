@@ -29,7 +29,6 @@ public class ServerTaskStorage {
         // Проверяем существование chapter
         if (!root.contains(chapterId)) {
             System.out.println("[ArsMelima] Chapter not found: " + chapterId + " for player: " + player.getName().getString());
-            System.out.println("[ArsMelima] Available chapters: " + root.getAllKeys());
             return 0;
         }
 
@@ -59,9 +58,6 @@ public class ServerTaskStorage {
 
         System.out.println("[ArsMelima] ServerTaskStorage WRITE: " + chapterId + "/" + taskId +
                 " " + oldValue + " -> " + value + " for player: " + player.getName().getString());
-
-        // Сохраняем изменения
-        player.getPersistentData().put(ROOT_TAG, root);
     }
 
     /**
@@ -118,12 +114,14 @@ public class ServerTaskStorage {
     }
 
     // -----------------------
-    // Совместимые методы (старая схема)
+    // Совместимые методы (старая схема) - УДАЛИТЬ ПОСЛЕ ОБНОВЛЕНИЯ
     // -----------------------
 
     /**
-     * Совместимый getProgress(player, taskId)
+     * Совместимый getProgress(player, taskId) - УСТАРЕВШИЙ
+     * @deprecated Используйте getProgress(player, chapterId, taskId)
      */
+    @Deprecated
     public static int getProgress(ServerPlayer player, String taskId) {
         if (player == null || taskId == null) return 0;
 
@@ -150,5 +148,4 @@ public class ServerTaskStorage {
         System.out.println("[ArsMelima] No progress found for task: " + taskId);
         return 0;
     }
-
 }

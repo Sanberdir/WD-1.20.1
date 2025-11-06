@@ -9,25 +9,16 @@ public class Task {
     private final String id;
     private final String itemId;
     private final int requiredCount;
-    private final List<String> recipeTypes; // Теперь список типов
+    private final List<String> recipeTypes;
+    private final String chapterId; // новая глава
 
-    public Task(String id, String itemId, int requiredCount, String recipeType) {
-        this(id, itemId, requiredCount, Collections.singletonList(recipeType));
-    }
-
-    public Task(String id, String itemId, int requiredCount, List<String> recipeTypes) {
+    public Task(String id, String itemId, int requiredCount, List<String> recipeTypes, String chapterId) {
         this.id = id;
         this.itemId = itemId;
         this.requiredCount = requiredCount;
         this.recipeTypes = new ArrayList<>(recipeTypes);
+        this.chapterId = chapterId;
     }
-
-    public String getId() { return id; }
-    public String getItemId() { return itemId; }
-    public int getRequiredCount() { return requiredCount; }
-    public List<String> getRecipeTypes() { return Collections.unmodifiableList(recipeTypes); }
-
-
     public Item getItem() {
         try {
             return BuiltInRegistries.ITEM.get(new ResourceLocation(itemId));
@@ -35,6 +26,11 @@ public class Task {
             return null;
         }
     }
+    public String getChapterId() { return chapterId; }
+    public String getId() { return id; }
+    public String getItemId() { return itemId; }
+    public int getRequiredCount() { return requiredCount; }
+    public List<String> getRecipeTypes() { return Collections.unmodifiableList(recipeTypes); }
 
     public boolean matchesRecipeType(String type) {
         return recipeTypes.contains(type);
