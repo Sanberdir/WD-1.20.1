@@ -1,7 +1,9 @@
 package ru.imaginaerum.wd.client.gui.ars_melima;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.*;
@@ -15,16 +17,10 @@ public class TaskManager {
     public static synchronized List<Task> getTasksForChapter(MinecraftServer server, String chapterId) {
         if (chapterId == null || chapterId.isEmpty()) return Collections.emptyList();
 
-        System.out.println("[ArsMelima] TaskManager.getTasksForChapter: " + chapterId);
-        System.out.println("[ArsMelima] Cached chapters: " + chapterTasks.keySet());
-
         if (chapterTasks.containsKey(chapterId)) {
-            List<Task> cachedTasks = chapterTasks.get(chapterId);
-            System.out.println("[ArsMelima] Returning CACHED tasks for chapter: " + chapterId + " (" + cachedTasks.size() + " tasks)");
-            return cachedTasks;
+            return chapterTasks.get(chapterId);
         }
 
-        System.out.println("[ArsMelima] No cache found, loading tasks for chapter: " + chapterId);
         ResourceManager manager = server.getResourceManager();
         List<Task> tasks = ServerTaskLoader.loadTasks(manager, chapterId);
 
@@ -34,11 +30,9 @@ public class TaskManager {
         chapterTasks.put(chapterId, tasks);
 
         // Обновляем индекс
-        System.out.println("[ArsMelima] Indexing " + tasks.size() + " tasks for chapter: " + chapterId);
         for (Task t : tasks) {
             String itemKey = t.getItemId().toLowerCase(Locale.ROOT);
             itemIndex.computeIfAbsent(itemKey, k -> new ArrayList<>()).add(t);
-            System.out.println("[ArsMelima]   Indexed task '" + t.getId() + "' for item: " + itemKey + " types: " + t.getRecipeTypes());
         }
 
         return tasks;
@@ -50,17 +44,13 @@ public class TaskManager {
         String itemKey = itemId.toLowerCase(Locale.ROOT);
         List<Task> result = itemIndex.getOrDefault(itemKey, new ArrayList<>());
 
-        System.out.println("[ArsMelima] TaskManager.getTasksByItem: '" + itemKey + "' -> " + result.size() + " tasks");
-
         // Если не нашли в индексе, попробуем загрузить все главы и переиндексировать
         if (result.isEmpty()) {
-            System.out.println("[ArsMelima] No tasks found in index, checking all chapters...");
             for (String chapterId : getLoadedChapterIds()) {
                 List<Task> chapterTasksList = chapterTasks.get(chapterId);
                 for (Task task : chapterTasksList) {
                     if (task.getItemId().equalsIgnoreCase(itemKey)) {
                         result.add(task);
-                        System.out.println("[ArsMelima]   Found task in chapter " + chapterId + ": " + task.getId());
                     }
                 }
             }
@@ -81,23 +71,19 @@ public class TaskManager {
         // Список всех возможных глав (добавьте сюда все ваши главы)
         String[] allChapters = {"cutting_techniques", "cooking_methods", "advanced_cooking", "magical_cooking"};
 
-        System.out.println("[ArsMelima] Force loading tasks for item: " + itemKey);
-
         for (String chapterId : allChapters) {
             try {
                 List<Task> tasks = getTasksForChapter(server, chapterId);
                 for (Task task : tasks) {
                     if (task.getItemId().equalsIgnoreCase(itemKey)) {
                         result.add(task);
-                        System.out.println("[ArsMelima]   Found in chapter " + chapterId + ": " + task.getId());
                     }
                 }
             } catch (Exception e) {
-                System.out.println("[ArsMelima] Error loading chapter " + chapterId + ": " + e.getMessage());
+                // Игнорируем ошибки загрузки глав
             }
         }
 
-        System.out.println("[ArsMelima] Force load result: " + result.size() + " tasks for " + itemKey);
         return result;
     }
 
@@ -107,13 +93,8 @@ public class TaskManager {
     public static synchronized void clearChapterCache(String chapterId) {
         if (chapterId == null) return;
 
-        System.out.println("[ArsMelima] Clearing cache for chapter: " + chapterId);
-
         // Удаляем из chapterTasks
         List<Task> removedTasks = chapterTasks.remove(chapterId);
-        if (removedTasks != null) {
-            System.out.println("[ArsMelima] Removed " + removedTasks.size() + " tasks from chapter cache");
-        }
 
         // Перестраиваем itemIndex
         itemIndex.clear();
@@ -123,8 +104,6 @@ public class TaskManager {
                 itemIndex.computeIfAbsent(itemKey, k -> new ArrayList<>()).add(task);
             }
         }
-
-        System.out.println("[ArsMelima] Cache cleared. Now " + chapterTasks.size() + " chapters and " + itemIndex.size() + " items in index");
     }
 
     public static synchronized Set<String> getLoadedChapterIds() {
@@ -137,19 +116,53 @@ public class TaskManager {
     public static synchronized void preloadAllChapters(MinecraftServer server) {
         if (server == null) return;
 
-        String[] allChapters = {"cutting_techniques", "cooking_methods", "advanced_cooking", "magical_cooking"};
+        // Динамически находим все JSON файлы в папке задач
+        List<String> chapterIds = discoverChapterIds(server.getResourceManager());
 
-        System.out.println("[ArsMelima] Preloading all chapters...");
-
-        for (String chapterId : allChapters) {
+        for (String chapterId : chapterIds) {
             try {
                 getTasksForChapter(server, chapterId);
-                System.out.println("[ArsMelima] ✓ Preloaded chapter: " + chapterId);
             } catch (Exception e) {
-                System.out.println("[ArsMelima] ✗ Failed to preload chapter " + chapterId + ": " + e.getMessage());
+                System.err.println("[ArsMelima] Failed to preload chapter: " + chapterId);
             }
         }
+    }
+    private static final String TASKS_DIR = "ars_melima/learning_tasks";
 
-        System.out.println("[ArsMelima] Preload complete. Loaded chapters: " + getLoadedChapterIds());
+    private static List<String> discoverChapterIds(ResourceManager resourceManager) {
+        List<String> chapterIds = new ArrayList<>();
+        String basePath = TASKS_DIR;
+
+        try {
+            // Ищем все файлы в папке задач
+            Map<ResourceLocation, Resource> resources = resourceManager.listResources(
+                    basePath,
+                    location -> location.getPath().endsWith(".json")
+            );
+
+            for (ResourceLocation rl : resources.keySet()) {
+                String filename = rl.getPath();
+                // Извлекаем chapterId из имени файла
+                if (filename.startsWith(basePath + "/") && filename.endsWith(".json")) {
+                    String chapterId = filename.substring(
+                            basePath.length() + 1,
+                            filename.length() - 5
+                    );
+                    chapterIds.add(chapterId);
+                    System.out.println("[ArsMelima] Discovered chapter: " + chapterId);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[ArsMelima] Error discovering chapters: " + e.getMessage());
+        }
+
+        // Fallback на старый список, если не нашли файлов
+        if (chapterIds.isEmpty()) {
+            chapterIds.addAll(Arrays.asList(
+                    "cutting_techniques", "cooking_methods", "advanced_cooking", "magical_cooking"
+            ));
+        }
+
+        return chapterIds;
     }
 }

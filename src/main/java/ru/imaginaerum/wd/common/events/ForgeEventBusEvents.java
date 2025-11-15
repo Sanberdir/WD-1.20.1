@@ -429,6 +429,7 @@ public class ForgeEventBusEvents {
         }
     }
 
+    // === ОБРАБОТКА СМЕРТИ ===
     @SubscribeEvent
     public static void onPlayerDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;

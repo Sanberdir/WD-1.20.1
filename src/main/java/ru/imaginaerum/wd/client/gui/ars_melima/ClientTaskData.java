@@ -76,8 +76,5 @@ public class ClientTaskData {
         notifyInit(progressData);
     }
 
-    public static void clearProgress() {
-        taskProgress.clear();
-        System.out.println("[ArsMelima] ClientTaskData cleared");
-    }
+
 }

@@ -6,6 +6,12 @@
       "item": "minecraft:bread",
       "count": 3,
       "recipe_types": ["crafting", "smelting", "campfire_cooking", "smoking", "stonecutting"]
+    },
+    {
+      "id": "cooked_porkchop",
+      "item": "minecraft:cooked_porkchop",
+      "count": 3,
+      "recipe_types": ["crafting", "smelting", "campfire_cooking", "smoking", "stonecutting"]
     }
   ]
 }
