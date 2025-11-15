@@ -22,11 +22,6 @@ public class LearningChapter {
     public boolean isUnlocked() { return "unlocked".equalsIgnoreCase(status); }
     public boolean isLocked() { return "locked".equalsIgnoreCase(status); }
 
-    // --- минимальный сеттер / helper для разблокировки ---
-    public void setStatus(String status) {
-        if (status == null) return;
-        this.status = status;
-    }
 
     public void unlock() {
         this.status = "unlocked";

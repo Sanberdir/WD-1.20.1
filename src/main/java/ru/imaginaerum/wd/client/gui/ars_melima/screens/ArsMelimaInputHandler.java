@@ -184,12 +184,11 @@ public class ArsMelimaInputHandler {
             return;
         }
 
-        // Вместо поиска главы открываем задачи для этого learning chapter
         menu.openTasks(lc.getId());
-        uiManager.setCurrentTaskPage(0); // если будет пагинация задач
+        uiManager.setCurrentTaskPage(0);
         playPageTurnSound();
 
-        // --- НОВОЕ: если все задачи в этой learning chapter выполнены, разблокировать дочерние ---
+        // ОСТАВЛЯЕМ существующую логику авто-разблокировки дочерних глав
         try {
             boolean completed = isLearningChapterCompleted(lc.getId());
             if (completed) {

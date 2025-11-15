@@ -1,11 +1,30 @@
 package ru.imaginaerum.wd.client.gui.ars_melima;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ClientTaskData {
     private static final Map<String, Map<String, Integer>> taskProgress = new HashMap<>();
 
+    // --- Добавлено: список слушателей ---
+    private static final List<TaskProgressListener> listeners = new CopyOnWriteArrayList<>();
+
+
+    private static void notifyUpdate(String chapterId, String taskId, int progress) {
+        for (TaskProgressListener l : listeners) {
+            try { l.onTaskProgressUpdated(chapterId, taskId, progress); }
+            catch (Throwable t) { System.err.println("[ArsMelima] Listener error (update): " + t.getMessage()); }
+        }
+    }
+
+    private static void notifyInit(Map<String, Map<String, Integer>> allProgress) {
+        for (TaskProgressListener l : listeners) {
+            try { l.onAllProgressInitialized(allProgress); }
+            catch (Throwable t) { System.err.println("[ArsMelima] Listener error (init): " + t.getMessage()); }
+        }
+    }
+
+    // --- Основная логика обновлений ---
     public static void updateTaskProgress(String learningChapterId, String taskId, int progress) {
         System.out.println("[ArsMelima] ClientTaskData UPDATE: " + learningChapterId + "/" + taskId + " = " + progress);
 
@@ -19,28 +38,23 @@ public class ClientTaskData {
                 System.out.println("[ArsMelima]   " + chapter + "/" + task + " = " + chapterTasks.get(task));
             }
         }
+
+        // --- Новое: уведомляем слушателей ---
+        notifyUpdate(learningChapterId, taskId, progress);
     }
 
     public static int getTaskProgress(String learningChapterId, String taskId) {
-        System.out.println("[ArsMelima] ClientTaskData GET: " + learningChapterId + "/" + taskId);
-
-        // Проверяем существование главы
         if (!taskProgress.containsKey(learningChapterId)) {
-            System.out.println("[ArsMelima] ClientTaskData: Chapter not found: " + learningChapterId);
-            System.out.println("[ArsMelima] ClientTaskData: Available chapters: " + taskProgress.keySet());
             return 0;
         }
-
         Map<String, Integer> chapterProgress = taskProgress.get(learningChapterId);
-        int progress = chapterProgress.getOrDefault(taskId, 0);
-
-        System.out.println("[ArsMelima] ClientTaskData: " + learningChapterId + "/" + taskId + " = " + progress);
-        return progress;
+        return chapterProgress.getOrDefault(taskId, 0);
     }
 
     /**
      * Инициализация всего прогресса (при входе в игру)
      */
+
     public static void initProgress(Map<String, Map<String, Integer>> progressData) {
         System.out.println("[ArsMelima] ClientTaskData INIT with " + (progressData != null ? progressData.size() : 0) + " chapters");
 
@@ -48,7 +62,6 @@ public class ClientTaskData {
         if (progressData != null) {
             taskProgress.putAll(progressData);
 
-            // Детальный вывод принятых данных
             for (Map.Entry<String, Map<String, Integer>> chapterEntry : progressData.entrySet()) {
                 String chapterId = chapterEntry.getKey();
                 Map<String, Integer> tasks = chapterEntry.getValue();
@@ -57,9 +70,10 @@ public class ClientTaskData {
                     System.out.println("[ArsMelima]   " + taskEntry.getKey() + " = " + taskEntry.getValue());
                 }
             }
-        } else {
-            System.out.println("[ArsMelima] ClientTaskData WARNING: initProgress called with null data");
         }
+
+        // --- Новое: уведомляем всех, что пришли полные данные ---
+        notifyInit(progressData);
     }
 
     public static void clearProgress() {

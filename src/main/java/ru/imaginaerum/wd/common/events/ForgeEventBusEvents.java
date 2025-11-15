@@ -39,6 +39,7 @@ import ru.imaginaerum.wd.common.blocks.registry_blocks_plaints.PepperRegistry;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = WD.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEventBusEvents {
@@ -66,11 +67,6 @@ public class ForgeEventBusEvents {
         } catch (Throwable t) {
             System.err.println("[ArsMelima] Failed to auto-unlock roots on login: " + t.getMessage());
         }
-
-        // Предзагрузка задач
-        String chapterId = "cutting_techniques";
-        List<Task> tasks = TaskManager.getTasksForChapter(serverPlayer.getServer(), chapterId);
-        System.out.println("[ArsMelima] Preloaded " + tasks.size() + " tasks for chapter: " + chapterId);
 
         // Полная синхронизация
         syncAllData(serverPlayer);
@@ -102,8 +98,6 @@ public class ForgeEventBusEvents {
         MinecraftServer server = player.getServer();
 
         if (server != null) {
-            System.out.println("[ArsMelima] Starting task progress sync for player: " + player.getName().getString());
-
             // Синхронизируем все загруженные главы
             for (String chapterId : TaskManager.getLoadedChapterIds()) {
                 List<Task> tasks = TaskManager.getTasksForChapter(server, chapterId);
@@ -116,7 +110,6 @@ public class ForgeEventBusEvents {
                     // Используем метод с указанием главы
                     int progress = ServerTaskStorage.getProgress(player, chapterId, task.getId());
                     chapterProgress.put(task.getId(), progress);
-                    System.out.println("[ArsMelima] Sync: " + chapterId + "/" + task.getId() + " = " + progress);
                 }
 
                 if (!chapterProgress.isEmpty()) {
@@ -129,8 +122,6 @@ public class ForgeEventBusEvents {
                 PacketDistributor.PLAYER.with(() -> player),
                 new SyncAllTaskProgressPacket(allProgress)
         );
-
-        System.out.println("[ArsMelima] Full sync completed: " + allProgress.size() + " chapters");
     }
 
     // === ОБРАБОТКА КРАФТА И ПЛАВКИ ===
@@ -158,7 +149,6 @@ public class ForgeEventBusEvents {
             ItemStack result = event.getSmelting();
             if (!result.isEmpty()) {
                 handleCrafting(serverPlayer, result, result.getCount(), "smelting");
-                System.out.println("[ArsMelima] Furnace smelting: " + result);
             }
         }
     }
@@ -170,12 +160,9 @@ public class ForgeEventBusEvents {
             ItemStack result = event.getSmelting();
             if (!result.isEmpty() && isSmokingRecipe(result, event.getEntity().level())) {
                 handleCrafting(serverPlayer, result, result.getCount(), "smoking");
-                System.out.println("[ArsMelima] Smoker smoking: " + result);
             }
         }
     }
-
-    // Обработка готовки на костре
 
     // Вспомогательные методы проверки рецептов
     private static boolean isSmokingRecipe(ItemStack result, Level level) {
@@ -211,7 +198,6 @@ public class ForgeEventBusEvents {
                         if (!cookingResult.isEmpty()) {
                             // Предмет может приготовиться на костре
                             handleCrafting((ServerPlayer) event.getEntity(), cookingResult, 1, "campfire_cooking");
-                            System.out.println("[ArsMelima] Campfire can cook: " + itemInSlot + " -> " + cookingResult);
                         }
                     }
                 }
@@ -243,52 +229,55 @@ public class ForgeEventBusEvents {
                 // Проверяем, был ли это рецепт костра
                 if (isCampfireRecipe(result, event.getEntity().level())) {
                     handleCrafting(serverPlayer, result, result.getCount(), "campfire_cooking");
-                    System.out.println("[ArsMelima] Campfire cooking completed: " + result);
                 }
             }
         }
     }
-    // === ОСНОВНАЯ ЛОГИКА ОБРАБОТКИ ===
-    // === ОСНОВНАЯ ЛОГИКА ОБРАБОТКИ ===
+
     private static void handleCrafting(ServerPlayer player, ItemStack result, int count, String recipeType) {
         String itemId = ForgeRegistries.ITEMS.getKey(result.getItem()).toString();
 
-        System.out.println("[ArsMelima] === START handleCrafting ===");
-        System.out.println("[ArsMelima] Recipe type: " + recipeType);
-        System.out.println("[ArsMelima] Item: " + itemId + " x" + count);
-        System.out.println("[ArsMelima] Player: " + player.getName().getString());
+        // ПРЕЖДЕ чем искать задачи, проверяем доступные (разблокированные) главы
+        List<String> unlockedChapters = getUnlockedChaptersForPlayer(player);
 
-        if (itemId == null || itemId.isEmpty()) {
-            System.out.println("[ArsMelima] ERROR: Cannot get item ID");
-            return;
-        }
-
-        // ИСПРАВЛЕНИЕ: используем принудительную загрузку всех глав
+        // Ищем задачи ТОЛЬКО в разблокированных главах
         List<Task> tasks = TaskManager.getTasksByItemWithForceLoad(player.getServer(), itemId);
-        System.out.println("[ArsMelima] Found " + tasks.size() + " tasks for item: " + itemId);
 
-        for (Task task : tasks) {
-            System.out.println("[ArsMelima] Checking task: " + task.getId());
-            System.out.println("[ArsMelima] Task recipe types: " + task.getRecipeTypes());
-            System.out.println("[ArsMelima] Current recipe type: " + recipeType);
-            System.out.println("[ArsMelima] Task chapter: " + task.getChapterId());
+        // ФИЛЬТРУЕМ: оставляем только задачи из разблокированных глав
+        List<Task> unlockedTasks = tasks.stream()
+                .filter(task -> unlockedChapters.contains(task.getChapterId()))
+                .collect(Collectors.toList());
 
+        for (Task task : unlockedTasks) {
             if (task.matchesRecipeType(recipeType)) {
-                System.out.println("[ArsMelima] ✓ Task matches recipe type!");
                 processTask(player, task, count, recipeType);
-            } else {
-                System.out.println("[ArsMelima] ✗ Task does NOT match recipe type");
             }
         }
-        System.out.println("[ArsMelima] === END handleCrafting ===");
+    }
+
+    private static List<String> getUnlockedChaptersForPlayer(ServerPlayer player) {
+        List<String> unlockedChapters = new ArrayList<>();
+
+        // Всегда разблокирована первая глава
+        unlockedChapters.add("cutting_techniques");
+
+        // Проверяем выполнение предыдущих глав для разблокировки последующих
+        if (isLearningChapterCompletedOnServer(player, "cutting_techniques")) {
+            unlockedChapters.add("cooking_methods");
+        }
+
+        if (isLearningChapterCompletedOnServer(player, "cooking_methods")) {
+            unlockedChapters.add("spices_usage");
+        }
+
+        return unlockedChapters;
     }
 
     private static void processTask(ServerPlayer player, Task task, int count, String recipeType) {
         String chapterId = task.getChapterId();
 
-        // ВАЖНО: инициализируем главу перед работой с прогрессом
+        // Глава гарантированно разблокирована на этом этапе
         ServerTaskStorage.initializeChapter(player, chapterId);
-
         int currentProgress = ServerTaskStorage.getProgress(player, chapterId, task.getId());
         int requiredCount = task.getRequiredCount();
         int maxPossibleIncrement = requiredCount - currentProgress;
@@ -298,11 +287,45 @@ public class ForgeEventBusEvents {
             int newProgress = ServerTaskStorage.incrementProgress(player, chapterId, task.getId(), actualIncrement);
             syncProgressToClient(player, task, newProgress, chapterId);
 
-            System.out.println("[ArsMelima] Task progress updated: " + chapterId + "/" + task.getId() +
-                    " " + currentProgress + " + " + actualIncrement + " = " + newProgress);
+            // Проверяем не завершилась ли глава и не нужно ли разблокировать следующую
+            checkChapterCompletion(player, chapterId);
         }
     }
 
+    private static void checkChapterCompletion(ServerPlayer player, String completedChapterId) {
+        // Определяем какая глава должна разблокироваться после завершения этой
+        Map<String, String> nextChapters = Map.of(
+                "cutting_techniques", "cooking_methods",
+                "cooking_methods", "spices_usage"
+        );
+
+        String nextChapterId = nextChapters.get(completedChapterId);
+        if (nextChapterId != null) {
+            // Проверяем действительно ли глава завершена
+            if (isLearningChapterCompletedOnServer(player, completedChapterId)) {
+                // Здесь можно добавить логику разблокировки следующей главы
+                // Например, через ProgressionUnlockManager.unlock(player, nextChapterId)
+            }
+        }
+    }
+
+    private static boolean isLearningChapterCompletedOnServer(ServerPlayer player, String chapterId) {
+        if (chapterId == null || chapterId.isEmpty()) return false;
+
+        List<Task> tasks = TaskManager.getTasksForChapter(player.getServer(), chapterId);
+        if (tasks == null || tasks.isEmpty()) {
+            return true; // Если нет задач - считаем выполненной
+        }
+
+        for (Task t : tasks) {
+            int progress = ServerTaskStorage.getProgress(player, chapterId, t.getId());
+            if (progress < t.getRequiredCount()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private static void syncProgressToClient(ServerPlayer player, Task task, int progress, String chapterId) {
         NetworkCookingXp.CHANNEL.send(
@@ -312,17 +335,6 @@ public class ForgeEventBusEvents {
     }
 
     // === ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ===
-    private static String determineSmeltingType(PlayerEvent.ItemSmeltedEvent event) {
-        // Упрощенная реализация - в будущем можно определить по блоку
-        return "smelting";
-    }
-
-    private static boolean hasCampfireRecipe(Level level, ItemStack stack) {
-        RecipeManager recipeManager = level.getRecipeManager();
-        var recipes = recipeManager.getRecipesFor(RecipeType.CAMPFIRE_COOKING, new SimpleContainer(stack), level);
-        return !recipes.isEmpty();
-    }
-
     private static void addCraftingXp(Player player, ItemStack crafting) {
         if (player == null || crafting.isEmpty()) return;
 
@@ -333,14 +345,6 @@ public class ForgeEventBusEvents {
         Item item = crafting.getItem();
         if (item == Items.CAKE || item == ItemsWD.WIZARD_PIE.get() || item == ItemsWD.ROTTEN_PIE.get()) {
             CookingXPManager.addXp(player, crafting.getCount() * 25);
-        }
-    }
-
-    private static void addSmeltingXp(Player player, ItemStack smelted) {
-        if (player == null || smelted.isEmpty()) return;
-
-        if (smelted.isEdible()) {
-            CookingXPManager.addXp(player, smelted.getCount() * 5);
         }
     }
 
@@ -425,7 +429,6 @@ public class ForgeEventBusEvents {
         }
     }
 
-    // === ОБРАБОТКА СМЕРТИ ===
     @SubscribeEvent
     public static void onPlayerDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;

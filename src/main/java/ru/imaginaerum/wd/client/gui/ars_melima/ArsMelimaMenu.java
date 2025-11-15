@@ -9,6 +9,7 @@ import java.util.*;
 public class ArsMelimaMenu {
     public static final int PROGRESSION_INDEX = -2; // новый "индекс" для режима дерева прогресса
     public static final int LEARNING_CHAPTERS_INDEX = -3; // новое состояние для learning chapters
+    public static final int TASKS_INDEX = -4; // новое состояние для списка задач
 
     private final List<Chapter> chapters = new ArrayList<>();
     private final List<ProgressNode> progressNodes = new ArrayList<>();
@@ -24,15 +25,22 @@ public class ArsMelimaMenu {
     private final Map<String, List<LearningChapter>> learningChaptersCache = new HashMap<>();
     private String currentLearningChapterId = null; // ID главы, для которой показываем learning chapters
 
+    private final Map<String, List<Task>> tasksCache = new HashMap<>();
+    private String currentTaskChapterId = null;
+    private int currentPage = 0;
+
     private Chapter dynamicChapter = null;
 
     public ArsMelimaMenu() { }
 
-    // В ArsMelimaMenu добавить:
-    public static final int TASKS_INDEX = -4; // новое состояние для списка задач
+    public void refreshPage() {
+        this.currentPage = this.currentPage;
+        this.updatePage();
+    }
 
-    private final Map<String, List<Task>> tasksCache = new HashMap<>();
-    private String currentTaskChapterId = null;
+    public void updatePage() {
+        System.out.println("[ArsMelima] Page updated: currentPage=" + currentPage);
+    }
 
     public void openTasks(String learningChapterId) {
         this.currentTaskChapterId = learningChapterId;
@@ -76,14 +84,14 @@ public class ArsMelimaMenu {
                 id -> LearningChapterLoader.loadLearningChapters(id));
     }
 
-    public void clearLearningChaptersCache() {
-        learningChaptersCache.clear();
-    }
 
     // === LEARNING CHAPTERS METHODS ===
     public void openLearningChapters(String chapterId) {
         this.currentLearningChapterId = chapterId;
         this.currentIndex = LEARNING_CHAPTERS_INDEX;
+
+        // НОВОЕ: Автоматическая проверка разблокировки при открытии
+        refreshLearningChaptersStatus();
     }
 
     public void closeLearningChapters() {
@@ -101,9 +109,62 @@ public class ArsMelimaMenu {
 
     public List<LearningChapter> getCurrentLearningChapters() {
         if (currentLearningChapterId != null) {
-            return getLearningChapters(currentLearningChapterId);
+            List<LearningChapter> chapters = getLearningChapters(currentLearningChapterId);
+            // НОВОЕ: Всегда проверяем статус разблокировки при получении списка
+            refreshLearningChaptersStatus(chapters);
+            return chapters;
         }
         return Collections.emptyList();
+    }
+
+    // НОВЫЙ МЕТОД: Обновление статуса разблокировки для всех learning chapters
+    public void refreshLearningChaptersStatus() {
+        if (currentLearningChapterId != null) {
+            List<LearningChapter> chapters = learningChaptersCache.get(currentLearningChapterId);
+            if (chapters != null) {
+                refreshLearningChaptersStatus(chapters);
+            }
+        }
+    }
+
+    // НОВЫЙ МЕТОД: Обновление статуса разблокировки для конкретного списка глав
+    private void refreshLearningChaptersStatus(List<LearningChapter> learningChapters) {
+        if (learningChapters == null) return;
+
+        boolean changed = false;
+
+        for (LearningChapter lc : learningChapters) {
+            if (lc != null && lc.isLocked()) {
+                // Проверяем, выполнены ли все задачи родительской главы
+                String parentChapterId = lc.getParent();
+                if (parentChapterId != null && !parentChapterId.isEmpty()) {
+                    if (isLearningChapterCompleted(parentChapterId)) {
+                        lc.unlock();
+                        changed = true;
+                        System.out.println("[ArsMelima] Auto-unlocked chapter: " + lc.getId() +
+                                " (parent " + parentChapterId + " completed)");
+                    }
+                }
+            }
+        }
+
+        if (changed) {
+            markLearningChaptersDirty();
+        }
+    }
+
+    // НОВЫЙ МЕТОД: Проверка выполнения всех задач главы
+    private boolean isLearningChapterCompleted(String chapterId) {
+        if (chapterId == null || chapterId.isEmpty()) return false;
+
+        List<Task> tasks = TaskLoader.loadTasks(chapterId);
+        if (tasks == null || tasks.isEmpty()) return true; // Если нет задач - считаем выполненной
+
+        for (Task t : tasks) {
+            int progress = ClientTaskData.getTaskProgress(chapterId, t.getId());
+            if (progress < t.getRequiredCount()) return false;
+        }
+        return true;
     }
 
     public void setChapters(List<Chapter> list) {
@@ -289,6 +350,7 @@ public class ArsMelimaMenu {
     }
 
     public void closeChapter() { this.currentIndex = -1; }
+
     /**
      * Разблокирует learning chapter по ID.
      * Меняет статус на "unlocked" и очищает кэш, чтобы обновить отображение.
@@ -305,7 +367,6 @@ public class ArsMelimaMenu {
             for (LearningChapter lc : list) {
                 if (lc != null && id.equals(lc.getId()) && lc.isLocked()) {
                     lc.unlock();
-
                     changed = true;
                     System.out.println("[ArsMelima] Learning chapter unlocked: " + id);
                 }
@@ -313,7 +374,6 @@ public class ArsMelimaMenu {
         }
 
         if (changed) {
-            // Если у нас открыт экран learning chapters, обновим кэш для визуального обновления
             markLearningChaptersDirty();
         }
     }
@@ -322,12 +382,10 @@ public class ArsMelimaMenu {
      * Заглушка для обновления кэша UI после разблокировки learning chapters.
      */
     private void markLearningChaptersDirty() {
-        // Если UI реализует обновление, можно вызывать ArsMelimaUIManager.requestRefresh();
         System.out.println("[ArsMelima] markLearningChaptersDirty() — cache marked for refresh.");
     }
 
     // --- progression helpers ---
-    public void openProgression() { this.currentIndex = PROGRESSION_INDEX; }
     public void closeProgression() { this.currentIndex = -1; }
     public boolean isProgressionOpen() { return this.currentIndex == PROGRESSION_INDEX; }
 
@@ -344,6 +402,4 @@ public class ArsMelimaMenu {
         s = s.replaceAll("[^a-z0-9_]", "");
         return s;
     }
-
-    
 }

@@ -21,6 +21,7 @@ import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.TOTAL_STR
  */
 public class ArsMelimaUIManager {
     private int guiLeft, guiTop;
+    private ArsMelimaMenu currentMenu;
 
     private int currentChapterPage = 0;
     private int currentTextPage = 0;
@@ -31,7 +32,9 @@ public class ArsMelimaUIManager {
     public void setCurrentTaskPage(int page) {
         this.currentTaskPage = page;
     }
-
+    public void setCurrentMenu(ArsMelimaMenu menu) {
+        this.currentMenu = menu;
+    }
     public int getCurrentTaskPage() {
         return currentTaskPage;
     }
@@ -252,12 +255,14 @@ public class ArsMelimaUIManager {
         int startIdx = currentPage * chaptersPerPage;
         int endIdx = Math.min(startIdx + chaptersPerPage, learningChapters.size());
 
+        // НОВОЕ: Автоматическая проверка разблокировки при рендеринге
+        checkAndUnlockChapters(learningChapters);
+
         // Левая колонка - полоски у левой границы
         for (int i = startIdx; i < startIdx + CHAPTERS_PER_COLUMN && i < endIdx; i++) {
             LearningChapter lc = learningChapters.get(i);
             int stripY = leftContentTop + CONTENT_PADDING + (i - startIdx) * TOTAL_STRIP_HEIGHT;
 
-            // Полоска начинается строго от левой границы контента
             renderLearningChapterStrip(graphics, lc, leftContentLeft, stripY,
                     leftContentWidth, OPEN_STRIP_HEIGHT, font, scale,
                     mouseX, mouseY);
@@ -269,11 +274,70 @@ public class ArsMelimaUIManager {
             int columnIndex = i - (startIdx + CHAPTERS_PER_COLUMN);
             int stripY = rightContentTop + CONTENT_PADDING + columnIndex * TOTAL_STRIP_HEIGHT;
 
-            // Полоска начинается строго от левой границы правой контентной области
             renderLearningChapterStrip(graphics, lc, rightContentLeft, stripY,
                     rightContentWidth, OPEN_STRIP_HEIGHT, font, scale,
                     mouseX, mouseY);
         }
+    }
+
+    // НОВЫЙ МЕТОД: Автоматическая проверка и разблокировка глав
+    private void checkAndUnlockChapters(List<LearningChapter> learningChapters) {
+        if (learningChapters == null) return;
+
+        for (LearningChapter lc : learningChapters) {
+            if (lc != null && lc.isLocked()) {
+                // Проверяем через ProgressionUnlockManager
+                boolean progressionUnlocked = ClientCookingData.isProgressUnlocked(lc.getId());
+                if (progressionUnlocked) {
+                    lc.unlock();
+                    System.out.println("[ArsMelima] Synced chapter unlock: " + lc.getId());
+                }
+
+                // ИЛИ проверяем выполнение родительской главы
+                String parentChapterId = lc.getParent();
+                if (parentChapterId != null && !parentChapterId.isEmpty()) {
+                    if (isLearningChapterCompleted(parentChapterId)) {
+                        lc.unlock();
+                        System.out.println("[ArsMelima] Auto-unlocked chapter: " + lc.getId() +
+                                " (parent " + parentChapterId + " completed)");
+                    }
+                }
+            }
+        }
+    }
+
+    // НОВЫЙ МЕТОД: Проверка выполнения всех задач главы
+    private boolean isLearningChapterCompleted(String chapterId) {
+        if (chapterId == null || chapterId.isEmpty()) return false;
+
+        List<Task> tasks = TaskLoader.loadTasks(chapterId);
+        if (tasks == null || tasks.isEmpty()) return true; // Если нет задач - считаем выполненной
+
+        for (Task t : tasks) {
+            int progress = ClientTaskData.getTaskProgress(chapterId, t.getId());
+            if (progress < t.getRequiredCount()) return false;
+        }
+        return true;
+    }
+
+    private boolean isLearningChapterEffectivelyUnlocked(LearningChapter lc) {
+        if (lc == null) return false;
+        if (lc.isUnlocked()) return true;
+
+        String chapterId = lc.getId();
+        if (chapterId == null || chapterId.isEmpty()) return false;
+
+        List<Task> tasks = TaskLoader.loadTasks(chapterId);
+        if (tasks == null || tasks.isEmpty()) return false;
+
+        for (Task t : tasks) {
+            int progress = ClientTaskData.getTaskProgress(chapterId, t.getId());
+            if (progress < t.getRequiredCount()) return false;
+        }
+
+        // ✅ Сохраняем факт, что глава реально разблокирована
+        lc.unlock();
+        return true;
     }
 
     // Обновленный метод renderLearningChapterStrip с уменьшенным шрифтом:
@@ -282,7 +346,8 @@ public class ArsMelimaUIManager {
                                             Font font, float scale,
                                             int mouseX, int mouseY) {
 
-        boolean isUnlocked = lc.isUnlocked();
+        boolean isUnlocked = isLearningChapterEffectivelyUnlocked(lc);
+
 
         // Hitbox также смещаем к левой границе
         boolean hover = isPointInRect(x, y, width, height, mouseX, mouseY);
