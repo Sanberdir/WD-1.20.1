@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.tree_progress.ProgressTreeLoader;
 
 import java.util.*;
 
@@ -29,6 +30,10 @@ public class ArsMelimaMenu {
 
     private final Map<String, List<TreeLink>> treeLinksCache = new HashMap<>();
     private Chapter dynamicChapter = null;
+
+    // Новые поля для управления деревьями прогрессии
+    private String currentProgressTreeId = null;
+    private final Map<String, List<ProgressNode>> progressTreesCache = new HashMap<>();
 
     public ArsMelimaMenu() { }
 
@@ -152,16 +157,33 @@ public class ArsMelimaMenu {
         System.out.println("[ArsMelima] setChapters() loaded " + chapters.size() + " chapters.");
     }
 
-    public int getChapterIndexByNormalizedKey(String key) { /* логика как в оригинале */ return normalizedChapterIndex.getOrDefault(normalizeKey(key), -1); }
-    public int getChapterIndexByProgressionId(String progressionId) { return progressionIdIndex.getOrDefault(normalizeKey(progressionId), getChapterIndexByNormalizedKey(progressionId)); }
+    public int getChapterIndexByNormalizedKey(String key) {
+        return normalizedChapterIndex.getOrDefault(normalizeKey(key), -1);
+    }
+
+    public int getChapterIndexByProgressionId(String progressionId) {
+        return progressionIdIndex.getOrDefault(normalizeKey(progressionId), getChapterIndexByNormalizedKey(progressionId));
+    }
 
     public List<Chapter> getChapters() { return chapters; }
-    public void setProgressNodes(List<ProgressNode> nodes) { progressNodes.clear(); if (nodes != null) progressNodes.addAll(nodes); }
+
+    public void setProgressNodes(List<ProgressNode> nodes) {
+        progressNodes.clear();
+        if (nodes != null) progressNodes.addAll(nodes);
+    }
+
     public List<ProgressNode> getProgressNodes() { return progressNodes; }
 
     public int getCurrentIndex() { return currentIndex; }
     public void setCurrentIndex(int idx) { this.currentIndex = idx; }
-    public void openChapter(int idx) { if (idx >= 0 && idx < chapters.size()) this.currentIndex = idx; }
+
+    public void openChapter(int idx) {
+        if (idx >= 0 && idx < chapters.size()) {
+            this.currentIndex = idx;
+            this.currentProgressTreeId = null; // Сбрасываем ID дерева при открытии главы
+        }
+    }
+
     public Chapter getCurrentChapter() {
         if (currentIndex >= 0 && currentIndex < chapters.size()) {
             return chapters.get(currentIndex);
@@ -169,12 +191,18 @@ public class ArsMelimaMenu {
             return dynamicChapter;
         }
         return null;
-    }    public void closeChapter() { this.currentIndex = -1; }
+    }
+
+    public void closeChapter() {
+        this.currentIndex = -1;
+        this.currentProgressTreeId = null;
+    }
 
     public void openDynamicChapter(String id, List<ChapterElement> elements) {
         if (id == null || elements == null || elements.isEmpty()) return;
         dynamicChapter = new Chapter(id, id, elements, true, null);
         currentIndex = PROGRESSION_INDEX - 1;
+        this.currentProgressTreeId = null; // Сбрасываем ID дерева
     }
 
     // --- TreeLinks ---
@@ -182,6 +210,7 @@ public class ArsMelimaMenu {
         if (chapterId == null || chapterId.isEmpty()) return Collections.emptyList();
         return treeLinksCache.computeIfAbsent(chapterId, TreeLinkLoader::loadTreeLinks);
     }
+
     public List<TreeLink> getCurrentTreeLinks() {
         Chapter ch = getCurrentChapter();
         if (ch == null) return Collections.emptyList();
@@ -208,8 +237,80 @@ public class ArsMelimaMenu {
         System.out.println("[ArsMelima] markLearningChaptersDirty() — cache marked for refresh.");
     }
 
-    public void closeProgression() { this.currentIndex = -1; }
-    public boolean isProgressionOpen() { return this.currentIndex == PROGRESSION_INDEX; }
+    // --- Progression Trees ---
+
+    /**
+     * Открывает дерево прогрессии по умолчанию (все узлы)
+     */
+    public void openProgression() {
+        this.currentIndex = PROGRESSION_INDEX;
+        this.currentProgressTreeId = "default";
+        // Используем уже загруженные узлы
+        System.out.println("[ArsMelima] Opened default progression with " + progressNodes.size() + " nodes");
+    }
+
+    /**
+     * Открывает конкретное дерево прогрессии по ID
+     */
+    public void openProgression(String treeId) {
+        this.currentIndex = PROGRESSION_INDEX;
+        this.currentProgressTreeId = treeId;
+        loadProgressTree(treeId);
+    }
+
+    /**
+     * Загружает дерево прогрессии по ID
+     */
+    private void loadProgressTree(String treeId) {
+        if (treeId == null || treeId.isEmpty()) {
+            System.err.println("[ArsMelima] Cannot load progress tree: treeId is null or empty");
+            return;
+        }
+
+        List<ProgressNode> nodes = progressTreesCache.computeIfAbsent(treeId, ProgressTreeLoader::loadProgressTree);
+
+        if (nodes != null && !nodes.isEmpty()) {
+            // Временно устанавливаем узлы для этого дерева
+            setProgressNodes(nodes);
+            System.out.println("[ArsMelima] Loaded progress tree: " + treeId + " with " + nodes.size() + " nodes");
+        } else {
+            System.err.println("[ArsMelima] Failed to load progress tree: " + treeId);
+            // Fallback: используем уже загруженные узлы
+            System.out.println("[ArsMelima] Using existing progress nodes: " + progressNodes.size() + " nodes");
+        }
+    }
+
+    /**
+     * Проверяет, существует ли дерево прогрессии с указанным ID
+     */
+    public boolean progressTreeExists(String treeId) {
+        if (treeId == null || treeId.isEmpty()) return false;
+
+        // Проверяем кэш
+        if (progressTreesCache.containsKey(treeId)) {
+            List<ProgressNode> nodes = progressTreesCache.get(treeId);
+            return nodes != null && !nodes.isEmpty();
+        }
+
+        // Проверяем существование файла
+        return ProgressTreeLoader.progressTreeExists(treeId);
+    }
+
+    /**
+     * Возвращает ID текущего открытого дерева прогрессии
+     */
+    public String getCurrentProgressTreeId() {
+        return currentProgressTreeId;
+    }
+
+    public void closeProgression() {
+        this.currentIndex = -1;
+        this.currentProgressTreeId = null;
+    }
+
+    public boolean isProgressionOpen() {
+        return this.currentIndex == PROGRESSION_INDEX;
+    }
 
     private static String normalizeKey(String raw) {
         if (raw == null) return "";

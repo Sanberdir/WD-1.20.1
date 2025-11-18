@@ -13,7 +13,6 @@ import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.RequestUnlockP
 import java.util.List;
 import java.util.Map;
 
-import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenderer.*;
 import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.OPEN_STRIP_HEIGHT;
 import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.TOTAL_STRIP_HEIGHT;
 
@@ -23,7 +22,10 @@ public class ArsMelimaInputHandler {
     private static final int NAV_REL_Y = 184;
     private static final int TREE_LINKS_PER_COLUMN = 5;
     private static final int TREE_LINKS_PER_PAGE = TREE_LINKS_PER_COLUMN * 2;
-
+    // Эти константы нужны для работы handleColumnClick
+    private static final int CHAPTERS_PER_COLUMN = 5;
+    private static final int CHAPTERS_PER_PAGE = CHAPTERS_PER_COLUMN * 2;
+    private static final int CONTENT_PADDING = 2;
     // --- state preservation (куда вернуться после Tasks) ---
     private int preservedChapterIndex = -1;
     private int preservedTextPage = 0;
@@ -65,6 +67,7 @@ public class ArsMelimaInputHandler {
             return handleChapterListClick(mx, my, button, guiLeft, guiTop, menu, uiManager);
         }
     }
+
 
     private boolean handleChapterContentClick(int mx, int my, int button, int guiLeft, int guiTop,
                                               ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
@@ -126,20 +129,46 @@ public class ArsMelimaInputHandler {
 
 
     private void openTreeLink(TreeLink link, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
-        int idx = menu.getChapterIndexByProgressionId(link.getId());
+        if (link == null) return;
+
+        // --- сохраняем текущее состояние (для возврата из Tasks) ---
+        preservedChapterIndex = menu.getCurrentIndex();
+        preservedTextPage = uiManager.getCurrentTextPage();
+        preservedLearningPage = uiManager.getCurrentLearningPage();
+
+        String id = link.getId();
+        if (id == null || id.isEmpty()) {
+            System.out.println("[ArsMelima] TreeLink ID пустой, ничего не открываем.");
+            return;
+        }
+
+        System.out.println("[ArsMelima] TreeLink clicked: id=\"" + id + "\" title=\"" + link.getTitle() + "\"");
+
+        // --- основной вариант: открываем прогрессию если есть ---
+        if (menu.progressTreeExists(id)) {
+            System.out.println("[ArsMelima] Opening progression: " + id);
+            menu.openProgression(id);
+            uiManager.setCurrentProgressPage(0);
+            playPageTurnSound();
+            return;
+        }
+
+        // --- fallback на главу ---
+        int idx = menu.getChapterIndexByProgressionId(id);
         if (idx >= 0) {
             menu.openChapter(idx);
             uiManager.setCurrentTextPage(0);
+            uiManager.setCurrentLearningPage(0);
             playPageTurnSound();
-        } else {
-            List<ChapterElement> content = ChapterLoader.loadChapterContent(link.getId());
-            if (content != null && !content.isEmpty()) {
-                menu.openDynamicChapter(link.getId(), content);
-                uiManager.setCurrentTextPage(0);
-                playPageTurnSound();
-            }
+            return;
         }
+
+        System.out.println("[ArsMelima] Не найдено ни прогрессии, ни главы для TreeLink id: " + id);
     }
+
+
+
+
     private boolean handleProgressNodesClick(int mouseX, int mouseY, int button,
                                              ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
         if (button != 0) return false;
@@ -172,56 +201,33 @@ public class ArsMelimaInputHandler {
     }
 
     private void handleChapterByNode(String nodeId, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
+        if (nodeId == null || nodeId.isEmpty()) return;
+
         String nodeKey = normalizeKey(nodeId);
         int idx = menu.getChapterIndexByProgressionId(nodeId);
-
-        if (idx < 0) {
-            outer:
-            for (int i = 0; i < menu.getChapters().size(); i++) {
-                Chapter ch = menu.getChapters().get(i);
-                if (ch == null) continue;
-                if (normalizeKey(ch.getId()).equals(nodeKey) || normalizeKey(ch.getTitle()).equals(nodeKey)) {
-                    idx = i; break;
-                }
-                List<ChapterElement> elems = ch.getElements();
-                if (elems != null) {
-                    for (ChapterElement el : elems) {
-                        if (el == null || el.getType() != ChapterElement.Type.TEXT) continue;
-                        String data = el.getData() != null ? el.getData().toString() : "";
-                        if (data.isEmpty()) continue;
-                        try {
-                            JsonObject obj = JsonParser.parseString(data).getAsJsonObject();
-                            if (obj.has("id") && normalizeKey(obj.get("id").getAsString()).equals(nodeKey)) {
-                                idx = i; break outer;
-                            }
-                        } catch (Exception ignored) {}
-                    }
-                }
-            }
-        }
-
-        if (idx < 0) {
-            List<ChapterElement> content = ChapterLoader.loadChapterContent(nodeId);
-            if ((content == null || content.isEmpty()) && nodeId != null && nodeId.contains(":")) {
-                String shortId = nodeId.substring(nodeId.indexOf(':') + 1);
-                content = ChapterLoader.loadChapterContent(shortId);
-                if (content != null && !content.isEmpty()) nodeId = shortId;
-            }
-
-            if (content != null && !content.isEmpty()) {
-                menu.openDynamicChapter(nodeId, content);
-                uiManager.setCurrentTextPage(0);
-                playPageTurnSound();
-                return;
-            }
-        }
+        if (idx < 0) idx = menu.getChapterIndexByProgressionId(nodeKey);
 
         if (idx >= 0) {
             menu.openChapter(idx);
             uiManager.setCurrentTextPage(0);
             playPageTurnSound();
+            return;
+        }
+
+        List<ChapterElement> content = ChapterLoader.loadChapterContent(nodeId);
+        if ((content == null || content.isEmpty()) && nodeId.contains(":")) {
+            String shortId = nodeId.substring(nodeId.indexOf(':') + 1);
+            content = ChapterLoader.loadChapterContent(shortId);
+            if (content != null && !content.isEmpty()) nodeId = shortId;
+        }
+
+        if (content != null && !content.isEmpty()) {
+            menu.openDynamicChapter(nodeId, content);
+            uiManager.setCurrentTextPage(0);
+            playPageTurnSound();
         }
     }
+
 
     // --- ОБЩИЙ КЛИК ПО КОЛОНКАМ (LEFT/RIGHT) ---
     private <T> boolean handleColumnClick(int mx, int my, int colLeft, int colTop, int colWidth, int startIdx,
