@@ -149,7 +149,6 @@ public class TaskManager {
                             filename.length() - 5
                     );
                     chapterIds.add(chapterId);
-                    System.out.println("[ArsMelima] Discovered chapter: " + chapterId);
                 }
             }
         } catch (Exception e) {

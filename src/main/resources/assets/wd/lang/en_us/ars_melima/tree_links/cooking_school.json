@@ -1,0 +1,24 @@
+{
+  "links": [
+    {
+      "id": "cooking_school3333",
+      "title": "wd.tree_links.start",
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "cooking_root",
+      "title": "wd.tree_links.cooking_root",
+      "icon": "minecraft:furnace"
+    },
+    {
+      "id": "cooking_schoo33",
+      "title": "wd.tree_links.start_root",
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "cooking_3t",
+      "title": "wd.tree_links.cooking",
+      "icon": "minecraft:furnace"
+    }
+  ]
+}

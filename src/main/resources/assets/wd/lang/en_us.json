@@ -312,5 +312,11 @@
   "wd.ice_waffles.description": "In freeze berries jam.",
   "wd.charming_waffles.description": "In charming berries jam.",
   "wd.poison_waffles.description": "In poison berries jam.",
-  "wd.glow_berries_waffles.description": "In a jam made from glowing berries."
+  "wd.glow_berries_waffles.description": "In a jam made from glowing berries.",
+
+
+  "wd.tree_links.start": "Start",
+  "wd.tree_links.cooking": "Start",
+  "wd.tree_links.start_root": "Start",
+  "wd.tree_links.cooking_root": "Fuck ass"
 }

@@ -1,6 +1,8 @@
 package ru.imaginaerum.wd.client.gui.ars_melima;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -12,7 +14,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class ChapterLoader {
-    private static final Gson GSON = new Gson();
     private static final String CHAPTERS_META_DIR = "ars_melima/chapters"; // папка для метаданных глав
     private static final String CHAPTERS_CONTENT_DIR = "ars_melima/content"; // папка для содержимого глав
 
@@ -88,8 +89,9 @@ public class ChapterLoader {
                     JsonObject jo = JsonParser.parseReader(reader).getAsJsonObject();
 
                     if (jo.has("elements") && jo.get("elements").isJsonArray()) {
-                        JsonArray arr = jo.getAsJsonArray("elements");
+                        var arr = jo.getAsJsonArray("elements");
                         for (JsonElement el : arr) {
+                            if (!el.isJsonObject()) continue;
                             JsonObject obj = el.getAsJsonObject();
                             if (!obj.has("type") || !obj.has("data")) continue;
 
@@ -99,6 +101,7 @@ public class ChapterLoader {
                                 );
                                 elements.add(new ChapterElement(type, obj.get("data").getAsString()));
                             } catch (IllegalArgumentException e) {
+                                // неизвестный тип — пропускаем
                                 continue;
                             }
                         }
@@ -118,11 +121,19 @@ public class ChapterLoader {
                     System.err.println("[ArsMelima] Failed to load chapter content " + rl + " : " + e.getMessage());
                 }
 
-                if (!elements.isEmpty()) break; // используем первую найденную локализацию
+                if (!elements.isEmpty()) {
+                    // нашли содержимое — используем и прекращаем поиск по другим локалям
+                    break;
+                }
 
             } catch (Exception e) {
                 // Файл не найден - пробуем следующую локализацию
             }
+        }
+
+        if (elements.isEmpty()) {
+            // диагностическое сообщение для отладки
+            // System.out.println("[ArsMelima] No content for chapter: " + chapterId);
         }
 
         return elements;

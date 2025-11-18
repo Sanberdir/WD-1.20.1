@@ -10,7 +10,6 @@ public class ServerTaskStorage {
         CompoundTag persistent = player.getPersistentData();
         if (!persistent.contains(ROOT_TAG)) {
             persistent.put(ROOT_TAG, new CompoundTag());
-            System.out.println("[ArsMelima] Created new root tag for player: " + player.getName().getString());
         }
         return persistent.getCompound(ROOT_TAG);
     }
@@ -20,7 +19,6 @@ public class ServerTaskStorage {
      */
     public static int getProgress(ServerPlayer player, String chapterId, String taskId) {
         if (player == null || chapterId == null || taskId == null) {
-            System.out.println("[ArsMelima] ERROR: getProgress called with null parameters");
             return 0;
         }
 
@@ -28,15 +26,11 @@ public class ServerTaskStorage {
 
         // Проверяем существование chapter
         if (!root.contains(chapterId)) {
-            System.out.println("[ArsMelima] Chapter not found: " + chapterId + " for player: " + player.getName().getString());
             return 0;
         }
 
         CompoundTag chapterTag = root.getCompound(chapterId);
-        int progress = chapterTag.getInt(taskId);
-
-        System.out.println("[ArsMelima] ServerTaskStorage READ: " + chapterId + "/" + taskId + " = " + progress);
-        return progress;
+        return chapterTag.getInt(taskId);
     }
 
     /**
@@ -44,20 +38,15 @@ public class ServerTaskStorage {
      */
     public static void setProgress(ServerPlayer player, String chapterId, String taskId, int value) {
         if (player == null || chapterId == null || taskId == null) {
-            System.out.println("[ArsMelima] ERROR: setProgress called with null parameters");
             return;
         }
 
         CompoundTag root = getRoot(player);
         CompoundTag chapterTag = root.contains(chapterId) ? root.getCompound(chapterId) : new CompoundTag();
 
-        int oldValue = chapterTag.getInt(taskId);
         chapterTag.putInt(taskId, value);
         root.put(chapterId, chapterTag);
         player.getPersistentData().put(ROOT_TAG, root);
-
-        System.out.println("[ArsMelima] ServerTaskStorage WRITE: " + chapterId + "/" + taskId +
-                " " + oldValue + " -> " + value + " for player: " + player.getName().getString());
     }
 
     /**
@@ -65,16 +54,12 @@ public class ServerTaskStorage {
      */
     public static int incrementProgress(ServerPlayer player, String chapterId, String taskId, int delta) {
         if (player == null || chapterId == null || taskId == null) {
-            System.out.println("[ArsMelima] ERROR: incrementProgress called with null parameters");
             return 0;
         }
 
         int prev = getProgress(player, chapterId, taskId);
         int next = Math.max(0, prev + delta);
         setProgress(player, chapterId, taskId, next);
-
-        System.out.println("[ArsMelima] ServerTaskStorage INCREMENT: " + chapterId + "/" + taskId +
-                " " + prev + " + " + delta + " = " + next);
 
         return next;
     }
@@ -86,16 +71,6 @@ public class ServerTaskStorage {
         if (player == null) return new CompoundTag();
 
         CompoundTag root = getRoot(player);
-        System.out.println("[ArsMelima] ServerTaskStorage getAllProgress: " + root.getAllKeys().size() + " chapters");
-
-        for (String chapterId : root.getAllKeys()) {
-            CompoundTag chapter = root.getCompound(chapterId);
-            System.out.println("[ArsMelima] Chapter " + chapterId + " has " + chapter.getAllKeys().size() + " tasks");
-            for (String taskId : chapter.getAllKeys()) {
-                System.out.println("[ArsMelima]   " + taskId + " = " + chapter.getInt(taskId));
-            }
-        }
-
         return root.copy();
     }
 
@@ -109,7 +84,6 @@ public class ServerTaskStorage {
         if (!root.contains(chapterId)) {
             root.put(chapterId, new CompoundTag());
             player.getPersistentData().put(ROOT_TAG, root);
-            System.out.println("[ArsMelima] Initialized chapter: " + chapterId + " for player: " + player.getName().getString());
         }
     }
 
@@ -129,9 +103,7 @@ public class ServerTaskStorage {
 
         // 1) плоский ключ
         if (root.contains(taskId)) {
-            int progress = root.getInt(taskId);
-            System.out.println("[ArsMelima] Found flat progress: " + taskId + " = " + progress);
-            return progress;
+            return root.getInt(taskId);
         }
 
         // 2) поиск по всем chapter-ключам
@@ -139,13 +111,10 @@ public class ServerTaskStorage {
             if (!root.get(chapterId).getClass().equals(CompoundTag.class)) continue;
             CompoundTag ch = root.getCompound(chapterId);
             if (ch.contains(taskId)) {
-                int progress = ch.getInt(taskId);
-                System.out.println("[ArsMelima] Found chapter progress: " + chapterId + "/" + taskId + " = " + progress);
-                return progress;
+                return ch.getInt(taskId);
             }
         }
 
-        System.out.println("[ArsMelima] No progress found for task: " + taskId);
         return 0;
     }
 }
