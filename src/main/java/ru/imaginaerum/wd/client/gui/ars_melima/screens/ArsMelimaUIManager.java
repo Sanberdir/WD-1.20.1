@@ -8,8 +8,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import ru.imaginaerum.wd.client.gui.ars_melima.*;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
-import ru.imaginaerum.wd.client.gui.ars_melima.screens.ClientCookingData;
-import ru.imaginaerum.wd.client.gui.ars_melima.screens.CookingXPManager;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.*;
 
 import java.util.List;
@@ -95,6 +93,15 @@ public class ArsMelimaUIManager {
     }
 
     private void renderContent(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
+        // ДОБАВЛЕНО: отладочный вывод
+        System.out.println("[RENDER] Current index: " + menu.getCurrentIndex());
+        Chapter chapter = menu.getCurrentChapter();
+        System.out.println("[RENDER] Current chapter: " + (chapter != null ? chapter.getId() : "NULL"));
+        if (chapter != null) {
+            System.out.println("[RENDER] Chapter elements: " + chapter.getElements().size());
+            System.out.println("[RENDER] Is dynamic: " + menu.isDynamicChapterOpen());
+        }
+
         int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
         int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
         int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
@@ -125,30 +132,37 @@ public class ArsMelimaUIManager {
                     font, menu, 0.85f, currentChapterPage);
 
         } else {
-            Chapter chapter = menu.getCurrentChapter();
+            // УБРАНО: повторное объявление Chapter chapter
             int page = currentTextPage;
 
-            if (page == 0) {
-                // Левая колонка — learning chapters
-                List<LearningChapter> learningChapters = menu.getLearningChapters(chapter.getId());
+            // ДОБАВЛЕНО: проверка на динамическую главу
+            if (menu.isDynamicChapterOpen()) {
+                // Для динамических глав рендерим только содержимое
+                System.out.println("[RENDER] Rendering dynamic chapter content");
+                ArsMelimaRenders.renderChapterPage(graphics, mouseX, mouseY,
+                        chapter, page,
+                        contentLeft, contentTop, contentWidth, contentHeight,
+                        rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
+                        font, 0.85f, ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ArsMelimaConstants.ICONS_TEXTURE);
 
+            } else if (page == 0) {
+                // Левая колонка — learning chapters (только для обычных глав)
+                List<LearningChapter> learningChapters = menu.getLearningChapters(chapter.getId());
                 renderLearningChaptersList(graphics, mouseX, mouseY,
                         contentLeft, contentTop, contentWidth, contentHeight,
                         rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
                         font, learningChapters, 0.85f, currentLearningPage);
 
-                // Правая колонка — tree links
+                // Правая колонка — tree links (только для обычных глав)
                 List<TreeLink> treeLinks = menu.getTreeLinks(chapter.getId());
-
                 renderTreeLinksList(graphics, mouseX, mouseY,
                         contentLeft, contentTop, contentWidth, contentHeight,
                         rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
                         font, treeLinks, 0.85f, 0);
 
             } else {
-                // Страницы TreeLinks
+                // Страницы TreeLinks (только для обычных глав)
                 List<TreeLink> treeLinks = menu.getTreeLinks(chapter.getId());
-
                 renderTreeLinksList(graphics, mouseX, mouseY,
                         contentLeft, contentTop, contentWidth, contentHeight,
                         rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,

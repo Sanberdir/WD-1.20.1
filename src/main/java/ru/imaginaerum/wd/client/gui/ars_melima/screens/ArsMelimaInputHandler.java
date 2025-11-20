@@ -12,6 +12,7 @@ import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.RequestUnlockP
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.OPEN_STRIP_HEIGHT;
 import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.TOTAL_STRIP_HEIGHT;
@@ -201,31 +202,88 @@ public class ArsMelimaInputHandler {
     }
 
     private void handleChapterByNode(String nodeId, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
-        if (nodeId == null || nodeId.isEmpty()) return;
+        System.out.println("[DEBUG] handleChapterByNode: nodeId=" + nodeId);
 
-        String nodeKey = normalizeKey(nodeId);
+        // 1) Проверяем главу
         int idx = menu.getChapterIndexByProgressionId(nodeId);
-        if (idx < 0) idx = menu.getChapterIndexByProgressionId(nodeKey);
+        System.out.println("[DEBUG] Chapter index by progressionId: " + idx);
 
-        if (idx >= 0) {
-            menu.openChapter(idx);
-            uiManager.setCurrentTextPage(0);
-            playPageTurnSound();
-            return;
+        // 2) Строим кандидатов
+        List<String> candidates = buildContentCandidates(nodeId);
+        System.out.println("[DEBUG] Content candidates: " + candidates);
+
+        // 3) Пробуем загрузить
+        for (String cand : candidates) {
+            try {
+                System.out.println("[DEBUG] Trying to load: " + cand);
+                List<ChapterElement> loaded = ChapterLoader.loadChapterContent(cand);
+                if (loaded != null && !loaded.isEmpty()) {
+                    System.out.println("[DEBUG] SUCCESS: Loaded content for " + cand + ", size=" + loaded.size());
+                    menu.openDynamicChapter(cand, loaded);
+                    uiManager.setCurrentTextPage(0);
+                    playPageTurnSound();
+                    return;
+                }
+            } catch (Exception e) {
+                System.out.println("[DEBUG] FAILED: " + cand + " - " + e.getMessage());
+            }
+        }
+        System.out.println("[DEBUG] No content found for any candidate");
+    }
+
+
+    /**
+     * Построить список кандидатов имён файлов для поиска JSON содержимого.
+     * Перебираем разумные варианты: оригинальный id, id без неймспейса, короткая часть после ':',
+     * нормализованная версия (normalizeKey), а также простые трансформации с заменой '/', '.', '-' -> '_'.
+     */
+    private List<String> buildContentCandidates(String nodeId) {
+        List<String> out = new ArrayList<>();
+        if (nodeId == null || nodeId.isEmpty()) return out;
+
+        // 1) оригинал
+        out.add(nodeId);
+
+        // 2) без неймспейса (после ':')
+        if (nodeId.contains(":")) {
+            String after = nodeId.substring(nodeId.indexOf(':') + 1);
+            out.add(after);
         }
 
-        List<ChapterElement> content = ChapterLoader.loadChapterContent(nodeId);
-        if ((content == null || content.isEmpty()) && nodeId.contains(":")) {
-            String shortId = nodeId.substring(nodeId.indexOf(':') + 1);
-            content = ChapterLoader.loadChapterContent(shortId);
-            if (content != null && !content.isEmpty()) nodeId = shortId;
+        // 3) basename после слеша
+        if (nodeId.contains("/")) {
+            String base = nodeId.substring(nodeId.lastIndexOf('/') + 1);
+            out.add(base);
         }
 
-        if (content != null && !content.isEmpty()) {
-            menu.openDynamicChapter(nodeId, content);
-            uiManager.setCurrentTextPage(0);
-            playPageTurnSound();
+        // 4) нормализованные варианты
+        String norm = normalizeKey(nodeId);
+        if (!norm.isEmpty()) out.add(norm);
+
+        if (nodeId.contains(":")) {
+            String after = nodeId.substring(nodeId.indexOf(':') + 1);
+            String normAfter = normalizeKey(after);
+            if (!normAfter.isEmpty()) out.add(normAfter);
         }
+
+        // 5) replace some separators
+        String replaced = nodeId.replace('/', '_').replace('.', '_').replace('-', '_');
+        if (!out.contains(replaced)) out.add(replaced);
+
+        String withoutNs = nodeId.contains(":") ? nodeId.substring(nodeId.indexOf(':') + 1) : nodeId;
+        String replaced2 = withoutNs.replace('/', '_').replace('.', '_').replace('-', '_');
+        if (!out.contains(replaced2)) out.add(replaced2);
+
+        // очистка и уборка дубликатов, сохраняя порядок
+        List<String> cleaned = new ArrayList<>();
+        for (String s : out) {
+            if (s == null) continue;
+            String t = s.trim();
+            if (t.isEmpty()) continue;
+            if (!cleaned.contains(t)) cleaned.add(t);
+        }
+
+        return cleaned;
     }
 
 

@@ -2,8 +2,6 @@ package ru.imaginaerum.wd.client.gui.ars_melima;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.tree_progress.ProgressTreeLoader;
 
@@ -187,22 +185,24 @@ public class ArsMelimaMenu {
     public Chapter getCurrentChapter() {
         if (currentIndex >= 0 && currentIndex < chapters.size()) {
             return chapters.get(currentIndex);
-        } else if (dynamicChapter != null && currentIndex == PROGRESSION_INDEX - 1) {
-            return dynamicChapter;
+        } else if (dynamicChapter != null && currentIndex >= chapters.size()) {
+            return dynamicChapter; // Динамические главы
         }
         return null;
     }
-
     public void closeChapter() {
         this.currentIndex = -1;
         this.currentProgressTreeId = null;
     }
-
     public void openDynamicChapter(String id, List<ChapterElement> elements) {
-        if (id == null || elements == null || elements.isEmpty()) return;
         dynamicChapter = new Chapter(id, id, elements, true, null);
-        currentIndex = PROGRESSION_INDEX - 1;
-        this.currentProgressTreeId = null; // Сбрасываем ID дерева
+        currentIndex = chapters.size(); // Уникальный индекс для динамических глав
+        this.currentProgressTreeId = null;
+        refreshPage();
+    }
+
+    public boolean isDynamicChapterOpen() {
+        return dynamicChapter != null && currentIndex >= chapters.size();
     }
 
     // --- TreeLinks ---
