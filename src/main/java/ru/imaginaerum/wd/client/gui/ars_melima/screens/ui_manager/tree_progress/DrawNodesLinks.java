@@ -102,7 +102,8 @@ public class DrawNodesLinks {
                             int verticalStartY = squareY + CORNER_SIZE + 1; // <-- +1 gap after corner
                             ny = verticalStartY + LINE_LENGTH + childDelta + childOffset;
                         } else if ("down".equals(first) && "right".equals(second)) {
-                            int parentBottomY = base.y + NODE_SIZE + parentDelta + parentOffset;
+                            int parentBottomY;
+                            parentBottomY = base.y + NODE_SIZE + parentDelta + parentOffset;
                             int startYSeg = parentBottomY;
                             int squareY = startYSeg + LINE_LENGTH + 1; // <-- +1 gap before corner
                             ny = squareY - (NODE_SIZE / 2) + 1;
@@ -193,6 +194,14 @@ public class DrawNodesLinks {
             int parentDelta = (parentFrame - NODE_SIZE) / 2;
             int childDelta = (childFrame - NODE_SIZE) / 2;
 
+            boolean parentUnlocked = parentNode != null && (!parentNode.isLocked() || ClientCookingData.isProgressUnlocked(parentNode.getId()));
+            boolean childUnlocked = (!childNode.isLocked() || ClientCookingData.isProgressUnlocked(childNode.getId()));
+            boolean useNew = parentUnlocked || childUnlocked;
+
+            // проникновение в рамку: locked -> 1px, unlocked -> 2px
+            int parentPenetration = parentUnlocked ? 2 : 1;
+            int childPenetration = childUnlocked ? 2 : 1;
+
             int parentOffset = parentNode != null && (!parentNode.isLocked() || ClientCookingData.isProgressUnlocked(parentNode.getId()))
                     ? LINE_OFFSET_UNLOCKED : LINE_OFFSET_LOCKED;
             int childOffset = (!childNode.isLocked() || ClientCookingData.isProgressUnlocked(childNode.getId()))
@@ -201,96 +210,136 @@ public class DrawNodesLinks {
             int visible = LINE_LENGTH;
             if (visible <= 0) continue;
 
+            // параметры новой текстуры
+            final int NEW_W = 17;   // new horizontal width
+            final int NEW_H = 4;    // new horizontal/vertical thickness
+
             String[] parts = dirRaw.split("\\s*,\\s*");
             if (parts.length == 1) {
                 // простые направления
                 switch (parts[0]) {
                     case "right" -> {
-                        int startX = parentPos.x + NODE_SIZE + parentDelta + parentOffset;
-                        int y = parentPos.y + NODE_SIZE / 2 - 1;
-                        drawHorizontalStripTiled(graphics, startX, y, visible);
+                        if (useNew) {
+                            // Для родителя: линия начинается ВНУТРИ рамки (проникновение внутрь)
+                            int startX = parentPos.x + NODE_SIZE + parentDelta - parentPenetration;
+                            int y = parentPos.y + NODE_SIZE / 2 - (NEW_H / 2);
+                            drawLineHorizontal17(graphics, startX, y);
+                        } else {
+                            int startX = parentPos.x + NODE_SIZE + parentDelta + parentOffset;
+                            int y = parentPos.y + NODE_SIZE / 2 - 1;
+                            drawHorizontalStripTiled(graphics, startX, y, visible);
+                        }
                     }
                     case "left" -> {
-                        int startX = childPos.x + NODE_SIZE + childDelta + childOffset;
-                        int y = childPos.y + NODE_SIZE / 2 - 1;
-                        drawHorizontalStripTiled(graphics, startX, y, visible);
+                        if (useNew) {
+                            // Для ребенка: линия начинается ВНУТРИ рамки (проникновение внутрь)
+                            int startX = childPos.x + NODE_SIZE + childDelta - childPenetration;
+                            int y = childPos.y + NODE_SIZE / 2 - (NEW_H / 2);
+                            drawLineHorizontal17(graphics, startX, y);
+                        } else {
+                            int startX = childPos.x + NODE_SIZE + childDelta + childOffset;
+                            int y = childPos.y + NODE_SIZE / 2 - 1;
+                            drawHorizontalStripTiled(graphics, startX, y, visible);
+                        }
                     }
                     case "down" -> {
-                        int startY = parentPos.y + NODE_SIZE + parentDelta + parentOffset;
-                        int x = parentPos.x + NODE_SIZE / 2 - 1;
-                        drawVerticalStripTiled(graphics, x, startY, visible);
+                        if (useNew) {
+                            // Для родителя: линия начинается ВНУТРИ рамки (проникновение внутрь)
+                            int startY = parentPos.y + NODE_SIZE + parentDelta - parentPenetration;
+                            int x = parentPos.x + NODE_SIZE / 2 - (NEW_H / 2);
+                            drawLineVertical17(graphics, x, startY);
+                        } else {
+                            int startY = parentPos.y + NODE_SIZE + parentDelta + parentOffset;
+                            int x = parentPos.x + NODE_SIZE / 2 - 1;
+                            drawVerticalStripTiled(graphics, x, startY, visible);
+                        }
                     }
                     case "up" -> {
-                        int startY = childPos.y + NODE_SIZE + childDelta + childOffset;
-                        int x = childPos.x + NODE_SIZE / 2 - 1;
-                        drawVerticalStripTiled(graphics, x, startY, visible);
+                        if (useNew) {
+                            // Для ребенка: линия начинается ВНУТРИ рамки (проникновение внутрь)
+                            int startY = childPos.y + NODE_SIZE + childDelta - childPenetration;
+                            int x = childPos.x + NODE_SIZE / 2 - (NEW_H / 2);
+                            drawLineVertical17(graphics, x, startY);
+                        } else {
+                            int startY = childPos.y + NODE_SIZE + childDelta + childOffset;
+                            int x = childPos.x + NODE_SIZE / 2 - 1;
+                            drawVerticalStripTiled(graphics, x, startY, visible);
+                        }
                     }
                 }
             }
-            // L-образные линии
-            if (parts.length == 2) {
+            else if (parts.length == 2 && useNew) {
+                // L-образные линии с углом внутри ноды
                 String first = parts[0];
                 String second = parts[1];
 
-                // right,down
-                if ("right".equals(first) && "down".equals(second)) {
+                switch (first + "," + second) {
+                    case "right,down" -> {
+                        int startX = parentPos.x + NODE_SIZE + parentDelta - parentPenetration;
+                        int startY = parentPos.y + NODE_SIZE / 2 - (NEW_H / 2);
+                        drawCornerRightDown(graphics, startX, startY);
+                    }
+                    case "down,right" -> {
+                        int startX = parentPos.x + NODE_SIZE / 2 - (NEW_H / 2);
+                        int startY = parentPos.y + NODE_SIZE + parentDelta - parentPenetration;
+                        drawCornerDownRight(graphics, startX, startY);
+                    }
+                    case "left,down" -> {
+                        int startX = parentPos.x - parentDelta - parentOffset - LINE_LENGTH - CORNER_SIZE - 2; // было -1 → теперь -3
+                        int startY = parentPos.y + NODE_SIZE / 2 - (NEW_H / 2);
+                        drawCornerLeftDown(graphics, startX, startY);
+                    }
+                    case "down,left" -> {
+                        int startX = parentPos.x + NODE_SIZE / 2 - (NEW_H / 2) - CORNER_SIZE - LINE_LENGTH - 2;
+                        int startY = parentPos.y + NODE_SIZE + parentDelta - parentPenetration;
+                        drawCornerDownLeft(graphics, startX, startY);
+                    }
+                }
+            } else if (parts.length == 2) {
+                // fallback старая схема
+                if ("right".equals(parts[0]) && "down".equals(parts[1])) {
                     int startX = parentPos.x + NODE_SIZE + parentDelta + parentOffset;
                     int y = parentPos.y + NODE_SIZE / 2 - 1;
                     drawHorizontalStripTiled(graphics, startX, y, visible);
 
-                    // place corner one-pixel after the end of the first segment
-                    int cornerX = startX + visible + 1;   // <-- +1 gap before corner
+                    int cornerX = startX + visible + 1;
                     int cornerY = y;
                     drawCornerSquare(graphics, cornerX, cornerY);
 
-                    int vertX = cornerX;
-                    int vertStartY = cornerY + CORNER_SIZE + 1; // <-- +1 gap after corner
-                    drawVerticalStripTiled(graphics, vertX, vertStartY, visible);
-                }
-                // down,right
-                else if ("down".equals(first) && "right".equals(second)) {
+                    drawVerticalStripTiled(graphics, cornerX, cornerY + CORNER_SIZE + 1, visible);
+                } else if ("down".equals(parts[0]) && "right".equals(parts[1])) {
                     int startY = parentPos.y + NODE_SIZE + parentDelta + parentOffset;
                     int x = parentPos.x + NODE_SIZE / 2 - 1;
                     drawVerticalStripTiled(graphics, x, startY, visible);
 
                     int cornerX = x;
-                    int cornerY = startY + visible + 1; // <-- +1 gap before corner
+                    int cornerY = startY + visible + 1;
                     drawCornerSquare(graphics, cornerX, cornerY);
 
-                    int horizStartX = cornerX + CORNER_SIZE + 1; // <-- +1 gap after corner
-                    int horizY = cornerY;
-                    drawHorizontalStripTiled(graphics, horizStartX, horizY, visible);
-                }
-                // left,down
-                else if ("left".equals(first) && "down".equals(second)) {
-                    int parentLeftFaceX = parentPos.x - parentDelta - parentOffset;
-                    int startX = parentLeftFaceX - visible;
+                    drawHorizontalStripTiled(graphics, cornerX + CORNER_SIZE + 1, cornerY, visible);
+                } else if ("left".equals(parts[0]) && "down".equals(parts[1])) {
+                    int startX = parentPos.x - parentDelta - parentOffset - visible;
                     int y = parentPos.y + NODE_SIZE / 2 - 1;
                     drawHorizontalStripTiled(graphics, startX, y, visible);
 
-                    // corner to the left of the first segment, leave 1px gap
-                    int cornerX = startX - CORNER_SIZE - 1; // <-- -1 to make 1px gap before corner
+                    int cornerX = startX - CORNER_SIZE - 1;
                     int cornerY = y;
                     drawCornerSquare(graphics, cornerX, cornerY);
 
-                    int vertX = cornerX;
-                    int vertStartY = cornerY + CORNER_SIZE + 1; // <-- +1 gap after corner
-                    drawVerticalStripTiled(graphics, vertX, vertStartY, visible);
-                } else if ("down".equals(first) && "left".equals(second)) {
+                    drawVerticalStripTiled(graphics, cornerX, cornerY + CORNER_SIZE + 1, visible);
+                } else if ("down".equals(parts[0]) && "left".equals(parts[1])) {
                     int startY = parentPos.y + NODE_SIZE + parentDelta + parentOffset;
                     int x = parentPos.x + NODE_SIZE / 2 - 1;
                     drawVerticalStripTiled(graphics, x, startY, visible);
 
                     int cornerX = x;
-                    int cornerY = startY + visible + 1; // gap before corner
+                    int cornerY = startY + visible + 1;
                     drawCornerSquare(graphics, cornerX, cornerY);
 
-                    // зеркальный вариант: 1px gap после corner, потом линия
-                    int horizStartX = cornerX - 1 - visible;
-                    int horizY = cornerY;
-                    drawHorizontalStripTiled(graphics, horizStartX, horizY, visible);
+                    drawHorizontalStripTiled(graphics, cornerX - 1 - visible, cornerY, visible);
                 }
             }
         }
     }
+
 }
