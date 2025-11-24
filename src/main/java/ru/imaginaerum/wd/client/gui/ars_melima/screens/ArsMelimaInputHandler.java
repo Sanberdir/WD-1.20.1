@@ -204,32 +204,28 @@ public class ArsMelimaInputHandler {
     private void handleChapterByNode(String nodeId, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
         System.out.println("[DEBUG] handleChapterByNode: nodeId=" + nodeId);
 
-        // 1) Проверяем главу
         int idx = menu.getChapterIndexByProgressionId(nodeId);
         System.out.println("[DEBUG] Chapter index by progressionId: " + idx);
 
-        // 2) Строим кандидатов
         List<String> candidates = buildContentCandidates(nodeId);
         System.out.println("[DEBUG] Content candidates: " + candidates);
 
-        // 3) Пробуем загрузить
         for (String cand : candidates) {
-            try {
-                System.out.println("[DEBUG] Trying to load: " + cand);
-                List<ChapterElement> loaded = ChapterLoader.loadChapterContent(cand);
-                if (loaded != null && !loaded.isEmpty()) {
-                    System.out.println("[DEBUG] SUCCESS: Loaded content for " + cand + ", size=" + loaded.size());
-                    menu.openDynamicChapter(cand, loaded);
-                    uiManager.setCurrentTextPage(0);
-                    playPageTurnSound();
-                    return;
-                }
-            } catch (Exception e) {
-                System.out.println("[DEBUG] FAILED: " + cand + " - " + e.getMessage());
+            System.out.println("[DEBUG] Trying to load candidate: " + cand);
+            List<ChapterElement> loaded = ChapterLoader.loadChapterContent(cand);
+            System.out.println("[DEBUG] ChapterLoader.loadChapterContent(\"" + cand + "\") returned " + (loaded == null ? "null" : loaded.size() + " elements"));
+            if (loaded != null && !loaded.isEmpty()) {
+                System.out.println("[DEBUG] SUCCESS: Loaded content for " + cand);
+                menu.openDynamicChapter(cand, loaded);
+                uiManager.setCurrentTextPage(0);
+                playPageTurnSound();
+                return;
             }
         }
+
         System.out.println("[DEBUG] No content found for any candidate");
     }
+
 
 
     /**

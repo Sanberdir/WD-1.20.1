@@ -13,7 +13,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -125,6 +127,7 @@ public class ForgeEventBusEvents {
     }
 
     // === ОБРАБОТКА КРАФТА И ПЛАВКИ ===
+    // === ОБРАБОТКА КРАФТА И ПЛАВКИ ===
     @SubscribeEvent
     public static void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
         Player player = event.getEntity();
@@ -149,6 +152,7 @@ public class ForgeEventBusEvents {
             ItemStack result = event.getSmelting();
             if (!result.isEmpty()) {
                 handleCrafting(serverPlayer, result, result.getCount(), "smelting");
+                addCraftingXp(serverPlayer, result); // ДОБАВЛЕНО: XP за плавку
             }
         }
     }
@@ -160,23 +164,12 @@ public class ForgeEventBusEvents {
             ItemStack result = event.getSmelting();
             if (!result.isEmpty() && isSmokingRecipe(result, event.getEntity().level())) {
                 handleCrafting(serverPlayer, result, result.getCount(), "smoking");
+                addCraftingXp(serverPlayer, result); // ДОБАВЛЕНО: XP за копчение
             }
         }
     }
 
-    // Вспомогательные методы проверки рецептов
-    private static boolean isSmokingRecipe(ItemStack result, Level level) {
-        RecipeManager recipeManager = level.getRecipeManager();
-        var recipes = recipeManager.getRecipesFor(RecipeType.SMOKING, new SimpleContainer(result), level);
-        return !recipes.isEmpty();
-    }
-
-    private static boolean isCampfireRecipe(ItemStack result, Level level) {
-        RecipeManager recipeManager = level.getRecipeManager();
-        var recipes = recipeManager.getRecipesFor(RecipeType.CAMPFIRE_COOKING, new SimpleContainer(result), level);
-        return !recipes.isEmpty();
-    }
-
+    // Обработка приготовления на костре
     @SubscribeEvent
     public static void onCampfireCookingResult(PlayerInteractEvent.RightClickBlock event) {
         if (event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND) return;
@@ -198,8 +191,69 @@ public class ForgeEventBusEvents {
                         if (!cookingResult.isEmpty()) {
                             // Предмет может приготовиться на костре
                             handleCrafting((ServerPlayer) event.getEntity(), cookingResult, 1, "campfire_cooking");
+                            addCraftingXp((ServerPlayer) event.getEntity(), cookingResult); // ДОБАВЛЕНО: XP за костер
                         }
                     }
+                }
+            }
+        }
+    }
+
+    // Обработка извлечения готовых предметов из костра
+    @SubscribeEvent
+    public static void onItemTakenFromCampfire(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND) return;
+
+        Level level = event.getLevel();
+        BlockPos pos = event.getPos();
+        BlockState blockState = level.getBlockState(pos);
+
+        if (blockState.getBlock() == Blocks.CAMPFIRE || blockState.getBlock() == Blocks.SOUL_CAMPFIRE) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof CampfireBlockEntity campfire) {
+                // Используем доступные методы для проверки готовности
+                for (int i = 0; i < campfire.getItems().size(); i++) {
+                    ItemStack itemInSlot = campfire.getItems().get(i);
+                    if (!itemInSlot.isEmpty()) {
+                        // Проверяем готовность через доступные данные
+                        ItemStack result = getCampfireCookingResult(level, itemInSlot);
+                        if (!result.isEmpty()) {
+                            // Если предмет может быть приготовлен, добавляем прогресс
+                            handleCrafting((ServerPlayer) event.getEntity(), result, 1, "campfire_cooking");
+                            addCraftingXp((ServerPlayer) event.getEntity(), result);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Обработка извлечения предметов из печи/коптильни
+    @SubscribeEvent
+    public static void onItemTakenFromFurnace(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND) return;
+
+        Level level = event.getLevel();
+        BlockPos pos = event.getPos();
+        BlockState blockState = level.getBlockState(pos);
+
+        // Проверяем все типы печей
+        if (blockState.getBlock() instanceof AbstractFurnaceBlock) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof AbstractFurnaceBlockEntity furnace) {
+                ItemStack result = furnace.getItem(2); // Слот результата
+                if (!result.isEmpty()) {
+                    // Определяем тип рецепта
+                    String recipeType = "smelting";
+                    if (blockState.getBlock() == Blocks.SMOKER) {
+                        recipeType = "smoking";
+                    } else if (blockState.getBlock() == Blocks.BLAST_FURNACE) {
+                        recipeType = "blasting";
+                    }
+
+                    handleCrafting((ServerPlayer) event.getEntity(), result, result.getCount(), recipeType);
+                    addCraftingXp((ServerPlayer) event.getEntity(), result);
                 }
             }
         }
@@ -219,6 +273,26 @@ public class ForgeEventBusEvents {
 
         return ItemStack.EMPTY;
     }
+
+    // Вспомогательные методы проверки рецептов
+    private static boolean isSmokingRecipe(ItemStack result, Level level) {
+        RecipeManager recipeManager = level.getRecipeManager();
+        var recipes = recipeManager.getRecipesFor(RecipeType.SMOKING, new SimpleContainer(result), level);
+        return !recipes.isEmpty();
+    }
+
+    private static boolean isCampfireRecipe(ItemStack result, Level level) {
+        RecipeManager recipeManager = level.getRecipeManager();
+        var recipes = recipeManager.getRecipesFor(RecipeType.CAMPFIRE_COOKING, new SimpleContainer(result), level);
+        return !recipes.isEmpty();
+    }
+
+
+
+    /**
+     * Получает результат приготовления предмета на костре
+     */
+
 
     // ОБНОВИТЕ метод onCampfireCooking для обработки готовых предметов
     @SubscribeEvent
@@ -257,17 +331,28 @@ public class ForgeEventBusEvents {
 
     private static List<String> getUnlockedChaptersForPlayer(ServerPlayer player) {
         List<String> unlockedChapters = new ArrayList<>();
+        MinecraftServer server = player.getServer();
 
-        // Всегда разблокирована первая глава
-        unlockedChapters.add("cutting_techniques");
+        if (server == null) return unlockedChapters;
 
-        // Проверяем выполнение предыдущих глав для разблокировки последующих
-        if (isLearningChapterCompletedOnServer(player, "cutting_techniques")) {
-            unlockedChapters.add("cooking_methods");
+        // Динамически получаем все доступные главы
+        List<String> allChapters = TaskManager.discoverChapterIds(server.getResourceManager());
+
+        // Первая глава всегда разблокирована
+        if (!allChapters.isEmpty()) {
+            unlockedChapters.add(allChapters.get(0));
         }
 
-        if (isLearningChapterCompletedOnServer(player, "cooking_methods")) {
-            unlockedChapters.add("spices_usage");
+        // Проверяем выполнение предыдущих глав для разблокировки последующих
+        for (int i = 0; i < allChapters.size() - 1; i++) {
+            String currentChapter = allChapters.get(i);
+            String nextChapter = allChapters.get(i + 1);
+
+            if (isLearningChapterCompletedOnServer(player, currentChapter)) {
+                unlockedChapters.add(nextChapter);
+            } else {
+                break; // Если глава не завершена, останавливаем разблокировку
+            }
         }
 
         return unlockedChapters;
@@ -293,18 +378,24 @@ public class ForgeEventBusEvents {
     }
 
     private static void checkChapterCompletion(ServerPlayer player, String completedChapterId) {
-        // Определяем какая глава должна разблокироваться после завершения этой
-        Map<String, String> nextChapters = Map.of(
-                "cutting_techniques", "cooking_methods",
-                "cooking_methods", "spices_usage"
-        );
+        MinecraftServer server = player.getServer();
+        if (server == null) return;
 
-        String nextChapterId = nextChapters.get(completedChapterId);
-        if (nextChapterId != null) {
+        // Динамически определяем следующую главу
+        List<String> allChapters = TaskManager.discoverChapterIds(server.getResourceManager());
+        int completedIndex = allChapters.indexOf(completedChapterId);
+
+        if (completedIndex >= 0 && completedIndex < allChapters.size() - 1) {
+            String nextChapterId = allChapters.get(completedIndex + 1);
+
             // Проверяем действительно ли глава завершена
             if (isLearningChapterCompletedOnServer(player, completedChapterId)) {
-                // Здесь можно добавить логику разблокировки следующей главы
-                // Например, через ProgressionUnlockManager.unlock(player, nextChapterId)
+                // Автоматически разблокируем следующую главу
+                // (если у вас есть система разблокировки через ProgressionUnlockManager)
+                System.out.println("[ArsMelima] Chapter '" + completedChapterId + "' completed, unlocking '" + nextChapterId + "'");
+
+                // Если нужно разблокировать через вашу систему прогрессии:
+                // ProgressionUnlockManager.unlock(player, nextChapterId);
             }
         }
     }

@@ -90,30 +90,25 @@ public class ChapterLoader {
 
                     if (jo.has("elements") && jo.get("elements").isJsonArray()) {
                         var arr = jo.getAsJsonArray("elements");
-                        for (JsonElement el : arr) {
+                        for (var el : arr) {
                             if (!el.isJsonObject()) continue;
                             JsonObject obj = el.getAsJsonObject();
-                            if (!obj.has("type") || !obj.has("data")) continue;
 
-                            try {
-                                ChapterElement.Type type = ChapterElement.Type.valueOf(
-                                        obj.get("type").getAsString().toUpperCase(Locale.ROOT)
-                                );
-                                elements.add(new ChapterElement(type, obj.get("data").getAsString()));
-                            } catch (IllegalArgumentException e) {
-                                // неизвестный тип — пропускаем
-                                continue;
+                            // Новый формат (text/image)
+                            if (obj.has("text")) {
+                                elements.add(new ChapterElement(ChapterElement.Type.TEXT, obj.get("text").getAsString()));
+                            } else if (obj.has("image")) {
+                                elements.add(new ChapterElement(ChapterElement.Type.IMAGE, obj.get("image").getAsString()));
                             }
-                        }
-                    }
-
-                    // Fallback для обратной совместимости
-                    if (elements.isEmpty()) {
-                        if (jo.has("content")) {
-                            elements.add(new ChapterElement(ChapterElement.Type.TEXT, jo.get("content").getAsString()));
-                        }
-                        if (jo.has("image")) {
-                            elements.add(new ChapterElement(ChapterElement.Type.IMAGE, jo.get("image").getAsString()));
+                            // Старый формат (type/data) для совместимости
+                            else if (obj.has("type") && obj.has("data")) {
+                                try {
+                                    ChapterElement.Type type = ChapterElement.Type.valueOf(
+                                            obj.get("type").getAsString().toUpperCase(Locale.ROOT)
+                                    );
+                                    elements.add(new ChapterElement(type, obj.get("data").getAsString()));
+                                } catch (IllegalArgumentException ignored) {}
+                            }
                         }
                     }
 
@@ -121,23 +116,16 @@ public class ChapterLoader {
                     System.err.println("[ArsMelima] Failed to load chapter content " + rl + " : " + e.getMessage());
                 }
 
-                if (!elements.isEmpty()) {
-                    // нашли содержимое — используем и прекращаем поиск по другим локалям
-                    break;
-                }
+                if (!elements.isEmpty()) break; // нашли содержимое, прекращаем поиск по локалям
 
             } catch (Exception e) {
-                // Файл не найден - пробуем следующую локализацию
+                // Файл не найден — пробуем следующую локализацию
             }
-        }
-
-        if (elements.isEmpty()) {
-            // диагностическое сообщение для отладки
-            // System.out.println("[ArsMelima] No content for chapter: " + chapterId);
         }
 
         return elements;
     }
+
 
     // getLanguageCandidates() и normalizeLangCode() остаются без изменений
     private static List<String> getLanguageCandidates() {

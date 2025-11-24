@@ -1,0 +1,38 @@
+{
+  "id": "bright_pepper",
+  "title": "Яркий перец",
+  "elements": [
+    {
+      "type": "TEXT",
+      "text": "Яркий перец можно найти в крепости незера"
+    },
+    {
+      "type": "IMAGE",
+      "image": "wd:textures/gui/ars_melima/pages/nether_fortress.png"
+    },
+    {
+      "type": "TEXT",
+      "text": "Яркий перец можно найти в крепости незера"
+    },
+    {
+      "type": "IMAGE",
+      "image": "wd:textures/gui/ars_melima/pages/nether_fortress.png"
+    },
+    {
+      "type": "TEXT",
+      "text": "Яркий перец можно найти в крепости незера"
+    },
+    {
+      "type": "IMAGE",
+      "image": "wd:textures/gui/ars_melima/pages/nether_fortress.png"
+    },
+    {
+      "type": "TEXT",
+      "text": "Яркий перец можно найти в крепости незера"
+    },
+    {
+      "type": "IMAGE",
+      "image": "wd:textures/gui/ars_melima/pages/nether_fortress.png"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "appreciate_greenery",
+    "item": "minecraft:diamond",
+    "description": "Ценитель зелени",
+    "parentId": "",
+    "side": "",
+    "locked": false
+  },
+  {
+    "id": "lover_lean",
+    "item": "minecraft:iron_ingot",
+    "description": "Любитель постного",
+    "parentId": "appreciate_greenery",
+    "side": "down",
+    "locked": true
+  },
+  {
+    "id": "sweet_tooth",
+    "item": "minecraft:gold_ingot",
+    "description": "Сладкоежка",
+    "parentId": "lover_lean",
+    "side": "right",
+    "locked": true
+  },
+  {
+    "id": "fish_diet",
+    "item": "minecraft:gold_ingot",
+    "description": "Рыбная диета",
+    "parentId": "sweet_tooth",
+    "side": "right",
+    "locked": true
+  }
+]

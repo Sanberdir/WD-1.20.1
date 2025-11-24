@@ -1,0 +1,34 @@
+[
+  {
+    "id": "appreciate_greenery",
+    "item": "minecraft:seagrass",
+    "description": "Ценитель зелени",
+    "parentId": "",
+    "side": "",
+    "locked": false
+  },
+  {
+    "id": "lover_lean",
+    "item": "minecraft:carrot",
+    "description": "Любитель постного",
+    "parentId": "appreciate_greenery",
+    "side": "down",
+    "locked": true
+  },
+  {
+    "id": "sweet_tooth",
+    "item": "minecraft:honey_bottle",
+    "description": "Сладкоежка",
+    "parentId": "lover_lean",
+    "side": "right",
+    "locked": true
+  },
+  {
+    "id": "fish_diet",
+    "item": "minecraft:cod",
+    "description": "Рыбная диета",
+    "parentId": "sweet_tooth",
+    "side": "right",
+    "locked": true
+  }
+]
