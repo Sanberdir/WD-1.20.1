@@ -5,7 +5,8 @@
     "description": "Ценитель зелени",
     "parentId": "",
     "side": "",
-    "locked": false
+    "locked": false,
+    "rootPosition": 2
   },
   {
     "id": "lover_lean",
@@ -27,8 +28,8 @@
     "id": "fish_diet",
     "item": "minecraft:gold_ingot",
     "description": "Рыбная диета",
-    "parentId": "sweet_tooth",
-    "side": "right",
+    "parentId": "lover_lean",
+    "side": "left",
     "locked": true
   }
 ]

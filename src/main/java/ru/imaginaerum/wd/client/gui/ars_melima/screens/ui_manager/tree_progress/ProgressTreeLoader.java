@@ -91,18 +91,32 @@ public class ProgressTreeLoader {
             String title = nodeObj.has("title") ? nodeObj.get("title").getAsString() : id;
             String description = nodeObj.has("description") ? nodeObj.get("description").getAsString() : "";
             String itemResource = nodeObj.has("item") ? nodeObj.get("item").getAsString() : "";
-            String parentId = nodeObj.has("parent") ? nodeObj.get("parent").getAsString() :
-                    nodeObj.has("parentId") ? nodeObj.get("parentId").getAsString() : "";
-            String side = nodeObj.has("side") ? nodeObj.get("side").getAsString() : "right";
-            boolean locked = nodeObj.has("locked") ? nodeObj.get("locked").getAsBoolean() : true;
 
-            return new ProgressNode(id, description, itemResource, parentId, side, locked);
+            String parentId =
+                    nodeObj.has("parent") ? nodeObj.get("parent").getAsString() :
+                            nodeObj.has("parentId") ? nodeObj.get("parentId").getAsString() : "";
+
+            String side = nodeObj.has("side") ? nodeObj.get("side").getAsString() : "right";
+            boolean locked = nodeObj.has("locked") && nodeObj.get("locked").getAsBoolean();
+
+            // Новое поле rootPosition (1–4). Если нет — значение по умолчанию = 1.
+            int rootPosition = 1;
+            try {
+                if (nodeObj.has("rootPosition")) {
+                    rootPosition = nodeObj.get("rootPosition").getAsInt();
+                }
+            } catch (Exception ignored) {
+                // если корявое значение — пусть будет 1
+            }
+
+            return new ProgressNode(id, description, itemResource, parentId, side, locked, rootPosition);
 
         } catch (Exception e) {
             System.err.println("[ArsMelima] Failed to parse progress node: " + e.getMessage());
             return null;
         }
     }
+
 
     public static boolean progressTreeExists(String treeId) {
         if (treeId == null || treeId.isEmpty()) return false;

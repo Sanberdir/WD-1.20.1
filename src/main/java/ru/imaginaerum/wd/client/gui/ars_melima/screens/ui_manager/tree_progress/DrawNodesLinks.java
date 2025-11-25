@@ -69,6 +69,14 @@ public class DrawNodesLinks {
                     int halfSumFrames = (parentFrame + childFrame) / 2;
                     int gap = halfSumFrames + parentOffset + LINE_LENGTH + childOffset;
 
+                    // ДОБАВЛЕНО: учитываем rootPosition для корневых узлов ПРАВИЛЬНО
+                    if (!hasParent) {
+                        int rootPosition = node.getRootPosition();
+                        // Смещаем корневые узлы по горизонтали на расстояние одного узла за каждую позицию
+                        int horizontalOffset = (rootPosition - 1) * gap; // Используем gap вместо фиксированного значения
+                        nx += horizontalOffset;
+                    }
+
                     String dirRaw = node.getSide() == null ? "" : node.getSide().trim().toLowerCase(Locale.ROOT);
                     String[] parts = dirRaw.split("\\s*,\\s*");
 
