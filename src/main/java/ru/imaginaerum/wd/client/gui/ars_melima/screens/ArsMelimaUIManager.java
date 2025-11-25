@@ -197,7 +197,7 @@ public class ArsMelimaUIManager {
         boolean completed = displayProgress >= required;
 
         ArsMelimaRenders.renderChapterStrip(graphics, x, y, width, OPEN_STRIP_HEIGHT, true, false);
-        drawTaskItemIcon(graphics, task, x + CONTENT_PADDING, y + (OPEN_STRIP_HEIGHT - 16) / 2);
+        drawTaskItemIcon(graphics, task, x + CONTENT_PADDING - 1, y + (OPEN_STRIP_HEIGHT - 16) / 2 + 1);
 
         int textY = y + (OPEN_STRIP_HEIGHT - 4) / 2;
         int textX = x + CONTENT_PADDING + 24;

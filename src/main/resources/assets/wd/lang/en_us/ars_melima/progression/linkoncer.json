@@ -1,7 +1,7 @@
 [
   {
     "id": "appreciate_greenery",
-    "item": "minecraft:diamond",
+    "item": "minecraft:seagrass",
     "description": "Ценитель зелени",
     "parentId": "",
     "side": "",
@@ -10,7 +10,7 @@
   },
   {
     "id": "lover_lean",
-    "item": "minecraft:iron_ingot",
+    "item": "minecraft:carrot",
     "description": "Любитель постного",
     "parentId": "appreciate_greenery",
     "side": "down",
@@ -18,18 +18,58 @@
   },
   {
     "id": "sweet_tooth",
-    "item": "minecraft:gold_ingot",
+    "item": "minecraft:honey_bottle",
     "description": "Сладкоежка",
+    "parentId": "lover_lean",
+    "side": "down",
+    "locked": true
+  },
+  {
+    "id": "eggnog",
+    "item": "wd:hot_cocoa_with_sparkling_pollen",
+    "description": "Великий Гоголь Моголь",
+    "parentId": "sweet_tooth",
+    "side": "down",
+    "locked": true
+  },
+  {
+    "id": "fish_diet",
+    "item": "minecraft:cod",
+    "description": "Рыбная диета",
+    "parentId": "lover_lean",
+    "side": "left",
+    "locked": true
+  },
+  {
+    "id": "healthy_eating",
+    "item": "minecraft:golden_carrot",
+    "description": "Здоровое питание",
     "parentId": "lover_lean",
     "side": "right",
     "locked": true
   },
   {
-    "id": "fish_diet",
-    "item": "minecraft:gold_ingot",
-    "description": "Рыбная диета",
-    "parentId": "lover_lean",
-    "side": "left",
+    "id": "immune_system",
+    "item": "minecraft:shield",
+    "description": "Крепкий иммунитет",
+    "parentId": "healthy_eating",
+    "side": "right",
+    "locked": true
+  },
+  {
+    "id": "clever_milkman",
+    "item": "farmersdelight:milk_bottle",
+    "description": "Ловкий дояр",
+    "parentId": "immune_system",
+    "side": "down",
+    "locked": true
+  },
+  {
+    "id": "potato virtuoso",
+    "item": "minecraft:potato",
+    "description": "Картофельный виртуоз",
+    "parentId": "healthy_eating",
+    "side": "down",
     "locked": true
   }
 ]
