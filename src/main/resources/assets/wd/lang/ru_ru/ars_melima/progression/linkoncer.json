@@ -9,6 +9,30 @@
     "rootPosition": 2
   },
   {
+    "id": "immune_system",
+    "item": "minecraft:shield",
+    "description": "Крепкий иммунитет",
+    "parentId": "lover_lean",
+    "side": "down",
+    "locked": true
+  },
+  {
+    "id": "lover_dough",
+    "item": "farmersdelight:wheat_dough",
+    "description": "Любитель теста",
+    "parentId": "immune_system",
+    "side": "left",
+    "locked": true
+  },
+  {
+    "id": "honey_chef",
+    "item": "minecraft:honeycomb",
+    "description": "Медовый шеф",
+    "parentId": "immune_system",
+    "side": "down",
+    "locked": true
+  },
+  {
     "id": "lover_lean",
     "item": "minecraft:carrot",
     "description": "Любитель постного",
@@ -20,16 +44,8 @@
     "id": "sweet_tooth",
     "item": "minecraft:honey_bottle",
     "description": "Сладкоежка",
-    "parentId": "lover_lean",
-    "side": "down",
-    "locked": true
-  },
-  {
-    "id": "eggnog",
-    "item": "wd:hot_cocoa_with_sparkling_pollen",
-    "description": "Великий Гоголь Моголь",
-    "parentId": "sweet_tooth",
-    "side": "down",
+    "parentId": "appreciate_greenery",
+    "side": "right",
     "locked": true
   },
   {
@@ -49,27 +65,35 @@
     "locked": true
   },
   {
-    "id": "immune_system",
-    "item": "minecraft:shield",
-    "description": "Крепкий иммунитет",
-    "parentId": "healthy_eating",
-    "side": "right",
-    "locked": true
-  },
-  {
     "id": "clever_milkman",
     "item": "farmersdelight:milk_bottle",
     "description": "Ловкий дояр",
     "parentId": "immune_system",
-    "side": "down",
+    "side": "right",
     "locked": true
   },
   {
-    "id": "potato_virtuoso",
-    "item": "minecraft:potato",
-    "description": "Картофельный виртуоз",
-    "parentId": "healthy_eating",
-    "side": "down",
+    "id": "unarmed_master",
+    "item": "minecraft:firework_rocket",
+    "description": "Безоружный мастер",
+    "parentId": "clever_milkman",
+    "side": "right",
+    "locked": true
+  },
+  {
+    "id": "stunning_blow",
+    "item": "minecraft:tnt",
+    "description": "Ошеломляющий удар",
+    "parentId": "unarmed_master",
+    "side": "up",
+    "locked": true
+  },
+  {
+    "id": "beater",
+    "item": "minecraft:wooden_sword",
+    "description": "Отбиватель",
+    "parentId": "unarmed_master",
+    "side": "down,left",
     "locked": true
   }
 ]
