@@ -1,6 +1,5 @@
-package ru.imaginaerum.wd.common;
+package ru.imaginaerum.wd.common.level;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import ru.imaginaerum.wd.WD;

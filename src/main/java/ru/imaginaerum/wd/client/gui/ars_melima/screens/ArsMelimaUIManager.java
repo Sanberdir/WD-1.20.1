@@ -1,5 +1,7 @@
 package ru.imaginaerum.wd.client.gui.ars_melima.screens;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,6 +12,7 @@ import ru.imaginaerum.wd.client.gui.ars_melima.*;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -132,18 +135,13 @@ public class ArsMelimaUIManager {
                     font, menu, 0.85f, currentChapterPage);
 
         } else {
-            // УБРАНО: повторное объявление Chapter chapter
             int page = currentTextPage;
 
             // ДОБАВЛЕНО: проверка на динамическую главу
             if (menu.isDynamicChapterOpen()) {
                 // Для динамических глав рендерим только содержимое
                 System.out.println("[RENDER] Rendering dynamic chapter content");
-                ArsMelimaRenders.renderChapterPage(graphics, mouseX, mouseY,
-                        chapter, page,
-                        contentLeft, contentTop, contentWidth, contentHeight,
-                        rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
-                        font, 0.85f, ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ArsMelimaConstants.ICONS_TEXTURE);
+                renderDynamicChapterContent(graphics, mouseX, mouseY, chapter, font);
 
             } else if (page == 0) {
                 // Левая колонка — learning chapters (только для обычных глав)
@@ -170,6 +168,127 @@ public class ArsMelimaUIManager {
             }
         }
     }
+
+    // НОВЫЙ МЕТОД: рендер контента главы с единым стилем текста
+    private List<String> wrapText(Font font, String text, int maxWidth, float scale) {
+        List<String> lines = new ArrayList<>();
+        if (text == null || text.isEmpty()) return lines;
+
+        String[] words = text.split(" ");
+        StringBuilder currentLine = new StringBuilder();
+
+        for (String word : words) {
+            String testLine = currentLine.length() > 0 ? currentLine + " " + word : word;
+            int testWidth = (int)(font.width(testLine) * scale);
+
+            if (testWidth <= maxWidth) {
+                currentLine.append(currentLine.length() > 0 ? " " + word : word);
+            } else {
+                if (currentLine.length() > 0) {
+                    lines.add(currentLine.toString());
+                }
+                currentLine = new StringBuilder(word);
+            }
+        }
+
+        if (currentLine.length() > 0) {
+            lines.add(currentLine.toString());
+        }
+
+        return lines;
+    }
+    private String getElementText(ChapterElement element) {
+        // Попробуем разные возможные методы получения текста
+        try {
+            // Способ 1: прямой метод getText()
+            if (element.getClass().getMethod("getText") != null) {
+                return (String) element.getClass().getMethod("getText").invoke(element);
+            }
+        } catch (Exception e) {
+            // Продолжаем пробовать другие способы
+        }
+
+        try {
+            // Способ 2: метод text()
+            if (element.getClass().getMethod("text") != null) {
+                return (String) element.getClass().getMethod("text").invoke(element);
+            }
+        } catch (Exception e) {
+            // Продолжаем пробовать другие способы
+        }
+
+        try {
+            // Способ 3: метод getContent()
+            if (element.getClass().getMethod("getContent") != null) {
+                Object content = element.getClass().getMethod("getContent").invoke(element);
+                if (content instanceof String) {
+                    return (String) content;
+                }
+            }
+        } catch (Exception e) {
+            // Продолжаем пробовать другие способы
+        }
+
+        try {
+            // Способ 4: метод data() и парсинг JSON
+            if (element.getClass().getMethod("getData") != null) {
+                Object data = element.getClass().getMethod("getData").invoke(element);
+                if (data instanceof String) {
+                    // Попробуем распарсить как JSON
+                    try {
+                        JsonObject json = JsonParser.parseString((String) data).getAsJsonObject();
+                        if (json.has("text")) {
+                            return json.get("text").getAsString();
+                        }
+                    } catch (Exception e) {
+                        // Не JSON, возможно это просто текст
+                        return (String) data;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Не удалось получить текст
+        }
+
+        return null;
+    }
+    // ОБНОВЛЕННЫЙ МЕТОД: рендер контента главы с единым стилем текста
+    private void renderDynamicChapterContent(GuiGraphics graphics, int mouseX, int mouseY,
+                                             Chapter chapter, Font font) {
+        if (chapter == null || chapter.getElements() == null) return;
+
+        int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
+        int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
+        int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
+
+        int currentY = contentTop + CONTENT_PADDING;
+        float textScale = 0.7f;
+
+        for (ChapterElement element : chapter.getElements()) {
+            if (element == null) continue;
+
+            // Получаем текст из элемента - используем правильный метод в зависимости от структуры ChapterElement
+            String text = getElementText(element);
+            if (text != null && !text.isEmpty()) {
+                // Разбиваем текст на строки если нужно
+                List<String> lines = wrapText(font, text, contentWidth - CONTENT_PADDING * 2, textScale);
+
+                for (String line : lines) {
+                    if (currentY + (int)(font.lineHeight * textScale) > guiTop + ArsMelimaConstants.CONTENT_Y2) {
+                        return; // Превысили высоту контентной области
+                    }
+
+                    // Рендер текста в едином стиле
+                    renderStyledText(graphics, font, line,
+                            contentLeft + CONTENT_PADDING, currentY, textScale, false);
+
+                    currentY += (int)(font.lineHeight * textScale) + 2;
+                }
+                currentY += 5; // Дополнительный отступ между параграфами
+            }
+        }
+    }
+
 
     private void renderTasks(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
         int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
@@ -469,7 +588,33 @@ public class ArsMelimaUIManager {
 
         graphics.pose().popPose();
     }
+    private void renderStyledText(GuiGraphics graphics, Font font, String text,
+                                  int x, int y, float scale, boolean hover) {
+        if (text == null || text.isEmpty()) return;
 
+        int baseColor = hover ? 0xFFE2A65D : 0xFF5D4037;
+
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0);
+        graphics.pose().scale(scale, scale, 1.0f);
+
+        // Тень и световая обводка (единый стиль)
+        graphics.drawString(font, text, 0, -1, 0x80FFFFFF, false);
+        graphics.drawString(font, text, -1, 0, 0x80DBD4B8, false);
+        graphics.drawString(font, text, 1, 0, 0x80DBD4B8, false);
+        graphics.drawString(font, text, 0, 1, 0x80BFB38A, false);
+
+        // Центральный текст
+        graphics.drawString(font, text, 0, 0, baseColor, false);
+
+        graphics.pose().popPose();
+    }
+
+    // Перегрузка метода без hover эффекта
+    private void renderStyledText(GuiGraphics graphics, Font font, String text,
+                                  int x, int y, float scale) {
+        renderStyledText(graphics, font, text, x, y, scale, false);
+    }
 
 
     private boolean isPointInRect(int rx, int ry, int rw, int rh, int px, int py) {

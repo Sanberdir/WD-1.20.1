@@ -55,13 +55,13 @@ public class ProgressTreeRenderer {
             // Центрируем заголовок в левой контентной области
             int titleWidth = font.width(title);
             int titleX = contentLeft + (contentWidth - titleWidth) / 2;
-            int titleY = manager.getGuiTop() + 22; // Отступ сверху от всего GUI
+            int titleY = manager.getGuiTop() + 16; // Отступ сверху от всего GUI
 
             graphics.drawString(font, title, titleX, titleY, 0xFF5D4037, false);
 
             // Корректируем стартовую позицию дерева
             int startX = manager.getGuiLeft() + 10;
-            int startY = titleY + font.lineHeight + 2; // Больший отступ после заголовка
+            int startY = titleY + font.lineHeight + 6; // Больший отступ после заголовка
 
             Map<String, Point> positions = DrawNodesLinks.computePositions(nodes, startX, startY);
             manager.getNodePositionsStore().setPositions(positions);
