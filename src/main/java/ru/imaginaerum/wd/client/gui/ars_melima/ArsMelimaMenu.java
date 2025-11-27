@@ -2,8 +2,10 @@ package ru.imaginaerum.wd.client.gui.ars_melima;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.network.chat.Component;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.tree_progress.ProgressTreeLoader;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.tree_progress.ProgressTreeTitlesCache;
 
 import java.util.*;
 
@@ -15,6 +17,7 @@ public class ArsMelimaMenu {
     private final List<Chapter> chapters = new ArrayList<>();
     private final List<ProgressNode> progressNodes = new ArrayList<>();
     private int currentIndex = -1;
+    private final Map<String, String> progressTreeTitles = new HashMap<>();
 
     private final Map<String, Integer> normalizedChapterIndex = new HashMap<>();
     private final Map<String, Integer> progressionIdIndex = new HashMap<>();
@@ -261,6 +264,17 @@ public class ArsMelimaMenu {
     /**
      * Загружает дерево прогрессии по ID
      */
+    public Component getProgressTreeTitle(String treeId) {
+        if (treeId == null || treeId.isEmpty()) {
+            return Component.literal("Progression Tree");
+        }
+
+        // Создаем ключ локализации на основе имени файла
+        String localizationKey = "wd.progression." + treeId + ".title";
+        return Component.translatable(localizationKey);
+    }
+
+    // В методе loadProgressTree добавляем:
     private void loadProgressTree(String treeId) {
         if (treeId == null || treeId.isEmpty()) {
             System.err.println("[ArsMelima] Cannot load progress tree: treeId is null or empty");
@@ -270,15 +284,14 @@ public class ArsMelimaMenu {
         List<ProgressNode> nodes = progressTreesCache.computeIfAbsent(treeId, ProgressTreeLoader::loadProgressTree);
 
         if (nodes != null && !nodes.isEmpty()) {
-            // Временно устанавливаем узлы для этого дерева
             setProgressNodes(nodes);
             System.out.println("[ArsMelima] Loaded progress tree: " + treeId + " with " + nodes.size() + " nodes");
         } else {
             System.err.println("[ArsMelima] Failed to load progress tree: " + treeId);
-            // Fallback: используем уже загруженные узлы
             System.out.println("[ArsMelima] Using existing progress nodes: " + progressNodes.size() + " nodes");
         }
     }
+
 
     /**
      * Проверяет, существует ли дерево прогрессии с указанным ID

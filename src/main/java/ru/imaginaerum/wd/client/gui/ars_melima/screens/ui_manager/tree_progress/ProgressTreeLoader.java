@@ -21,7 +21,6 @@ public class ProgressTreeLoader {
         ResourceManager manager = Minecraft.getInstance().getResourceManager();
         List<String> langs = getLanguageCandidates();
 
-        // ПРОБЕГАЕМ ПО КАНДИДАТАМ ЯЗЫКА И __BASE__
         for (String lang : langs) {
             String basePath = "__BASE__".equals(lang) ? PROGRESSION_DIR : "lang/" + lang + "/" + PROGRESSION_DIR;
             String filePath = basePath + "/" + treeId + ".json";
@@ -30,13 +29,16 @@ public class ProgressTreeLoader {
             try {
                 Resource resource = manager.getResource(rl).orElse(null);
                 if (resource == null) {
-                    // пробуем следующий кандидат
                     continue;
                 }
 
                 try (InputStreamReader reader = new InputStreamReader(resource.open())) {
                     JsonElement root = JsonParser.parseReader(reader);
                     List<ProgressNode> nodes = parseProgressTree(root, treeId);
+
+                    // Сохраняем название файла для локализации
+                    ProgressTreeTitlesCache.setTitle(treeId, treeId);
+
                     System.out.println("[ArsMelima] Successfully loaded progress tree: " + treeId + " from " + rl + " with " + nodes.size() + " nodes");
                     return nodes;
                 }
@@ -51,26 +53,43 @@ public class ProgressTreeLoader {
 
     private static List<ProgressNode> parseProgressTree(JsonElement root, String treeId) {
         List<ProgressNode> nodes = new ArrayList<>();
+        String treeTitle = null;
 
         if (root == null) return nodes;
 
         try {
-            if (root.isJsonArray()) {
-                JsonArray nodesArray = root.getAsJsonArray();
-                for (JsonElement nodeElem : nodesArray) {
-                    ProgressNode node = parseProgressNode(nodeElem, treeId);
-                    if (node != null) nodes.add(node);
-                }
-            } else if (root.isJsonObject()) {
+            if (root.isJsonObject()) {
                 JsonObject treeObj = root.getAsJsonObject();
+
+                // Извлекаем заголовок дерева
+                if (treeObj.has("title")) {
+                    treeTitle = treeObj.get("title").getAsString();
+                }
+
                 if (treeObj.has("nodes") && treeObj.get("nodes").isJsonArray()) {
                     JsonArray nodesArray = treeObj.getAsJsonArray("nodes");
                     for (JsonElement nodeElem : nodesArray) {
                         ProgressNode node = parseProgressNode(nodeElem, treeId);
-                        if (node != null) nodes.add(node);
+                        if (node != null) {
+                            // Устанавливаем заголовок дерева в ноду (или в отдельную структуру)
+                            nodes.add(node);
+                        }
                     }
                 } else {
                     ProgressNode node = parseProgressNode(root, treeId);
+                    if (node != null) nodes.add(node);
+                }
+
+                // Сохраняем заголовок дерева (можно в отдельную структуру)
+                if (treeTitle != null) {
+                    // Сохраняем в кэш заголовков деревьев
+                    ProgressTreeTitlesCache.setTitle(treeId, treeTitle);
+                }
+            } else if (root.isJsonArray()) {
+                // Старый формат без заголовка
+                JsonArray nodesArray = root.getAsJsonArray();
+                for (JsonElement nodeElem : nodesArray) {
+                    ProgressNode node = parseProgressNode(nodeElem, treeId);
                     if (node != null) nodes.add(node);
                 }
             }

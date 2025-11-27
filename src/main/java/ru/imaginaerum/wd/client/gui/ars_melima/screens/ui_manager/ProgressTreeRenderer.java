@@ -38,21 +38,37 @@ public class ProgressTreeRenderer {
 
     public static void renderProgressTree(ArsMelimaUIManager manager, GuiGraphics graphics,
                                           int mouseX, int mouseY,
-                                          ArsMelimaMenu menu,
-                                          Font font) {
+                                          ArsMelimaMenu menu, Font font) {
         List<ProgressNode> nodes = menu.getProgressNodes();
         if (nodes == null || nodes.isEmpty()) return;
 
+        // === РЕНДЕР ЗАГОЛОВКА ДЕРЕВА ПО ЦЕНТРУ ЛЕВОЙ СТРАНИЦЫ ===
+        String currentTreeId = menu.getCurrentProgressTreeId();
+        if (currentTreeId != null) {
+            Component title = menu.getProgressTreeTitle(currentTreeId);
 
+            // Координаты левой контентной области
+            int contentLeft = manager.getGuiLeft() + ArsMelimaConstants.CONTENT_X1;
+            int contentRight = manager.getGuiLeft() + ArsMelimaConstants.CONTENT_X2;
+            int contentWidth = contentRight - contentLeft;
 
-        int startX = manager.getGuiLeft() + 7;
-        int startY = manager.getGuiTop() + 25;
+            // Центрируем заголовок в левой контентной области
+            int titleWidth = font.width(title);
+            int titleX = contentLeft + (contentWidth - titleWidth) / 2;
+            int titleY = manager.getGuiTop() + 22; // Отступ сверху от всего GUI
 
-        Map<String, Point> positions = DrawNodesLinks.computePositions(nodes, startX, startY);
-        manager.getNodePositionsStore().setPositions(positions);
+            graphics.drawString(font, title, titleX, titleY, 0xFF5D4037, false);
 
-        drawNodes(manager, graphics, positions, nodes, mouseX, mouseY, font);
-        DrawNodesLinks.drawLinks(graphics, positions, nodes);
+            // Корректируем стартовую позицию дерева
+            int startX = manager.getGuiLeft() + 10;
+            int startY = titleY + font.lineHeight + 2; // Больший отступ после заголовка
+
+            Map<String, Point> positions = DrawNodesLinks.computePositions(nodes, startX, startY);
+            manager.getNodePositionsStore().setPositions(positions);
+
+            drawNodes(manager, graphics, positions, nodes, mouseX, mouseY, font);
+            DrawNodesLinks.drawLinks(graphics, positions, nodes);
+        }
     }
 
     private static void drawNodes(ArsMelimaUIManager manager, GuiGraphics graphics,
