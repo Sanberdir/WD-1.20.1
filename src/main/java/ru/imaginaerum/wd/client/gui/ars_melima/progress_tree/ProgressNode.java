@@ -7,7 +7,7 @@ public class ProgressNode {
     private final String parentId;
     private final String side;
     private final boolean locked;
-
+    private final int level; // ← НОВОЕ ПОЛЕ
     // Новое поле: позиция корневой ноды: 1,2,3,4
     private final int rootPosition;
 
@@ -18,7 +18,8 @@ public class ProgressNode {
             String parentId,
             String side,
             boolean locked,
-            int rootPosition // <= новое поле
+            int rootPosition, // <= новое поле
+            int level // ← НОВЫЙ ПАРАМЕТР
     ) {
         this.id = id;
         this.itemResource = itemResource;
@@ -27,6 +28,7 @@ public class ProgressNode {
         this.side = side;
         this.locked = locked;
         this.rootPosition = rootPosition;
+        this.level = level;
     }
 
     public String getId() { return id; }
@@ -35,7 +37,7 @@ public class ProgressNode {
     public String getParentId() { return parentId; }
     public String getSide() { return side; }
     public boolean isLocked() { return locked; }
-
+    public int getLevel() { return level; }
     // Новое
     public int getRootPosition() { return rootPosition; }
 

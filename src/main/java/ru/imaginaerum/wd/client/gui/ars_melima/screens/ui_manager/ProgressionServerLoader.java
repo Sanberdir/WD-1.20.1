@@ -58,9 +58,12 @@ public class ProgressionServerLoader {
         // Новое поле: позиция корневой ноды
         int rootPos = jo.has("rootPosition") ? jo.get("rootPosition").getAsInt() : 1;
 
-        nodes.add(new ProgressNode(id, desc, item, parent, side, locked, rootPos));
-    }
+        // ← ДОБАВЛЕНО: загрузка уровня (по умолчанию 1)
+        int level = jo.has("level") ? jo.get("level").getAsInt() : 1;
 
+        // ← ОБНОВЛЕНО: добавлен параметр level
+        nodes.add(new ProgressNode(id, desc, item, parent, side, locked, rootPos, level));
+    }
 
     private static String basenameFromPath(String path) {
         if (path == null) return "";

@@ -76,11 +76,12 @@ public class ProgressionLoader {
         String parentId = jo.has("parentId") ? jo.get("parentId").getAsString() : "";
         String side = jo.has("side") ? jo.get("side").getAsString() : "";
         boolean locked = jo.has("locked") && jo.get("locked").getAsBoolean();
-
-        // <<< Новое поле
         int rootPos = jo.has("rootPosition") ? jo.get("rootPosition").getAsInt() : 1;
 
-        nodes.add(new ProgressNode(id, desc, item, parentId, side, locked, rootPos));
+        // ← НОВОЕ: загрузка уровня (по умолчанию 1)
+        int level = jo.has("level") ? jo.get("level").getAsInt() : 1;
+
+        nodes.add(new ProgressNode(id, desc, item, parentId, side, locked, rootPos, level));
     }
 
 

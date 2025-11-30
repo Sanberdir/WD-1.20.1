@@ -168,7 +168,8 @@ public class ArsMelimaRenders {
             RenderUnit unit = units.get(unitIdx);
 
             if (unit.type == RenderUnit.Type.TEXT) {
-                ArsMelimaDraws.drawScaledText(graphics, font, unit.line, cx, cy, 0xFF000000, scale);
+                // Используем единый стиль текста
+                renderStyledText(graphics, font, unit.line, cx, cy, scale);
                 cy += linePix;
                 used++;
                 unitIdx++;
@@ -186,6 +187,28 @@ public class ArsMelimaRenders {
             }
         }
     }
+
+    // Метод единообразного рендера текста (тень + обводка + основной цвет)
+    private static void renderStyledText(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, float scale) {
+        if (text == null) return;
+
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0);
+        graphics.pose().scale(scale, scale, 1.0f);
+
+        // Тень и световая обводка
+        graphics.drawString(font, text, 0, -1, 0x80FFFFFF, false);
+        graphics.drawString(font, text, -1, 0, 0x80DBD4B8, false);
+        graphics.drawString(font, text, 1, 0, 0x80DBD4B8, false);
+        graphics.drawString(font, text, 0, 1, 0x80BFB38A, false);
+
+        // Центральный текст
+        graphics.drawString(font, text, 0, 0, 0xFF5D4037, false);
+
+        graphics.pose().popPose();
+    }
+
+
 
     private static void renderImageElement(GuiGraphics graphics, RenderUnit unit,
                                            int cx, int cy, int colWidth, int imgW, int imgH,

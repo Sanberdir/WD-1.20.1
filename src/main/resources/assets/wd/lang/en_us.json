@@ -315,5 +315,27 @@
   "wd.glow_berries_waffles.description": "In a jam made from glowing berries.",
 
   "wd.progression.linkoncer.title": "Eat green",
-  "wd.tree_links.linkoncer": "Linkincer"
+  "wd.tree_links.linkoncer": "Linkincer",
+
+  "wd.chapter.fish_diet": "Рыбная диета",
+  "wd.chapter.appreciate_greenery": "Ценитель зелени",
+  "wd.chapter.clever_milkman": "Ловкий дояр",
+  "wd.chapter.healthy_eating": "Здоровое питание",
+  "wd.chapter.lover_lean": "Любитель постного",
+  "wd.chapter.sweet_tooth": "Сладкоежка",
+  "wd.chapter.immune_system": "Крепкий иммунитет",
+
+  "screen.wd.ars_melima.level": "Level %s",
+  "node.wd.ars_melima.appreciate_greenery.description": "Дополнительно 0.5 сытости за 1 уровень навыка при поедании пищи.",
+  "node.wd.ars_melima.clever_milkman.description": "Позволяет наполнить молоком бутылочку доя корову.",
+  "node.wd.ars_melima.immune_system.description": "Снижает урон от иссушения, отравления, обморожения.",
+  "node.wd.ars_melima.lover_dough.description": "Просто любит тесто?",
+  "node.wd.ars_melima.honey_chef.description": "Медовый шеф?",
+  "node.wd.ars_melima.fish_diet.description": "При поедании рыбы 20% шанс получить дельфинью грацию.",
+  "node.wd.ars_melima.healthy_eating.description": "При употреблении здоровой пищи есть шанс получить хороший эффект.",
+  "node.wd.ars_melima.unarmed_master.description": "Безоружный мастер?",
+  "node.wd.ars_melima.stunning_blow.description": "Ошеломляющий удар?",
+  "node.wd.ars_melima.beater.description": "Отбиватель?",
+  "node.wd.ars_melima.lover_lean.description": "Увеличивает скорость съедания пищи, приготовленной без кровопролития на 2% за каждый уровень. Максимально 5 уровней.",
+  "node.wd.ars_melima.sweet_tooth.description": "Даёт эффект скорости на 15 секунд, + 1 уровень за уровень навыка."
 }

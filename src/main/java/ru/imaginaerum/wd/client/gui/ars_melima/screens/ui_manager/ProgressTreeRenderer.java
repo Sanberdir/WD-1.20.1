@@ -55,13 +55,16 @@ public class ProgressTreeRenderer {
             // Центрируем заголовок в левой контентной области
             int titleWidth = font.width(title);
             int titleX = contentLeft + (contentWidth - titleWidth) / 2;
-            int titleY = manager.getGuiTop() + 16; // Отступ сверху от всего GUI
+            int titleY = manager.getGuiTop() + 11; // Отступ сверху от всего GUI
 
             graphics.drawString(font, title, titleX, titleY, 0xFF5D4037, false);
 
+            // === ДОБАВЛЕНО: ЛИНИЯ ПОД ЗАГОЛОВКОМ ===
+            renderTitleLineUnderText(graphics, contentLeft, titleY + font.lineHeight - 1, contentWidth);
+
             // Корректируем стартовую позицию дерева
             int startX = manager.getGuiLeft() + 10;
-            int startY = titleY + font.lineHeight + 6; // Больший отступ после заголовка
+            int startY = titleY + font.lineHeight + 12; // Больший отступ после линии
 
             Map<String, Point> positions = DrawNodesLinks.computePositions(nodes, startX, startY);
             manager.getNodePositionsStore().setPositions(positions);
@@ -69,6 +72,26 @@ public class ProgressTreeRenderer {
             drawNodes(manager, graphics, positions, nodes, mouseX, mouseY, font);
             DrawNodesLinks.drawLinks(graphics, positions, nodes);
         }
+    }
+
+    // НОВЫЙ МЕТОД: рендер линии под заголовком
+    private static void renderTitleLineUnderText(GuiGraphics graphics, int x, int y, int width) {
+        // Координаты линии в текстуре: X0 Y82 до X107 Y87 (ширина 107px, высота 5px)
+        int textureX = 0;
+        int textureY = 82;
+        int textureWidth = 107;
+        int textureHeight = 5;
+
+        // Центрируем линию по ширине контента
+        int lineX = x + (width - textureWidth) / 2;
+        int lineY = y;
+
+        // Рисуем линию фиксированной длины
+        graphics.blit(ArsMelimaConstants.ICONS_TEXTURE,
+                lineX, lineY,
+                textureX, textureY,
+                textureWidth, textureHeight,
+                512, 512);
     }
 
     private static void drawNodes(ArsMelimaUIManager manager, GuiGraphics graphics,
@@ -106,17 +129,18 @@ public class ProgressTreeRenderer {
             if (UIUtils.isPointInRect(drawX, drawY, frameSize, frameSize, mouseX, mouseY)) {
                 graphics.fill(drawX, drawY, drawX + frameSize, drawY + frameSize, 0x80FFFFFF);
 
-                if (unlocked) {
-                    // если открыта — показываем обычное описание
-                    Component tooltip = Component.literal(node.getDescription() != null ? node.getDescription() : "");
-                    graphics.renderTooltip(font, tooltip, mouseX, mouseY);
-                } else {
-                    // если закрыта — показываем причину (родитель/уровень/фоллбек) как translatable Component
-                    Component reason = computeLockedTooltip(node, nodes);
-                    graphics.renderTooltip(font, reason, mouseX, mouseY);
-                }
-            }
+                // ← ОБНОВЛЕННЫЙ ТУЛТИП
+                List<Component> tooltipLines = new ArrayList<>();
 
+                // Первая строка: "Level X" (локализованно)
+                tooltipLines.add(Component.translatable("screen.wd.ars_melima.level", node.getLevel()));
+
+                // Вторая строка: локализованное описание ноды
+                String descriptionKey = "node.wd.ars_melima." + node.getId() + ".description";
+                tooltipLines.add(Component.translatable(descriptionKey));
+
+                graphics.renderTooltip(font, tooltipLines, Optional.empty(), mouseX, mouseY);
+            }
         }
     }
     private static Component computeLockedTooltip(ProgressNode node, List<ProgressNode> allNodes) {

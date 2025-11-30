@@ -128,14 +128,24 @@ public class ProgressTreeLoader {
                 // если корявое значение — пусть будет 1
             }
 
-            return new ProgressNode(id, description, itemResource, parentId, side, locked, rootPosition);
+            // ← ДОБАВЛЕНО: загрузка уровня (по умолчанию 1)
+            int level = 1;
+            try {
+                if (nodeObj.has("level")) {
+                    level = nodeObj.get("level").getAsInt();
+                }
+            } catch (Exception ignored) {
+                // если корявое значение — пусть будет 1
+            }
+
+            // ← ОБНОВЛЕНО: добавлен параметр level
+            return new ProgressNode(id, description, itemResource, parentId, side, locked, rootPosition, level);
 
         } catch (Exception e) {
             System.err.println("[ArsMelima] Failed to parse progress node: " + e.getMessage());
             return null;
         }
     }
-
 
     public static boolean progressTreeExists(String treeId) {
         if (treeId == null || treeId.isEmpty()) return false;

@@ -3,9 +3,11 @@ package ru.imaginaerum.wd.client.gui.ars_melima.screens;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import ru.imaginaerum.wd.client.gui.ars_melima.*;
@@ -253,6 +255,8 @@ public class ArsMelimaUIManager {
         return null;
     }
     // ОБНОВЛЕННЫЙ МЕТОД: рендер контента главы с единым стилем текста
+    // ОБНОВЛЁННЫЙ МЕТОД: рендер контента динамической главы с поддержкой пагинации/колонок
+    // ОБНОВЛЁННЫЙ МЕТОД: рендер контента динамической главы с поддержкой пагинации/колонок
     private void renderDynamicChapterContent(GuiGraphics graphics, int mouseX, int mouseY,
                                              Chapter chapter, Font font) {
         if (chapter == null || chapter.getElements() == null) return;
@@ -260,35 +264,71 @@ public class ArsMelimaUIManager {
         int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
         int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
         int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
+        int contentHeight = ArsMelimaConstants.CONTENT_Y2 - ArsMelimaConstants.CONTENT_Y1;
 
-        int currentY = contentTop + CONTENT_PADDING;
-        float textScale = 0.7f;
+        int yOffset = 0;
 
-        for (ChapterElement element : chapter.getElements()) {
-            if (element == null) continue;
 
-            // Получаем текст из элемента - используем правильный метод в зависимости от структуры ChapterElement
-            String text = getElementText(element);
-            if (text != null && !text.isEmpty()) {
-                // Разбиваем текст на строки если нужно
-                List<String> lines = wrapText(font, text, contentWidth - CONTENT_PADDING * 2, textScale);
+        if (currentTextPage == 0) {
+            String chapterId = chapter.getId();
+            if (chapterId != null && !chapterId.isEmpty()) {
+                Component titleComponent = Component.translatable("wd.chapter." + chapterId);
+                String titleText = titleComponent.getString(); // <- вот здесь получаем String
+                int titleWidth = font.width(titleText);
+                int titleX = contentLeft + (contentWidth - titleWidth) / 2;
+                int titleY = contentTop + CONTENT_PADDING - 14;
 
-                for (String line : lines) {
-                    if (currentY + (int)(font.lineHeight * textScale) > guiTop + ArsMelimaConstants.CONTENT_Y2) {
-                        return; // Превысили высоту контентной области
-                    }
+                renderStyledText(graphics, font, titleText, titleX, titleY, 1.0f);
 
-                    // Рендер текста в едином стиле
-                    renderStyledText(graphics, font, line,
-                            contentLeft + CONTENT_PADDING, currentY, textScale, false);
-
-                    currentY += (int)(font.lineHeight * textScale) + 2;
-                }
-                currentY += 5; // Дополнительный отступ между параграфами
+                int lineY = titleY + font.lineHeight;
+                renderTitleLineUnderText(graphics, contentLeft, lineY, contentWidth);
+                yOffset = font.lineHeight - 2;
             }
         }
+
+        // === ОБЛАСТЬ ДЛЯ КОЛОНОК ===
+        int columnsTop = contentTop + CONTENT_PADDING + yOffset;
+        int columnsHeight = contentHeight - CONTENT_PADDING - yOffset;
+        if (columnsHeight <= 0) return;
+
+        // === РЕНДЕР КОНТЕНТА ЧЕРЕЗ СИСТЕМУ СТРАНИЦ ===
+        ArsMelimaRenders.renderChapterPage(
+                graphics, mouseX, mouseY,
+                chapter,
+                currentTextPage,
+                contentLeft, columnsTop,
+                contentWidth, columnsHeight,
+                // Координаты правой колонки — как у обычных глав
+                guiLeft + ArsMelimaConstants.RIGHT_CONTENT_X1,
+                guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1,
+                ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1,
+                ArsMelimaConstants.RIGHT_CONTENT_Y2 - ArsMelimaConstants.RIGHT_CONTENT_Y1,
+                font,
+                0.85f,
+                ArsMelimaConstants.ICONS_TEXTURE
+        );
     }
 
+
+
+
+    private void renderTitleLineUnderText(GuiGraphics graphics, int x, int y, int width) {
+        int textureX = 0;
+        int textureY = 82;
+        int textureWidth = 107;
+        int textureHeight = 5;
+
+        int lineX = x + (width - textureWidth) / 2;
+        int lineY = y;
+
+        graphics.blit(
+                ArsMelimaConstants.ICONS_TEXTURE,
+                lineX, lineY,
+                textureX, textureY,
+                textureWidth, textureHeight,
+                512, 512
+        );
+    }
 
     private void renderTasks(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
         int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
