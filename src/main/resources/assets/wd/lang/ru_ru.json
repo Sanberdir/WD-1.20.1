@@ -325,6 +325,7 @@
   "wd.chapter.immune_system": "Крепкий иммунитет",
 
   "screen.wd.ars_melima.level": "Уровень %s",
+
   "node.wd.ars_melima.appreciate_greenery.description": "Дополнительно 0.5 сытости за 1 уровень навыка при поедании пищи.",
   "node.wd.ars_melima.clever_milkman.description": "Позволяет наполнить молоком бутылочку доя корову.",
   "node.wd.ars_melima.immune_system.description": "Снижает урон от иссушения, отравления, обморожения.",
