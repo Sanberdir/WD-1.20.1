@@ -1,7 +1,5 @@
 package ru.imaginaerum.wd.client.gui.ars_melima.screens;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 import ru.imaginaerum.wd.client.gui.ars_melima.*;

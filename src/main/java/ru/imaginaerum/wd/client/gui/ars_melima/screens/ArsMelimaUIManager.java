@@ -254,9 +254,7 @@ public class ArsMelimaUIManager {
 
         return null;
     }
-    // ОБНОВЛЕННЫЙ МЕТОД: рендер контента главы с единым стилем текста
-    // ОБНОВЛЁННЫЙ МЕТОД: рендер контента динамической главы с поддержкой пагинации/колонок
-    // ОБНОВЛЁННЫЙ МЕТОД: рендер контента динамической главы с поддержкой пагинации/колонок
+
     private void renderDynamicChapterContent(GuiGraphics graphics, int mouseX, int mouseY,
                                              Chapter chapter, Font font) {
         if (chapter == null || chapter.getElements() == null) return;
@@ -526,22 +524,74 @@ public class ArsMelimaUIManager {
 
         checkAndUnlockChapters(learningChapters);
 
-        // Левая колонка - начинаем с CONTENT_PADDING БЕЗ дополнительных отступов
+        // ---------------------------------------------------------
+        // ✦ ДОБАВЛЕН ЗАГОЛОВОК И ЛИНИЯ НА ЛЕВОЙ СТРАНИЦЕ ✦
+        // ---------------------------------------------------------
+        {
+            Component titleComponent = Component.translatable("wd.learning_chapters");
+            String titleText = titleComponent.getString();
+            int titleWidth = font.width(titleText);
+
+            int titleX = leftContentLeft + (leftContentWidth - titleWidth) / 2;
+            int titleY = leftContentTop + CONTENT_PADDING - 14;
+
+            renderStyledText(graphics, font, titleText, titleX, titleY, 1.0f);
+
+            int lineY = titleY + font.lineHeight;
+            renderLearningTitleLine(graphics, leftContentLeft, lineY, leftContentWidth);
+
+            // Небольшой отступ, чтобы полоски не прилипали к линии
+            leftContentTop = lineY + 4;
+        }
+
+        // ---------------------------------------------------------
+        // ✦ ЛЕВАЯ КОЛОНКА
+        // ---------------------------------------------------------
         for (int i = startIdx; i < startIdx + CHAPTERS_PER_COLUMN && i < endIdx; i++) {
             LearningChapter lc = learningChapters.get(i);
             int columnIndex = i - startIdx;
-            int stripY = leftContentTop + CONTENT_PADDING + columnIndex * TOTAL_STRIP_HEIGHT;
-            renderLearningChapterStrip(graphics, lc, leftContentLeft, stripY, leftContentWidth, OPEN_STRIP_HEIGHT, font, scale, mouseX, mouseY);
+            int stripY = leftContentTop + columnIndex * TOTAL_STRIP_HEIGHT;
+
+            renderLearningChapterStrip(graphics, lc,
+                    leftContentLeft, stripY,
+                    leftContentWidth, OPEN_STRIP_HEIGHT,
+                    font, scale, mouseX, mouseY
+            );
         }
 
-        // Правая колонка
+        // ---------------------------------------------------------
+        // ✦ ПРАВАЯ КОЛОНКА — НЕ ТРОГАЛ
+        // ---------------------------------------------------------
         for (int i = startIdx + CHAPTERS_PER_COLUMN; i < endIdx; i++) {
             LearningChapter lc = learningChapters.get(i);
             int columnIndex = i - (startIdx + CHAPTERS_PER_COLUMN);
             int stripY = rightContentTop + CONTENT_PADDING + columnIndex * TOTAL_STRIP_HEIGHT;
-            renderLearningChapterStrip(graphics, lc, rightContentLeft, stripY, rightContentWidth, OPEN_STRIP_HEIGHT, font, scale, mouseX, mouseY);
+
+            renderLearningChapterStrip(graphics, lc,
+                    rightContentLeft, stripY,
+                    rightContentWidth, OPEN_STRIP_HEIGHT,
+                    font, scale, mouseX, mouseY
+            );
         }
     }
+    private void renderLearningTitleLine(GuiGraphics graphics, int x, int y, int width) {
+        int textureX = 0;
+        int textureY = 82;
+        int textureWidth = 107;
+        int textureHeight = 5;
+
+        int lineX = x + (width - textureWidth) / 2;
+        int lineY = y;
+
+        graphics.blit(
+                ArsMelimaConstants.ICONS_TEXTURE,
+                lineX, lineY,
+                textureX, textureY,
+                textureWidth, textureHeight,
+                512, 512
+        );
+    }
+
 
     private void checkAndUnlockChapters(List<LearningChapter> learningChapters) {
         if (learningChapters == null) return;
