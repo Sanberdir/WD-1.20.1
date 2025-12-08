@@ -153,6 +153,10 @@
   "item.wd.ars_melima": "Ars Melima (WIP)",
   "item.wd.cleaned_turtle_neck": "Очищенная черепашья шея",
   "item.wd.cleansing_decoction": "Очищающий отвар",
+  "item.wd.cocktail_molokov": "Коктейль Молокова",
+  "item.wd.spicy_cocktail_molokov": "Пикантный коктейль Молокова",
+  "item.wd.withering_cocktail_molokov": "Иссушающий коктейль Молокова",
+  "item.wd.disorienting_cocktail_molokov": "Дезориентирующий коктейль Молокова",
   "item.wd.clear_dragolit_nugget": "§eОчищенный драколитовый осколок",
   "item.wd.coastal_steep": "Береговой крутень",
   "item.wd.coastal_steep_fibers": "Волокна берегового крутня",
@@ -315,6 +319,7 @@
   "wd.progression.linkoncer.title": "Едок зелени",
 
   "wd.tree_links.linkoncer": "Линконсер",
+  "wd.tree_links.milkman": "Дояр",
 
   "wd.chapter.fish_diet": "Рыбная диета",
   "wd.chapter.appreciate_greenery": "Ценитель зелени",

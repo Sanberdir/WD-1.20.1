@@ -51,6 +51,9 @@ public class ArsMelimaMenu {
         this.currentTaskChapterId = null;
         this.currentIndex = LEARNING_CHAPTERS_INDEX;
     }
+    public boolean isChapterOpen() {
+        return currentIndex >= 0 && currentIndex < chapters.size();
+    }
     public boolean isTasksOpen() { return this.currentIndex == TASKS_INDEX; }
     public String getCurrentTaskChapterId() { return currentTaskChapterId; }
     public List<Task> getCurrentTasks() { return currentTaskChapterId != null ? getTasks(currentTaskChapterId) : Collections.emptyList(); }

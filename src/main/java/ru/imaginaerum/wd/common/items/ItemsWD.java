@@ -33,6 +33,25 @@ public class ItemsWD {
     public static final RegistryObject<Item> IRON_WATERING_CAN = ITEMS.register("iron_watering_can",
             () -> new IronWateringCan(new Item.Properties().stacksTo(1)));
 
+    // Коктейли Молокова
+    public static final RegistryObject<Item> COCKTAIL_MOLOKOV = ITEMS.register("cocktail_molokov",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> SPICY_COCKTAIL_MOLOKOV = ITEMS.register("spicy_cocktail_molokov",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> WITHERING_COCKTAIL_MOLOKOV = ITEMS.register("withering_cocktail_molokov",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> DISORIENTING_COCKTAIL_MOLOKOV = ITEMS.register("disorienting_cocktail_molokov",
+            () -> new Item(new Item.Properties()));
+    // Значки навыков
+    public static final RegistryObject<Item> UNARMED_MASTER = ITEMS.register("unarmed_master",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> CLEVER_MILKMAN = ITEMS.register("clever_milkman",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> DIZZYING_BLOW = ITEMS.register("dizzying_blow",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> WITHERING_BLOW = ITEMS.register("withering_blow",
+            () -> new Item(new Item.Properties()));
+
     // Шляпа
     public static final RegistryObject<Item> MAGIC_HAT = ITEMS.register("magic_hat",
             () -> new MagicHat(ModArmorMaterials.MAGIC, ArmorItem.Type.HELMET, new Item.Properties()));

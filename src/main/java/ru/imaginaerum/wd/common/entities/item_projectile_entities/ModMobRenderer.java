@@ -12,8 +12,16 @@ import ru.imaginaerum.wd.common.entities.ModEntities;
 
 public class ModMobRenderer {
     @SubscribeEvent
-    public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+    public static void registerStarBallRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.STAR_BALL.get(), ThrownItemRenderer::new);
+    }
+    @SubscribeEvent
+    public static void registerMilkBottleRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntities.MILK_BOTTLE.get(), ThrownItemRenderer::new);
+    }
+    @SubscribeEvent
+    public static void registerCocktail_molokovRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntities.COCKTAIL_MOLOKOV.get(), ThrownItemRenderer::new);
     }
 
 }

@@ -13,6 +13,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import ru.imaginaerum.wd.WD;
+import ru.imaginaerum.wd.common.entities.item_projectile_entities.CocktailMolokov;
+import ru.imaginaerum.wd.common.entities.item_projectile_entities.MilkBottle;
 import ru.imaginaerum.wd.common.entities.item_projectile_entities.StarBall;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -23,6 +25,14 @@ public class ModEntities {
     public static final RegistryObject<EntityType<StarBall>> STAR_BALL = register("projectile_star_ball",
             EntityType.Builder.<StarBall>of(StarBall::new, MobCategory.MISC).setCustomClientFactory(StarBall::new)
                     .setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(1).sized(0.5f, 0.5f));
+
+    public static final RegistryObject<EntityType<MilkBottle>> MILK_BOTTLE = register("projectile_milk_bottle",
+            EntityType.Builder.<MilkBottle>of(MilkBottle::new, MobCategory.MISC)
+                    .setShouldReceiveVelocityUpdates(true).setUpdateInterval(1).sized(0.5f, 0.5f));
+    public static final RegistryObject<EntityType<CocktailMolokov>> COCKTAIL_MOLOKOV = register("projectile_cocktail_molokov",
+            EntityType.Builder.<CocktailMolokov>of(CocktailMolokov::new, MobCategory.MISC)
+                    .setShouldReceiveVelocityUpdates(true).setUpdateInterval(1).sized(0.5f, 0.5f));
+
 
     private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
         return ENTITY_TYPES.register(registryname, () -> (EntityType<T>) entityTypeBuilder.build(registryname));

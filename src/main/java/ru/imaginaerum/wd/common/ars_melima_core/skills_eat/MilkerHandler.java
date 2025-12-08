@@ -15,7 +15,7 @@ import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ProgressionUnl
 import vectorwing.farmersdelight.common.registry.ModItems;
 
 @Mod.EventBusSubscriber(modid = "wd", bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class CleverMilkmanMilkingHandler {
+public class MilkerHandler {
 
     @SubscribeEvent
     public static void onInteractWithCow(PlayerInteractEvent.EntityInteract event) {
@@ -26,7 +26,7 @@ public class CleverMilkmanMilkingHandler {
         ItemStack stack = event.getItemStack();
 
         if (!stack.is(Items.GLASS_BOTTLE)) return;
-        if (!ProgressionUnlockManager.isUnlocked(player, "clever_milkman")) return;
+        if (!ProgressionUnlockManager.isUnlocked(player, "milker")) return;
         if (cow.isBaby()) return;
 
         event.setCanceled(true);

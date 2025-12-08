@@ -153,6 +153,10 @@
   "item.wd.dungeon_master_cheese_2": "§dDungeon Master Сheese",
   "item.wd.cleaned_turtle_neck": "Cleaned Turtle Neck",
   "item.wd.cleansing_decoction": "Cleansing Decoction",
+  "item.wd.cocktail_molokov": "Coctail Molokov",
+  "item.wd.spicy_cocktail_molokov": "Spicy Cocktail Molokov",
+  "item.wd.withering_cocktail_molokov": "Withering Cocktail Molokov",
+  "item.wd.disorienting_cocktail_molokov": "Disorienting Cocktail Molokov",
   "item.wd.clear_dragolit_nugget": "§ePurified Dracolite Shard",
   "item.wd.coastal_steep": "Coastal Root",
   "item.wd.coastal_steep_fibers": "Fibers Of Coastal Root",
@@ -316,6 +320,7 @@
 
   "wd.progression.linkoncer.title": "Eat green",
   "wd.tree_links.linkoncer": "Linkincer",
+  "wd.tree_links.milkman": "Milkman",
 
   "wd.chapter.fish_diet": "Рыбная диета",
   "wd.chapter.appreciate_greenery": "Ценитель зелени",

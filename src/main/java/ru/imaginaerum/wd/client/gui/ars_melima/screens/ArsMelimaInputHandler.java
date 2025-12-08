@@ -5,6 +5,7 @@ import net.minecraft.world.item.ItemStack;
 import ru.imaginaerum.wd.client.gui.ars_melima.*;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ArsMelimaConstants;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.BookmarkRenderer;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.Point;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.RequestUnlockProgressPacket;
 
@@ -37,7 +38,13 @@ public class ArsMelimaInputHandler {
         int my = (int) Math.floor(mouseY);
         int guiLeft = uiManager.getGuiLeft();
         int guiTop = uiManager.getGuiTop();
-
+        // Стало так:
+        if (BookmarkRenderer.handleBookmarkClick(mouseX, mouseY, uiManager.getGuiLeft(), uiManager.getGuiTop(), uiManager)) {
+            // Теперь uiManager.setCurrentSection уже вызывается внутри handleBookmarkClick
+            // Эта строка больше не нужна:
+            // uiManager.setCurrentSection(BookmarkRenderer.getCurrentBookmark());
+            return true;
+        }
         if (menu.isProgressionOpen()) {
             if (handleBackArrowClick(mx, my, button, menu, uiManager)) return true;
             if (handlePageArrowClick(mx, my, button, guiLeft, guiTop, uiManager::getCurrentProgressPage,

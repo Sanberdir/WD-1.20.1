@@ -1,0 +1,59 @@
+[
+  {
+    "id": "clever_milkman",
+    "item": "wd:clever_milkman",
+    "description": "Ловкий дояр",
+    "parentId": "",
+    "side": "",
+    "rootPosition": 3,
+    "locked": true
+  },
+  {
+    "id": "milk_thrower",
+    "item": "farmersdelight:milk_bottle",
+    "description": "Молокометатель",
+    "parentId": "clever_milkman",
+    "side": "down,right",
+    "locked": true
+  },
+  {
+    "id": "unarmed_master",
+    "item": "wd:unarmed_master",
+    "description": "Безоружный мастер",
+    "parentId": "clever_milkman",
+    "side": "down,left",
+    "locked": true
+  },
+  {
+    "id": "dizzying_blow",
+    "item": "wd:dizzying_blow",
+    "description": "Головокружительный удар",
+    "parentId": "unarmed_master",
+    "side": "left",
+    "locked": true
+  },
+  {
+    "id": "withering_blow",
+    "item": "wd:withering_blow",
+    "description": "Иссушающий удар",
+    "parentId": "unarmed_master",
+    "side": "down",
+    "locked": true
+  },
+  {
+    "id": "cocktail_molokov",
+    "item": "minecraft:gunpowder",
+    "description": "Коктейль Молокова",
+    "parentId": "milk_thrower",
+    "side": "down",
+    "locked": true
+  },
+  {
+    "id": "arrow_of_redemption",
+    "item": "minecraft:arrow",
+    "description": "Стрела искупления",
+    "parentId": "cocktail_molokov",
+    "side": "down",
+    "locked": true
+  }
+]
