@@ -24,83 +24,101 @@ import static ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.TOTAL_STR
 
 /**
  * Координатор UI — минимальная логика, вызывает конкретные рендереры.
- * Обновлён: синяя вкладка (index 1) — главный раздел, красная (index 0) — заглушка.
+ * Обновлено: синяя вкладка (index 1) — основные главы, красная (index 0) — базовые главы.
  */
 public class ArsMelimaUIManager {
     private int guiLeft, guiTop;
     private ArsMelimaMenu currentMenu;
 
+    // Состояние для основной вкладки (синяя)
     private int currentChapterPage = 0;
     private int currentTextPage = 0;
     private int currentProgressPage = 0;
     private int currentLearningPage = 0;
-    // СДЕЛАНО: синяя вкладка (index 1) — дефолтная «главная»
-    private int currentSection = 1;
+
+    // Состояние для базовых глав (красная вкладка)
+    private int currentBaseChapterPage = 0;
+    private int currentBaseTextPage = 0;
+    private int currentBaseLearningPage = 0;
+
+    private int currentSection = 1; // Дефолтная — синяя вкладка
     private int currentTaskPage = 0;
+
+    // Для прогрессии
+    private final NodePositionsStore nodePositionsStore = new NodePositionsStore();
+    private ProgressNode currentProgressNode = null;
+    private final ProgressBarRenderer progressBarRenderer = new ProgressBarRenderer();
+
     public void setCurrentTaskPage(int page) { this.currentTaskPage = page; }
     public int getCurrentTaskPage() { return currentTaskPage; }
 
     public void setCurrentMenu(ArsMelimaMenu menu) { this.currentMenu = menu; }
 
-    private final NodePositionsStore nodePositionsStore = new NodePositionsStore();
-    private ProgressNode currentProgressNode = null;
-
-    private final ProgressBarRenderer progressBarRenderer = new ProgressBarRenderer();
-
+    // Геттеры и сеттеры для основной вкладки
     public void setCurrentProgressPage(int page) { this.currentProgressPage = page; }
     public int getCurrentProgressPage() { return currentProgressPage; }
-
     public void setCurrentChapterPage(int page) { this.currentChapterPage = page; }
     public int getCurrentChapterPage() { return currentChapterPage; }
-
     public void setCurrentTextPage(int page) { this.currentTextPage = page; }
     public int getCurrentTextPage() { return currentTextPage; }
-
     public void setCurrentLearningPage(int page) { this.currentLearningPage = page; }
     public int getCurrentLearningPage() { return currentLearningPage; }
+
+    // Геттеры и сеттеры для базовых глав
+    public void setCurrentBaseChapterPage(int page) { this.currentBaseChapterPage = page; }
+    public int getCurrentBaseChapterPage() { return currentBaseChapterPage; }
+    public void setCurrentBaseTextPage(int page) { this.currentBaseTextPage = page; }
+    public int getCurrentBaseTextPage() { return currentBaseTextPage; }
+    public void setCurrentBaseLearningPage(int page) { this.currentBaseLearningPage = page; }
+    public int getCurrentBaseLearningPage() { return currentBaseLearningPage; }
 
     public void setCurrentProgressNode(ProgressNode node) { this.currentProgressNode = node; setCurrentTextPage(0); }
     public ProgressNode getCurrentProgressNode() { return currentProgressNode; }
 
     public NodePositionsStore getNodePositionsStore() { return nodePositionsStore; }
-
     public Map<String, Point> getNodePositions() { return this.nodePositionsStore.getPositions(); }
 
     public int getGuiLeft() { return guiLeft; }
     public int getGuiTop() { return guiTop; }
-    public int getCurrentSection() {
-        return currentSection;
-    }
+    public int getCurrentSection() { return currentSection; }
 
     public void setCurrentSection(int section) {
         if (section >= 0 && section <= 2) {
             this.currentSection = section;
-            // Сбрасываем состояние при смене раздела
             resetSectionState();
         }
     }
 
     private void resetSectionState() {
-        // Сбрасываем состояние меню при смене раздела
         if (currentMenu != null) {
-            // Теперь «главный» раздел — синяя вкладка (index 1).
-            if (currentSection != 1) {
-                // Для неосновных разделов закрываем все открытые окна
-                currentMenu.closeChapter();
-                currentMenu.closeLearningChapters();
-                currentMenu.closeTasks();
-                currentMenu.closeProgression();
-            }
+            // Закрываем все открытые окна при смене раздела
+            currentMenu.closeChapter();
+            currentMenu.closeLearningChapters();
+            currentMenu.closeTasks();
+            currentMenu.closeProgression();
         }
     }
+
     public void render(GuiGraphics graphics, int mouseX, int mouseY, int screenWidth, int screenHeight,
                        ArsMelimaMenu menu, Font font) {
         calculatePosition(screenWidth, screenHeight);
+        currentMenu = menu;
+
         BookmarkRenderer.syncWithUIManager(this);
-        BookmarkRenderer.renderBookmarks(graphics, guiLeft, guiTop);
+
+        // 1. Фон (самый нижний)
         BackgroundRenderer.renderBackground(graphics, guiLeft, guiTop);
+
+        // 2. Закладки поверх фона
+        BookmarkRenderer.renderBookmarks(graphics, guiLeft, guiTop);
+
+        // 3. Белые страницы поверх закладок
+        PagesRenderer.renderPages(graphics, guiLeft, guiTop);
+
+        // 4. Остальное как было...
         ContentAreasRenderer.renderContentAreas(graphics, guiLeft, guiTop);
 
+        // Прогресс-бар только в основной вкладке при открытой прогрессии
         if (currentSection == 1 && menu != null && menu.isProgressionOpen()) {
             ProgressBarModel model = new ProgressBarModel(ClientCookingData.clientLevel,
                     ClientCookingData.clientXp,
@@ -108,8 +126,8 @@ public class ArsMelimaUIManager {
             progressBarRenderer.render(graphics, guiLeft, guiTop, model);
         }
 
-        // Рендерим навигацию только в основном разделе (синяя)
-        if (currentSection == 1) {
+        // Навигация только в основной и базовой вкладках
+        if (currentSection == 0 || currentSection == 1) {
             NavigationRenderer.renderNavigation(this, graphics, mouseX, mouseY, menu, font);
         }
 
@@ -127,12 +145,241 @@ public class ArsMelimaUIManager {
     }
 
     private void renderContent(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
-        // Если мы не в основном разделе (теперь — синем), показываем заглушку
-        if (currentSection != 1) {
-            renderNonMainSection(graphics, mouseX, mouseY, menu, font);
-            return;
+        switch (currentSection) {
+            case 0: // Красная вкладка - базовые главы
+                renderBaseSection(graphics, mouseX, mouseY, menu, font);
+                break;
+            case 1: // Синяя вкладка - основные главы
+                renderMainSection(graphics, mouseX, mouseY, menu, font);
+                break;
+            default: // Другие вкладки
+                renderNonMainSection(graphics, mouseX, mouseY, menu, font);
+                break;
+        }
+    }
+
+    // ===================== КРАСНАЯ ВКЛАДКА - БАЗОВЫЕ ГЛАВЫ =====================
+
+    private void renderBaseSection(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
+        int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
+        int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
+        int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
+        int contentHeight = ArsMelimaConstants.CONTENT_Y2 - ArsMelimaConstants.CONTENT_Y1;
+
+        int rightContentLeft = guiLeft + ArsMelimaConstants.RIGHT_CONTENT_X1;
+        int rightContentTop = guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1;
+        int rightContentWidth = ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1;
+        int rightContentHeight = ArsMelimaConstants.RIGHT_CONTENT_Y2 - ArsMelimaConstants.RIGHT_CONTENT_Y1;
+
+        // Проверяем, открыта ли базовая глава
+        if (menu.isBaseChapterOpen()) {
+            // РЕНДЕРИМ СОДЕРЖИМОЕ БАЗОВОЙ ГЛАВЫ
+            renderBaseChapterContentPage(graphics, mouseX, mouseY, menu, font);
+        } else {
+            // Рендерим список БАЗОВЫХ глав (menu.getBaseChapters())
+            List<Chapter> baseChapters = menu.getBaseChapters();
+
+            if (baseChapters == null || baseChapters.isEmpty()) {
+                // Если нет базовых глав, показываем сообщение
+                renderStyledText(graphics, font, "Нет базовых глав",
+                        contentLeft + (contentWidth - font.width("Нет базовых глав")) / 2,
+                        contentTop + (contentHeight - font.lineHeight) / 2, 1.0f);
+            } else {
+                // Создаем временный объект меню для рендеринга только базовых глав
+                ArsMelimaMenu baseMenuWrapper = new ArsMelimaMenu() {
+                    @Override
+                    public List<Chapter> getChapters() {
+                        return baseChapters; // Возвращаем только базовые главы
+                    }
+
+                    @Override
+                    public int getCurrentIndex() {
+                        return -1; // Ничего не открыто
+                    }
+
+                    @Override
+                    public boolean isProgressionOpen() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isTasksOpen() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isLearningChaptersOpen() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isBaseChapterOpen() {
+                        return false; // Список открыт, не глава
+                    }
+                };
+
+                // Рендерим список базовых глав
+                ArsMelimaRenders.renderChapterList(graphics, mouseX, mouseY,
+                        contentLeft, contentTop, contentWidth, contentHeight,
+                        rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
+                        font, baseMenuWrapper, 0.85f, currentBaseChapterPage);
+            }
+        }
+    }
+
+    // НОВЫЙ МЕТОД: рендеринг содержимого базовой главы
+    private void renderBaseChapterContentPage(GuiGraphics graphics, int mouseX, int mouseY,
+                                              ArsMelimaMenu menu, Font font) {
+        Chapter chapter = menu.getCurrentBaseChapter();
+        if (chapter == null) return;
+
+        int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
+        int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
+        int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
+        int contentHeight = ArsMelimaConstants.CONTENT_Y2 - ArsMelimaConstants.CONTENT_Y1;
+
+        int rightContentLeft = guiLeft + ArsMelimaConstants.RIGHT_CONTENT_X1;
+        int rightContentTop = guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1;
+        int rightContentWidth = ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1;
+        int rightContentHeight = ArsMelimaConstants.RIGHT_CONTENT_Y2 - ArsMelimaConstants.RIGHT_CONTENT_Y1;
+
+        // Если первая страница - показываем LearningChapters и TreeLinks
+        if (currentBaseTextPage == 0) {
+            // Слева: LearningChapters для базовых глав
+            List<LearningChapter> learningChapters = menu.getLearningChapters(chapter.getId());
+            renderLearningChaptersList(graphics, mouseX, mouseY,
+                    contentLeft, contentTop, contentWidth, contentHeight,
+                    rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
+                    font, learningChapters, 0.85f, currentBaseLearningPage);
+
+            // Справа: TreeLinks для базовых глав
+            List<TreeLink> treeLinks = menu.getBaseTreeLinks(chapter.getId());
+            renderTreeLinksList(graphics, mouseX, mouseY,
+                    contentLeft, contentTop, contentWidth, contentHeight,
+                    rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
+                    font, treeLinks, 0.85f, 0);
+        } else {
+            // Последующие страницы: только TreeLinks
+            List<TreeLink> treeLinks = menu.getBaseTreeLinks(chapter.getId());
+            renderTreeLinksList(graphics, mouseX, mouseY,
+                    contentLeft, contentTop, contentWidth, contentHeight,
+                    rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
+                    font, treeLinks, 0.85f, currentBaseTextPage);
         }
 
+        // ДОБАВЛЕНО: Рендерим содержимое главы (текст/изображения) сверху
+        renderBaseChapterTextContent(graphics, mouseX, mouseY, chapter, font);
+    }
+
+    // НОВЫЙ МЕТОД: рендеринг текстового содержимого базовой главы
+    private void renderBaseChapterTextContent(GuiGraphics graphics, int mouseX, int mouseY,
+                                              Chapter chapter, Font font) {
+        if (chapter == null || chapter.getElements() == null) return;
+
+        int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
+        int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
+        int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
+        int contentHeight = ArsMelimaConstants.CONTENT_Y2 - ArsMelimaConstants.CONTENT_Y1;
+
+        int yOffset = 0;
+
+        // Отображаем заголовок на первой странице
+        if (currentBaseTextPage == 0) {
+            String chapterId = chapter.getId();
+            if (chapterId != null && !chapterId.isEmpty()) {
+                // Пробуем локализованный заголовок
+                String titleText = chapter.getTitle();
+                if (titleText != null && !titleText.isEmpty()) {
+                    Component titleComponent = Component.translatable(titleText);
+                    String localizedTitle = titleComponent.getString();
+
+                    // Если не нашли локализацию, используем как есть
+                    if (localizedTitle.equals(titleText)) {
+                        // Пробуем по ID
+                        titleComponent = Component.translatable("wd.chapter." + chapterId);
+                        localizedTitle = titleComponent.getString();
+                    }
+
+                    int titleWidth = font.width(localizedTitle);
+                    int titleX = contentLeft + (contentWidth - titleWidth) / 2;
+                    int titleY = contentTop + CONTENT_PADDING - 14;
+
+                    renderStyledText(graphics, font, localizedTitle, titleX, titleY, 1.0f);
+
+                    int lineY = titleY + font.lineHeight;
+                    renderTitleLineUnderText(graphics, contentLeft, lineY, contentWidth);
+                    yOffset = font.lineHeight - 2;
+                }
+            }
+        }
+
+        // === ОБЛАСТЬ ДЛЯ КОЛОНОК ===
+        int columnsTop = contentTop + CONTENT_PADDING + yOffset;
+        int columnsHeight = contentHeight - CONTENT_PADDING - yOffset;
+        if (columnsHeight <= 0) return;
+
+        // === РЕНДЕР КОНТЕНТА ЧЕРЕЗ СИСТЕМУ СТРАНИЦ ===
+        // Используем существующий метод ArsMelimaRenders.renderChapterPage
+        ArsMelimaRenders.renderChapterPage(
+                graphics, mouseX, mouseY,
+                chapter,
+                currentBaseTextPage, // Используем страницу для базовых глав
+                contentLeft, columnsTop,
+                contentWidth, columnsHeight,
+                // Координаты правой колонки — как у обычных глав
+                guiLeft + ArsMelimaConstants.RIGHT_CONTENT_X1,
+                guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1,
+                ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1,
+                ArsMelimaConstants.RIGHT_CONTENT_Y2 - ArsMelimaConstants.RIGHT_CONTENT_Y1,
+                font,
+                0.85f,
+                ArsMelimaConstants.ICONS_TEXTURE
+        );
+    }
+
+    private void renderBaseChapterContent(GuiGraphics graphics, int mouseX, int mouseY,
+                                          ArsMelimaMenu menu, Font font) {
+        Chapter chapter = menu.getCurrentBaseChapter();
+        if (chapter == null) return;
+
+        int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
+        int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
+        int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
+        int contentHeight = ArsMelimaConstants.CONTENT_Y2 - ArsMelimaConstants.CONTENT_Y1;
+
+        int rightContentLeft = guiLeft + ArsMelimaConstants.RIGHT_CONTENT_X1;
+        int rightContentTop = guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1;
+        int rightContentWidth = ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1;
+        int rightContentHeight = ArsMelimaConstants.RIGHT_CONTENT_Y2 - ArsMelimaConstants.RIGHT_CONTENT_Y1;
+
+        // Обработка первой страницы (LearningChapters и TreeLinks)
+        if (currentBaseTextPage == 0) {
+            // Слева: LearningChapters для базовых глав
+            List<LearningChapter> learningChapters = menu.getLearningChapters(chapter.getId());
+            renderLearningChaptersList(graphics, mouseX, mouseY,
+                    contentLeft, contentTop, contentWidth, contentHeight,
+                    rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
+                    font, learningChapters, 0.85f, currentBaseLearningPage);
+
+            // Справа: TreeLinks для базовых глав
+            List<TreeLink> treeLinks = menu.getBaseTreeLinks(chapter.getId());
+            renderTreeLinksList(graphics, mouseX, mouseY,
+                    contentLeft, contentTop, contentWidth, contentHeight,
+                    rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
+                    font, treeLinks, 0.85f, 0);
+        } else {
+            // Последующие страницы: только TreeLinks
+            List<TreeLink> treeLinks = menu.getBaseTreeLinks(chapter.getId());
+            renderTreeLinksList(graphics, mouseX, mouseY,
+                    contentLeft, contentTop, contentWidth, contentHeight,
+                    rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
+                    font, treeLinks, 0.85f, currentBaseTextPage);
+        }
+    }
+
+    // ===================== СИНЯЯ ВКЛАДКА - ОСНОВНЫЕ ГЛАВЫ =====================
+
+    private void renderMainSection(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
         Chapter chapter = menu.getCurrentChapter();
 
         int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
@@ -159,6 +406,7 @@ public class ArsMelimaUIManager {
         }
 
         if (menu.getCurrentIndex() == -1) {
+            // Рендерим список ОСНОВНЫХ глав (menu.getChapters())
             ArsMelimaRenders.renderChapterList(graphics, mouseX, mouseY,
                     contentLeft, contentTop, contentWidth, contentHeight,
                     rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
@@ -168,7 +416,6 @@ public class ArsMelimaUIManager {
             int page = currentTextPage;
 
             if (menu.isDynamicChapterOpen()) {
-                System.out.println("[RENDER] Rendering dynamic chapter content");
                 renderDynamicChapterContent(graphics, mouseX, mouseY, chapter, font);
 
             } else if (page == 0) {
@@ -194,18 +441,16 @@ public class ArsMelimaUIManager {
         }
     }
 
+    // ===================== ДРУГИЕ ВКЛАДКИ =====================
+
     private void renderNonMainSection(GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
         int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
         int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
         int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
         int contentHeight = ArsMelimaConstants.CONTENT_Y2 - ArsMelimaConstants.CONTENT_Y1;
 
-        // Заглушка для неосновных разделов
         String message = "";
         switch (currentSection) {
-            case 0: // Красная закладка — теперь заглушка
-                message = "Красная вкладка — заглушка";
-                break;
             case 2: // Зелёная закладка
                 message = "Зелёный раздел - в разработке";
                 break;
@@ -213,7 +458,6 @@ public class ArsMelimaUIManager {
                 message = "Раздел в разработке";
         }
 
-        // Рендерим сообщение по центру
         int textWidth = font.width(message);
         int textX = contentLeft + (contentWidth - textWidth) / 2;
         int textY = contentTop + (contentHeight - font.lineHeight) / 2;
@@ -221,88 +465,7 @@ public class ArsMelimaUIManager {
         renderStyledText(graphics, font, message, textX, textY, 1.0f);
     }
 
-    private List<String> wrapText(Font font, String text, int maxWidth, float scale) {
-        List<String> lines = new ArrayList<>();
-        if (text == null || text.isEmpty()) return lines;
-
-        String[] words = text.split(" ");
-        StringBuilder currentLine = new StringBuilder();
-
-        for (String word : words) {
-            String testLine = currentLine.length() > 0 ? currentLine + " " + word : word;
-            int testWidth = (int)(font.width(testLine) * scale);
-
-            if (testWidth <= maxWidth) {
-                currentLine.append(currentLine.length() > 0 ? " " + word : word);
-            } else {
-                if (currentLine.length() > 0) {
-                    lines.add(currentLine.toString());
-                }
-                currentLine = new StringBuilder(word);
-            }
-        }
-
-        if (currentLine.length() > 0) {
-            lines.add(currentLine.toString());
-        }
-
-        return lines;
-    }
-    private String getElementText(ChapterElement element) {
-        // Попробуем разные возможные методы получения текста
-        try {
-            // Способ 1: прямой метод getText()
-            if (element.getClass().getMethod("getText") != null) {
-                return (String) element.getClass().getMethod("getText").invoke(element);
-            }
-        } catch (Exception e) {
-            // Продолжаем пробовать другие способы
-        }
-
-        try {
-            // Способ 2: метод text()
-            if (element.getClass().getMethod("text") != null) {
-                return (String) element.getClass().getMethod("text").invoke(element);
-            }
-        } catch (Exception e) {
-            // Продолжаем пробовать другие способы
-        }
-
-        try {
-            // Способ 3: метод getContent()
-            if (element.getClass().getMethod("getContent") != null) {
-                Object content = element.getClass().getMethod("getContent").invoke(element);
-                if (content instanceof String) {
-                    return (String) content;
-                }
-            }
-        } catch (Exception e) {
-            // Продолжаем пробовать другие способы
-        }
-
-        try {
-            // Способ 4: метод data() и парсинг JSON
-            if (element.getClass().getMethod("getData") != null) {
-                Object data = element.getClass().getMethod("getData").invoke(element);
-                if (data instanceof String) {
-                    // Попробуем распарсить как JSON
-                    try {
-                        JsonObject json = JsonParser.parseString((String) data).getAsJsonObject();
-                        if (json.has("text")) {
-                            return json.get("text").getAsString();
-                        }
-                    } catch (Exception e) {
-                        // Не JSON, возможно это просто текст
-                        return (String) data;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // Не удалось получить текст
-        }
-
-        return null;
-    }
+    // ===================== ОБЩИЕ МЕТОДЫ РЕНДЕРИНГА =====================
 
     private void renderDynamicChapterContent(GuiGraphics graphics, int mouseX, int mouseY,
                                              Chapter chapter, Font font) {
@@ -319,7 +482,7 @@ public class ArsMelimaUIManager {
             String chapterId = chapter.getId();
             if (chapterId != null && !chapterId.isEmpty()) {
                 Component titleComponent = Component.translatable("wd.chapter." + chapterId);
-                String titleText = titleComponent.getString(); // <- вот здесь получаем String
+                String titleText = titleComponent.getString();
                 int titleWidth = font.width(titleText);
                 int titleX = contentLeft + (contentWidth - titleWidth) / 2;
                 int titleY = contentTop + CONTENT_PADDING - 14;
@@ -332,19 +495,16 @@ public class ArsMelimaUIManager {
             }
         }
 
-        // === ОБЛАСТЬ ДЛЯ КОЛОНОК ===
         int columnsTop = contentTop + CONTENT_PADDING + yOffset;
         int columnsHeight = contentHeight - CONTENT_PADDING - yOffset;
         if (columnsHeight <= 0) return;
 
-        // === РЕНДЕР КОНТЕНТА ЧЕРЕЗ СИСТЕМУ СТРАНИЦ ===
         ArsMelimaRenders.renderChapterPage(
                 graphics, mouseX, mouseY,
                 chapter,
                 currentTextPage,
                 contentLeft, columnsTop,
                 contentWidth, columnsHeight,
-                // Координаты правой колонки — как у обычных глав
                 guiLeft + ArsMelimaConstants.RIGHT_CONTENT_X1,
                 guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1,
                 ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1,
@@ -462,13 +622,14 @@ public class ArsMelimaUIManager {
         if (startIdx >= treeLinks.size()) return;
         int endIdx = Math.min(startIdx + perPage, treeLinks.size());
 
-        // Левая колонка: startIdx .. startIdx + CHAPTERS_PER_COLUMN - 1
+        // Левая колонка
         for (int i = startIdx; i < Math.min(startIdx + CHAPTERS_PER_COLUMN, endIdx); i++) {
             TreeLink tl = treeLinks.get(i);
             int stripY = leftContentTop + CONTENT_PADDING + (i - startIdx) * TOTAL_STRIP_HEIGHT;
             renderTreeLinkStrip(graphics, tl, leftContentLeft, stripY, leftContentWidth, OPEN_STRIP_HEIGHT, font, scale, mouseX, mouseY);
         }
 
+        // Правая колонка
         for (int i = startIdx + CHAPTERS_PER_COLUMN; i < endIdx; i++) {
             TreeLink tl = treeLinks.get(i);
             int columnIndex = i - (startIdx + CHAPTERS_PER_COLUMN);
@@ -487,19 +648,17 @@ public class ArsMelimaUIManager {
         boolean hover = isPointInRect(x, y, width, height, mouseX, mouseY);
         ArsMelimaRenders.renderChapterStrip(graphics, x, y, width, height, true, hover);
 
-        // --- ЛОКАЛИЗАЦИЯ ---
         String keyById = "wd.tree_links." + tl.getId();
         String localized = Component.translatable(keyById).getString();
 
         String title;
 
         if (localized == null || localized.isEmpty() || localized.equals(keyById)) {
-            // Пробуем использовать title как ключ
             String titleKey = tl.getTitle();
             if (titleKey != null && !titleKey.isBlank()) {
                 String loc2 = Component.translatable(titleKey).getString();
                 title = (loc2 == null || loc2.isBlank() || loc2.equals(titleKey))
-                        ? tl.getId()    // fallback
+                        ? tl.getId()
                         : loc2;
             } else {
                 title = tl.getId();
@@ -518,13 +677,11 @@ public class ArsMelimaUIManager {
         graphics.pose().translate(textX, textY, 0);
         graphics.pose().scale(scale, scale, 1.0f);
 
-        // тень и световой обвод
         graphics.drawString(font, title, 0, -1, 0x80FFFFFF, false);
         graphics.drawString(font, title, -1, 0, 0x80DBD4B8, false);
         graphics.drawString(font, title, 1, 0, 0x80DBD4B8, false);
         graphics.drawString(font, title, 0, 1, 0x80BFB38A, false);
 
-        // центральный текст
         graphics.drawString(font, title, 0, 0, baseColor, false);
 
         graphics.pose().popPose();
@@ -575,10 +732,10 @@ public class ArsMelimaUIManager {
             int lineY = titleY + font.lineHeight;
             renderLearningTitleLine(graphics, leftContentLeft, lineY, leftContentWidth);
 
-            // Небольшой отступ, чтобы полоски не прилипали к линии
             leftContentTop = lineY + 4;
         }
 
+        // Левая колонка
         for (int i = startIdx; i < startIdx + CHAPTERS_PER_COLUMN && i < endIdx; i++) {
             LearningChapter lc = learningChapters.get(i);
             int columnIndex = i - startIdx;
@@ -591,6 +748,7 @@ public class ArsMelimaUIManager {
             );
         }
 
+        // Правая колонка
         for (int i = startIdx + CHAPTERS_PER_COLUMN; i < endIdx; i++) {
             LearningChapter lc = learningChapters.get(i);
             int columnIndex = i - (startIdx + CHAPTERS_PER_COLUMN);
@@ -603,6 +761,7 @@ public class ArsMelimaUIManager {
             );
         }
     }
+
     private void renderLearningTitleLine(GuiGraphics graphics, int x, int y, int width) {
         int textureX = 0;
         int textureY = 82;
@@ -676,10 +835,10 @@ public class ArsMelimaUIManager {
                                             Font font, float scale,
                                             int mouseX, int mouseY) {
 
-        float textScale = 0.7f; // масштаб текста
+        float textScale = 0.7f;
 
         boolean isUnlocked = isLearningChapterEffectivelyUnlocked(lc);
-        boolean hover = isPointInRect(x, y, width, height, mouseX, mouseY); // <-- use full height
+        boolean hover = isPointInRect(x, y, width, height, mouseX, mouseY);
 
         ArsMelimaRenders.renderChapterStrip(graphics, x, y, width, height, isUnlocked, hover && isUnlocked);
 
@@ -704,6 +863,7 @@ public class ArsMelimaUIManager {
 
         graphics.pose().popPose();
     }
+
     private void renderStyledText(GuiGraphics graphics, Font font, String text,
                                   int x, int y, float scale, boolean hover) {
         if (text == null || text.isEmpty()) return;
@@ -723,10 +883,12 @@ public class ArsMelimaUIManager {
 
         graphics.pose().popPose();
     }
+
     private void renderStyledText(GuiGraphics graphics, Font font, String text,
                                   int x, int y, float scale) {
         renderStyledText(graphics, font, text, x, y, scale, false);
     }
+
     private boolean isPointInRect(int rx, int ry, int rw, int rh, int px, int py) {
         return px >= rx && py >= ry && px < rx + rw && py < ry + rh;
     }

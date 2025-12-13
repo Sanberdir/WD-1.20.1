@@ -13,9 +13,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import ru.imaginaerum.wd.WD;
-import ru.imaginaerum.wd.common.entities.item_projectile_entities.CocktailMolokov;
-import ru.imaginaerum.wd.common.entities.item_projectile_entities.MilkBottle;
-import ru.imaginaerum.wd.common.entities.item_projectile_entities.StarBall;
+import ru.imaginaerum.wd.common.entities.item_projectile_entities.*;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModEntities {
@@ -31,6 +29,15 @@ public class ModEntities {
                     .setShouldReceiveVelocityUpdates(true).setUpdateInterval(1).sized(0.5f, 0.5f));
     public static final RegistryObject<EntityType<CocktailMolokov>> COCKTAIL_MOLOKOV = register("projectile_cocktail_molokov",
             EntityType.Builder.<CocktailMolokov>of(CocktailMolokov::new, MobCategory.MISC)
+                    .setShouldReceiveVelocityUpdates(true).setUpdateInterval(1).sized(0.5f, 0.5f));
+    public static final RegistryObject<EntityType<WitheringCocktailMolokov>> WITHERING_COCKTAIL_MOLOKOV = register("projectile_withering_cocktail_molokov",
+            EntityType.Builder.<WitheringCocktailMolokov>of(WitheringCocktailMolokov::new, MobCategory.MISC)
+                    .setShouldReceiveVelocityUpdates(true).setUpdateInterval(1).sized(0.5f, 0.5f));
+    public static final RegistryObject<EntityType<DisorientingCocktailMolokov>> DISORIENTING_COCKTAIL_MOLOKOV = register("projectile_disorienting_cocktail_molokov",
+            EntityType.Builder.<DisorientingCocktailMolokov>of(DisorientingCocktailMolokov::new, MobCategory.MISC)
+                    .setShouldReceiveVelocityUpdates(true).setUpdateInterval(1).sized(0.5f, 0.5f));
+    public static final RegistryObject<EntityType<SpicyCocktailMolokov>> SPICY_COCKTAIL_MOLOKOV = register("projectile_spicy_cocktail_molokov",
+            EntityType.Builder.<SpicyCocktailMolokov>of(SpicyCocktailMolokov::new, MobCategory.MISC)
                     .setShouldReceiveVelocityUpdates(true).setUpdateInterval(1).sized(0.5f, 0.5f));
 
 

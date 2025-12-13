@@ -15,21 +15,20 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import ru.imaginaerum.wd.common.entities.ModEntities;
 import ru.imaginaerum.wd.common.items.ItemsWD;
-import vectorwing.farmersdelight.common.registry.ModItems;
 
-public class CocktailMolokov extends ThrowableItemProjectile {
+public class WitheringCocktailMolokov extends ThrowableItemProjectile {
 
     // 1. ИСПРАВЛЕННЫЙ конструктор: тип должен соответствовать MilkBottle
-    public CocktailMolokov(EntityType<? extends CocktailMolokov> pEntityType, Level pLevel) {
+    public WitheringCocktailMolokov(EntityType<? extends WitheringCocktailMolokov> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
     }
 
-    public CocktailMolokov(Level pLevel, LivingEntity pShooter) {
+    public WitheringCocktailMolokov(Level pLevel, LivingEntity pShooter) {
         // 2. Используйте вашу зарегистрированную EntityType
         super(ModEntities.COCKTAIL_MOLOKOV.get(), pShooter, pLevel);
     }
 
-    public CocktailMolokov(Level pLevel, double pX, double pY, double pZ) {
+    public WitheringCocktailMolokov(Level pLevel, double pX, double pY, double pZ) {
         super(ModEntities.COCKTAIL_MOLOKOV.get(), pX, pY, pZ, pLevel);
     }
 
@@ -40,7 +39,7 @@ public class CocktailMolokov extends ThrowableItemProjectile {
 
     @Override
     protected Item getDefaultItem() {
-        return ItemsWD.COCKTAIL_MOLOKOV.get();
+        return ItemsWD.WITHERING_COCKTAIL_MOLOKOV.get();
     }
 
     public void handleEntityEvent(byte pId) {

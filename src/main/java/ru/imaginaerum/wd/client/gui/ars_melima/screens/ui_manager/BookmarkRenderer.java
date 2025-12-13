@@ -45,7 +45,7 @@ public class BookmarkRenderer {
     private static final int BASE_TOP_OFFSET = 15;
 
     public static void renderBookmarks(GuiGraphics graphics, int guiLeft, int guiTop) {
-        int baseLeft = guiLeft - 50 + 8;
+        int baseLeft = guiLeft - 50 + 12; // Добавляем +4 пикселя сдвига вправо
         int baseTop = guiTop + BASE_TOP_OFFSET;
 
         for (int i = 0; i < 3; i++) {

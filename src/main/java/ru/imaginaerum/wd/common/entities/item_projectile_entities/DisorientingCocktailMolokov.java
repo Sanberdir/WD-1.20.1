@@ -1,5 +1,6 @@
 package ru.imaginaerum.wd.common.entities.item_projectile_entities;
 
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -13,24 +14,24 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.joml.Vector3f;
 import ru.imaginaerum.wd.common.entities.ModEntities;
 import ru.imaginaerum.wd.common.items.ItemsWD;
-import vectorwing.farmersdelight.common.registry.ModItems;
 
-public class CocktailMolokov extends ThrowableItemProjectile {
+public class DisorientingCocktailMolokov extends ThrowableItemProjectile {
 
     // 1. ИСПРАВЛЕННЫЙ конструктор: тип должен соответствовать MilkBottle
-    public CocktailMolokov(EntityType<? extends CocktailMolokov> pEntityType, Level pLevel) {
+    public DisorientingCocktailMolokov(EntityType<? extends DisorientingCocktailMolokov> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
     }
 
-    public CocktailMolokov(Level pLevel, LivingEntity pShooter) {
+    public DisorientingCocktailMolokov(Level pLevel, LivingEntity pShooter) {
         // 2. Используйте вашу зарегистрированную EntityType
-        super(ModEntities.COCKTAIL_MOLOKOV.get(), pShooter, pLevel);
+        super(ModEntities.DISORIENTING_COCKTAIL_MOLOKOV.get(), pShooter, pLevel);
     }
 
-    public CocktailMolokov(Level pLevel, double pX, double pY, double pZ) {
-        super(ModEntities.COCKTAIL_MOLOKOV.get(), pX, pY, pZ, pLevel);
+    public DisorientingCocktailMolokov(Level pLevel, double pX, double pY, double pZ) {
+        super(ModEntities.DISORIENTING_COCKTAIL_MOLOKOV.get(), pX, pY, pZ, pLevel);
     }
 
     private ParticleOptions getParticle() {
@@ -40,28 +41,24 @@ public class CocktailMolokov extends ThrowableItemProjectile {
 
     @Override
     protected Item getDefaultItem() {
-        return ItemsWD.COCKTAIL_MOLOKOV.get();
+        return ItemsWD.DISORIENTING_COCKTAIL_MOLOKOV.get();
     }
 
-    public void handleEntityEvent(byte pId) {
-        if (pId == 3) {
-            ParticleOptions particleoptions = this.getParticle();
-
-            for(int i = 0; i < 8; ++i) {
-                this.level().addParticle(particleoptions, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
-            }
+    @Override
+    public void handleEntityEvent(byte id) {
+        // Не вызываем супер, чтобы стандартные частицы не появились
+        if (id == 3) {
+            // Можно вызвать свои цветные частицы, если нужно
         }
     }
 
     protected void onHitEntity(EntityHitResult pResult) {
-        super.onHitEntity(pResult);
         Entity entity = pResult.getEntity();
         int i = entity instanceof Blaze ? 3 : 0;
         entity.hurt(this.damageSources().thrown(this, this.getOwner()), (float)i);
     }
 
     protected void onHit(HitResult pResult) {
-        super.onHit(pResult);
         if (!this.level().isClientSide) {
             this.level().broadcastEntityEvent(this, (byte)3);
             this.discard();

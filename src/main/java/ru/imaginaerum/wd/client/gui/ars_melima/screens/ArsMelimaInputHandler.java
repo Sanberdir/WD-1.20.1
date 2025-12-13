@@ -4,10 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 import ru.imaginaerum.wd.client.gui.ars_melima.*;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
-import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ArsMelimaConstants;
-import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.BookmarkRenderer;
-import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.Point;
-import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.RequestUnlockProgressPacket;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.*;
 
 import java.util.List;
 import java.util.Map;
@@ -22,15 +19,19 @@ public class ArsMelimaInputHandler {
     private static final int NAV_REL_Y = 184;
     private static final int TREE_LINKS_PER_COLUMN = 5;
     private static final int TREE_LINKS_PER_PAGE = TREE_LINKS_PER_COLUMN * 2;
-    // Эти константы нужны для работы handleColumnClick
     private static final int CHAPTERS_PER_COLUMN = 5;
     private static final int CHAPTERS_PER_PAGE = CHAPTERS_PER_COLUMN * 2;
     private static final int CONTENT_PADDING = 2;
+
     // --- state preservation (куда вернуться после Tasks) ---
     private int preservedChapterIndex = -1;
     private int preservedTextPage = 0;
     private int preservedLearningPage = 0;
 
+    // --- для базовых глав ---
+    private int preservedBaseChapterIndex = -1;
+    private int preservedBaseTextPage = 0;
+    private int preservedBaseLearningPage = 0;
 
     public boolean handleMouseClick(double mouseX, double mouseY, int button,
                                     ArsMelimaUIManager uiManager, ArsMelimaMenu menu, ItemStack book) {
@@ -38,33 +39,264 @@ public class ArsMelimaInputHandler {
         int my = (int) Math.floor(mouseY);
         int guiLeft = uiManager.getGuiLeft();
         int guiTop = uiManager.getGuiTop();
-        // Стало так:
+
+        // Обработка кликов по закладкам
         if (BookmarkRenderer.handleBookmarkClick(mouseX, mouseY, uiManager.getGuiLeft(), uiManager.getGuiTop(), uiManager)) {
-            // Теперь uiManager.setCurrentSection уже вызывается внутри handleBookmarkClick
-            // Эта строка больше не нужна:
-            // uiManager.setCurrentSection(BookmarkRenderer.getCurrentBookmark());
             return true;
         }
+
+        // Определяем текущую секцию
+        int currentSection = uiManager.getCurrentSection();
+
+        if (currentSection == 0) { // Красная вкладка - базовые главы
+            return handleBaseSectionClick(mx, my, button, guiLeft, guiTop, uiManager, menu);
+        } else if (currentSection == 1) { // Синяя вкладка - основные главы
+            return handleMainSectionClick(mx, my, button, guiLeft, guiTop, uiManager, menu);
+        }
+
+        return false;
+    }
+
+    // ===================== ОБРАБОТКА КРАСНОЙ ВКЛАДКИ (БАЗОВЫЕ ГЛАВЫ) =====================
+
+    private boolean handleBaseSectionClick(int mx, int my, int button, int guiLeft, int guiTop,
+                                           ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
+        if (menu.isBaseChapterOpen()) {
+            // Обработка содержимого открытой базовой главы
+            return handleBaseChapterContentClick(mx, my, button, guiLeft, guiTop, uiManager, menu);
+        } else {
+            // Обработка списка базовых глав
+            if (handlePageArrowClick(mx, my, button, guiLeft, guiTop,
+                    uiManager::getCurrentBaseChapterPage,
+                    uiManager::setCurrentBaseChapterPage,
+                    ArsMelimaRenders.computeChapterPageCount(menu.getBaseChapters())))
+                return true;
+
+            return handleBaseChapterListClick(mx, my, button, guiLeft, guiTop, menu, uiManager);
+        }
+    }
+
+    private boolean handleBaseChapterContentClick(int mx, int my, int button, int guiLeft, int guiTop,
+                                                  ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
+        if (button != 0) return false;
+
+        // Кнопка "назад" для базовых глав
+        if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, uiManager, menu, true)) return true;
+
+        // Навигация по страницам для базовых глав
+        if (handlePageArrowClick(mx, my, button, guiLeft, guiTop,
+                uiManager::getCurrentBaseTextPage,
+                uiManager::setCurrentBaseTextPage,
+                Integer.MAX_VALUE)) return true;
+
+        // Обработка LearningChapters и TreeLinks внутри базовой главы
+        int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
+        int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
+        int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
+
+        int rightContentLeft = guiLeft + ArsMelimaConstants.RIGHT_CONTENT_X1;
+        int rightContentTop = guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1;
+        int rightContentWidth = ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1;
+
+        int currentBaseTextPage = uiManager.getCurrentBaseTextPage();
+        Chapter currentChapter = menu.getCurrentBaseChapter();
+        if (currentChapter == null) return false;
+
+        // Первая страница: слева LearningChapters, справа первые TreeLinks
+        if (currentBaseTextPage == 0) {
+            List<LearningChapter> leftList = menu.getLearningChapters(currentChapter.getId());
+            if (leftList != null && !leftList.isEmpty()) {
+                int startIdx = uiManager.getCurrentBaseLearningPage() * CHAPTERS_PER_PAGE;
+                int leftFirstElementY = contentTop;
+                if (handleColumnClick(mx, my, contentLeft + 8, leftFirstElementY, contentWidth - 16,
+                        startIdx, leftList, lc -> openBaseLearningChapter(lc, menu, uiManager))) return true;
+            }
+
+            List<TreeLink> rightList = menu.getBaseTreeLinks(currentChapter.getId());
+            if (rightList != null && !rightList.isEmpty()) {
+                int startIdx = 0;
+                int rightFirstElementY = rightContentTop;
+                if (handleColumnClick(mx, my, rightContentLeft + 8, rightFirstElementY, rightContentWidth - 16,
+                        startIdx, rightList, tl -> openBaseTreeLink(tl, menu, uiManager))) return true;
+            }
+            return false;
+        }
+
+        // Остальные страницы: TreeLinks двумя колонками
+        List<TreeLink> links = menu.getBaseTreeLinks(currentChapter.getId());
+        if (links == null || links.isEmpty()) return false;
+
+        int page = currentBaseTextPage - 1;
+        int startIdx = page * TREE_LINKS_PER_PAGE;
+        if (startIdx < 0) startIdx = 0;
+
+        // Левая колонка
+        if (handleColumnClick(mx, my, contentLeft + 8, contentTop, contentWidth - 16, startIdx, links,
+                tl -> openBaseTreeLink(tl, menu, uiManager))) return true;
+
+        // Правая колонка
+        if (handleColumnClick(mx, my, rightContentLeft + 8, rightContentTop, rightContentWidth - 16,
+                startIdx + TREE_LINKS_PER_COLUMN, links, tl -> openBaseTreeLink(tl, menu, uiManager))) return true;
+
+        return false;
+    }
+
+    private void openBaseTreeLink(TreeLink link, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
+        if (link == null) return;
+
+        // --- сохраняем текущее состояние (для возврата из Tasks) ---
+        preservedBaseChapterIndex = menu.getCurrentBaseIndex();
+        preservedBaseTextPage = uiManager.getCurrentBaseTextPage();
+        preservedBaseLearningPage = uiManager.getCurrentBaseLearningPage();
+
+        String id = link.getId();
+        if (id == null || id.isEmpty()) {
+            System.out.println("[ArsMelima] Base TreeLink ID пустой, ничего не открываем.");
+            return;
+        }
+
+        System.out.println("[ArsMelima] Base TreeLink clicked: id=\"" + id + "\" title=\"" + link.getTitle() + "\"");
+
+        // --- основной вариант: открываем прогрессию если есть ---
+        if (menu.progressTreeExists(id)) {
+            System.out.println("[ArsMelima] Opening progression from base chapter: " + id);
+            menu.openProgression(id);
+            uiManager.setCurrentProgressPage(0);
+            playPageTurnSound();
+            return;
+        }
+
+        // --- fallback на главу ---
+        // Сначала пробуем найти в базовых главах
+        int baseIdx = findBaseChapterIndexById(menu, id);
+        if (baseIdx >= 0) {
+            menu.openBaseChapter(baseIdx);
+            uiManager.setCurrentBaseTextPage(0);
+            uiManager.setCurrentBaseLearningPage(0);
+            playPageTurnSound();
+            return;
+        }
+
+        // Потом пробуем в обычных главах
+        int idx = menu.getChapterIndexByProgressionId(id);
+        if (idx >= 0) {
+            menu.openChapter(idx);
+            uiManager.setCurrentTextPage(0);
+            uiManager.setCurrentLearningPage(0);
+            playPageTurnSound();
+            return;
+        }
+
+        System.out.println("[ArsMelima] Не найдено ни прогрессии, ни главы для Base TreeLink id: " + id);
+    }
+
+    private int findBaseChapterIndexById(ArsMelimaMenu menu, String id) {
+        List<Chapter> baseChapters = menu.getBaseChapters();
+        if (baseChapters == null || id == null) return -1;
+
+        for (int i = 0; i < baseChapters.size(); i++) {
+            Chapter chapter = baseChapters.get(i);
+            if (chapter != null && id.equals(chapter.getId())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void openBaseLearningChapter(LearningChapter lc, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
+        if (!lc.isUnlocked()) {
+            playPageTurnSound();
+            return;
+        }
+
+        // --- сохраняем состояние, ОТКУДА открыли Tasks ---
+        preservedBaseChapterIndex = menu.getCurrentBaseIndex();
+        preservedBaseTextPage = uiManager.getCurrentBaseTextPage();
+        preservedBaseLearningPage = uiManager.getCurrentBaseLearningPage();
+
+        menu.openTasks(lc.getId());
+        uiManager.setCurrentTaskPage(0);
+        playPageTurnSound();
+
+        try {
+            boolean completed = isLearningChapterCompleted(lc.getId());
+            if (completed) {
+                List<LearningChapter> siblings = menu.getCurrentLearningChapters();
+                if (siblings != null) {
+                    for (LearningChapter child : siblings) {
+                        if (child != null && lc.getId().equals(child.getParent()) && child.isLocked()) {
+                            menu.unlockLearningChapter(child.getId());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[ArsMelima] Error while checking/unlocking child learning chapters: " + e.getMessage());
+        }
+    }
+
+    private boolean handleBaseChapterListClick(int mx, int my, int button, int guiLeft, int guiTop,
+                                               ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
+        if (button != 0) return false;
+        List<Chapter> list = menu.getBaseChapters();
+        int currentPage = uiManager.getCurrentBaseChapterPage();
+        int startIdx = currentPage * CHAPTERS_PER_PAGE;
+
+        // ПРАВИЛЬНЫЕ КООРДИНАТЫ КОНТЕНТНЫХ ОБЛАСТЕЙ
+        int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
+        int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
+        int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
+
+        int rightContentLeft = guiLeft + ArsMelimaConstants.RIGHT_CONTENT_X1;
+        int rightContentTop = guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1;
+        int rightContentWidth = ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1;
+
+        // ИСПОЛЬЗУЕМ ОБЩИЙ МЕТОД handleColumnClick
+        return handleColumnClick(mx, my, contentLeft + 8, contentTop, contentWidth - 16, startIdx, list, ch -> {
+            int chapterIndex = menu.getBaseChapters().indexOf(ch);
+            if (chapterIndex >= 0) {
+                menu.openBaseChapter(chapterIndex);
+                uiManager.setCurrentBaseTextPage(0);
+                uiManager.setCurrentBaseLearningPage(0);
+                playPageTurnSound();
+            }
+        }) ||
+                handleColumnClick(mx, my, rightContentLeft + 8, rightContentTop, rightContentWidth - 16,
+                        startIdx + CHAPTERS_PER_COLUMN, list, ch -> {
+                            int chapterIndex = menu.getBaseChapters().indexOf(ch);
+                            if (chapterIndex >= 0) {
+                                menu.openBaseChapter(chapterIndex);
+                                uiManager.setCurrentBaseTextPage(0);
+                                uiManager.setCurrentBaseLearningPage(0);
+                                playPageTurnSound();
+                            }
+                        });
+    }
+
+    // ===================== ОБРАБОТКА СИНЕЙ ВКЛАДКИ (ОСНОВНЫЕ ГЛАВЫ) =====================
+
+    private boolean handleMainSectionClick(int mx, int my, int button, int guiLeft, int guiTop,
+                                           ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
         if (menu.isProgressionOpen()) {
-            if (handleBackArrowClick(mx, my, button, menu, uiManager)) return true;
+            if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, uiManager, menu, false)) return true;
             if (handlePageArrowClick(mx, my, button, guiLeft, guiTop, uiManager::getCurrentProgressPage,
                     uiManager::setCurrentProgressPage, computeProgressPageCount(menu.getProgressNodes()))) return true;
             return handleProgressNodesClick(mx, my, button, uiManager, menu);
 
         } else if (menu.isLearningChaptersOpen()) {
-            if (handleBackArrowClick(mx, my, button, menu, uiManager)) return true;
+            if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, uiManager, menu, false)) return true;
             if (handlePageArrowClick(mx, my, button, guiLeft, guiTop, uiManager::getCurrentLearningPage,
                     uiManager::setCurrentLearningPage, computeLearningPageCount(menu.getCurrentLearningChapters()))) return true;
             return handleLearningChaptersClick(mx, my, button, uiManager, menu);
 
         } else if (menu.getCurrentIndex() != -1) {
-            if (handleBackArrowClick(mx, my, button, menu, uiManager)) return true;
+            if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, uiManager, menu, false)) return true;
             if (handlePageArrowClick(mx, my, button, guiLeft, guiTop, uiManager::getCurrentTextPage,
                     uiManager::setCurrentTextPage, Integer.MAX_VALUE)) return true;
             return handleChapterContentClick(mx, my, button, guiLeft, guiTop, uiManager, menu);
 
         } else if (menu.isTasksOpen()) {
-            if (handleBackArrowClick(mx, my, button, menu, uiManager)) return true;
+            if (handleBackArrowClick(mx, my, button, guiLeft, guiTop, uiManager, menu, false)) return true;
             return false;
 
         } else {
@@ -74,6 +306,59 @@ public class ArsMelimaInputHandler {
         }
     }
 
+    private boolean handleBackArrowClick(int mx, int my, int button, int guiLeft, int guiTop,
+                                         ArsMelimaUIManager uiManager, ArsMelimaMenu menu, boolean isBaseSection) {
+        if (button != 0 || !isPointInRect(guiLeft + 140, guiTop + 184, 15, 15, mx, my))
+            return false;
+
+        if (isBaseSection) {
+            // Обработка кнопки "назад" для базовых глав
+            if (menu.isTasksOpen()) {
+                menu.closeTasks();
+                if (preservedBaseChapterIndex >= 0) {
+                    menu.openBaseChapter(preservedBaseChapterIndex);
+                    uiManager.setCurrentBaseTextPage(preservedBaseTextPage);
+                    uiManager.setCurrentBaseLearningPage(preservedBaseLearningPage);
+                }
+                preservedBaseChapterIndex = -1;
+                preservedBaseTextPage = 0;
+                preservedBaseLearningPage = 0;
+            } else if (menu.isBaseChapterOpen()) {
+                menu.closeBaseChapter();
+            }
+        } else {
+            // Обработка кнопки "назад" для основных глав (старая логика)
+            if (menu.isProgressionOpen()) {
+                menu.closeProgression();
+            } else if (menu.isTasksOpen()) {
+                menu.closeTasks();
+                if (preservedChapterIndex >= 0) {
+                    menu.openChapter(preservedChapterIndex);
+                    uiManager.setCurrentTextPage(preservedTextPage);
+                    uiManager.setCurrentLearningPage(preservedLearningPage);
+                }
+                preservedChapterIndex = -1;
+                preservedTextPage = 0;
+                preservedLearningPage = 0;
+            } else if (menu.isLearningChaptersOpen()) {
+                menu.closeLearningChapters();
+                if (preservedChapterIndex >= 0) {
+                    menu.openChapter(preservedChapterIndex);
+                    uiManager.setCurrentTextPage(preservedTextPage);
+                }
+                preservedChapterIndex = -1;
+                preservedTextPage = 0;
+                preservedLearningPage = 0;
+            } else {
+                menu.closeChapter();
+            }
+        }
+
+        playPageTurnSound();
+        return true;
+    }
+
+    // ===================== СУЩЕСТВУЮЩИЕ МЕТОДЫ (без RequestUnlockProgressPacket) =====================
 
     private boolean handleChapterContentClick(int mx, int my, int button, int guiLeft, int guiTop,
                                               ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
@@ -97,7 +382,6 @@ public class ArsMelimaInputHandler {
             if (leftList != null && !leftList.isEmpty()) {
                 int startIdx = uiManager.getCurrentLearningPage() * CHAPTERS_PER_PAGE;
                 int leftFirstElementY = contentTop;
-                // ИСПОЛЬЗУЕМ ОБЩИЙ МЕТОД handleColumnClick
                 if (handleColumnClick(mx, my, contentLeft + 8, leftFirstElementY, contentWidth - 16,
                         startIdx, leftList, lc -> openLearningChapter(lc, menu, uiManager))) return true;
             }
@@ -106,7 +390,6 @@ public class ArsMelimaInputHandler {
             if (rightList != null && !rightList.isEmpty()) {
                 int startIdx = 0;
                 int rightFirstElementY = rightContentTop;
-                // ИСПОЛЬЗУЕМ ОБЩИЙ МЕТОД handleColumnClick
                 if (handleColumnClick(mx, my, rightContentLeft + 8, rightFirstElementY, rightContentWidth - 16,
                         startIdx, rightList, tl -> openTreeLink(tl, menu, uiManager))) return true;
             }
@@ -131,8 +414,6 @@ public class ArsMelimaInputHandler {
 
         return false;
     }
-
-
 
     private void openTreeLink(TreeLink link, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
         if (link == null) return;
@@ -172,9 +453,6 @@ public class ArsMelimaInputHandler {
         System.out.println("[ArsMelima] Не найдено ни прогрессии, ни главы для TreeLink id: " + id);
     }
 
-
-
-
     private boolean handleProgressNodesClick(int mouseX, int mouseY, int button,
                                              ArsMelimaUIManager uiManager, ArsMelimaMenu menu) {
         if (button != 0) return false;
@@ -188,17 +466,8 @@ public class ArsMelimaInputHandler {
 
             if (isPointInRect(pos.x, pos.y, size, size, mouseX, mouseY)) {
                 uiManager.setCurrentProgressNode(node);
-                boolean clientUnlocked = ClientCookingData.isProgressUnlocked(node.getId());
-                boolean baseLocked = node.isLocked();
 
-                if (baseLocked && !clientUnlocked) {
-                    NetworkCookingXp.CHANNEL.send(
-                            net.minecraftforge.network.PacketDistributor.SERVER.noArg(),
-                            new RequestUnlockProgressPacket(node.getId())
-                    );
-                    return true;
-                }
-
+                // УБРАЛИ сетевой запрос - открываем главу напрямую
                 handleChapterByNode(node.getId(), menu, uiManager);
                 return true;
             }
@@ -231,33 +500,22 @@ public class ArsMelimaInputHandler {
         System.out.println("[DEBUG] No content found for any candidate");
     }
 
-
-
-    /**
-     * Построить список кандидатов имён файлов для поиска JSON содержимого.
-     * Перебираем разумные варианты: оригинальный id, id без неймспейса, короткая часть после ':',
-     * нормализованная версия (normalizeKey), а также простые трансформации с заменой '/', '.', '-' -> '_'.
-     */
     private List<String> buildContentCandidates(String nodeId) {
         List<String> out = new ArrayList<>();
         if (nodeId == null || nodeId.isEmpty()) return out;
 
-        // 1) оригинал
         out.add(nodeId);
 
-        // 2) без неймспейса (после ':')
         if (nodeId.contains(":")) {
             String after = nodeId.substring(nodeId.indexOf(':') + 1);
             out.add(after);
         }
 
-        // 3) basename после слеша
         if (nodeId.contains("/")) {
             String base = nodeId.substring(nodeId.lastIndexOf('/') + 1);
             out.add(base);
         }
 
-        // 4) нормализованные варианты
         String norm = normalizeKey(nodeId);
         if (!norm.isEmpty()) out.add(norm);
 
@@ -267,7 +525,6 @@ public class ArsMelimaInputHandler {
             if (!normAfter.isEmpty()) out.add(normAfter);
         }
 
-        // 5) replace some separators
         String replaced = nodeId.replace('/', '_').replace('.', '_').replace('-', '_');
         if (!out.contains(replaced)) out.add(replaced);
 
@@ -275,7 +532,6 @@ public class ArsMelimaInputHandler {
         String replaced2 = withoutNs.replace('/', '_').replace('.', '_').replace('-', '_');
         if (!out.contains(replaced2)) out.add(replaced2);
 
-        // очистка и уборка дубликатов, сохраняя порядок
         List<String> cleaned = new ArrayList<>();
         for (String s : out) {
             if (s == null) continue;
@@ -287,11 +543,9 @@ public class ArsMelimaInputHandler {
         return cleaned;
     }
 
-
     // --- ОБЩИЙ КЛИК ПО КОЛОНКАМ (LEFT/RIGHT) ---
     private <T> boolean handleColumnClick(int mx, int my, int colLeft, int colTop, int colWidth, int startIdx,
                                           List<T> list, java.util.function.Consumer<T> onClick) {
-        // СИНХРОНИЗИРОВАНО С РЕНДЕРЕРОМ: добавляем CONTENT_PADDING
         int relativeY = my - (colTop + CONTENT_PADDING);
         if (relativeY < 0) return false;
 
@@ -300,7 +554,6 @@ public class ArsMelimaInputHandler {
 
         if (indexInCol < 0 || indexInCol >= CHAPTERS_PER_COLUMN || idx >= list.size()) return false;
 
-        // Расчет области - ТОЧНО как в рендерере
         int stripX = colLeft + 2;
         int stripY = colTop + CONTENT_PADDING + indexInCol * TOTAL_STRIP_HEIGHT;
         int stripWidth = colWidth - 4;
@@ -322,7 +575,6 @@ public class ArsMelimaInputHandler {
         int currentPage = uiManager.getCurrentLearningPage();
         int startIdx = currentPage * CHAPTERS_PER_PAGE;
 
-        // ПРАВИЛЬНЫЕ КООРДИНАТЫ КОНТЕНТНЫХ ОБЛАСТЕЙ
         int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
         int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
         int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
@@ -331,13 +583,11 @@ public class ArsMelimaInputHandler {
         int rightContentTop = guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1;
         int rightContentWidth = ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1;
 
-        // ИСПОЛЬЗУЕМ ОБЩИЙ МЕТОД handleColumnClick
         return handleColumnClick(mx, my, contentLeft + 8, contentTop, contentWidth - 16, startIdx, list,
                 lc -> openLearningChapter(lc, menu, uiManager)) ||
                 handleColumnClick(mx, my, rightContentLeft + 8, rightContentTop, rightContentWidth - 16,
                         startIdx + CHAPTERS_PER_COLUMN, list, lc -> openLearningChapter(lc, menu, uiManager));
     }
-
 
     private void openLearningChapter(LearningChapter lc, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
         if (!lc.isUnlocked()) {
@@ -345,7 +595,6 @@ public class ArsMelimaInputHandler {
             return;
         }
 
-        // --- сохраняем состояние, ОТКУДА открыли Tasks ---
         preservedChapterIndex = menu.getCurrentIndex();
         preservedTextPage = uiManager.getCurrentTextPage();
         preservedLearningPage = uiManager.getCurrentLearningPage();
@@ -371,7 +620,6 @@ public class ArsMelimaInputHandler {
         }
     }
 
-
     private boolean isLearningChapterCompleted(String chapterId) {
         if (chapterId == null || chapterId.isEmpty()) return false;
 
@@ -392,7 +640,6 @@ public class ArsMelimaInputHandler {
         int currentPage = uiManager.getCurrentChapterPage();
         int startIdx = currentPage * CHAPTERS_PER_PAGE;
 
-        // ПРАВИЛЬНЫЕ КООРДИНАТЫ КОНТЕНТНЫХ ОБЛАСТЕЙ
         int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
         int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
         int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
@@ -401,7 +648,6 @@ public class ArsMelimaInputHandler {
         int rightContentTop = guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1;
         int rightContentWidth = ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1;
 
-        // ИСПОЛЬЗУЕМ ОБЩИЙ МЕТОД handleColumnClick
         return handleColumnClick(mx, my, contentLeft + 8, contentTop, contentWidth - 16, startIdx, list, ch -> {
             int chapterIndex = menu.getChapters().indexOf(ch);
             if (chapterIndex >= 0) {
@@ -436,48 +682,6 @@ public class ArsMelimaInputHandler {
         }
         return false;
     }
-
-    private boolean handleBackArrowClick(int mx, int my, int button,
-                                         ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {
-        if (button != 0 || !isPointInRect(uiManager.getGuiLeft() + 140, uiManager.getGuiTop() + 184, 15, 15, mx, my))
-            return false;
-
-        if (menu.isProgressionOpen()) {
-            menu.closeProgression();
-
-        } else if (menu.isTasksOpen()) {
-            // закрываем Tasks и восстанавливаем предыдущую главу/страницу (если сохранили)
-            menu.closeTasks();
-            if (preservedChapterIndex >= 0) {
-                menu.openChapter(preservedChapterIndex);
-                uiManager.setCurrentTextPage(preservedTextPage);
-                uiManager.setCurrentLearningPage(preservedLearningPage);
-            }
-            // сбрасываем сохранение — чтобы следующее открытие не подхватило старые данные
-            preservedChapterIndex = -1;
-            preservedTextPage = 0;
-            preservedLearningPage = 0;
-
-        } else if (menu.isLearningChaptersOpen()) {
-            // если закрываем список LearningChapters — можно попытаться восстановить предыдущую главу,
-            // но чаще всего список учебных глав открывается прямо из главы, так что восстановление безопасно:
-            menu.closeLearningChapters();
-            if (preservedChapterIndex >= 0) {
-                menu.openChapter(preservedChapterIndex);
-                uiManager.setCurrentTextPage(preservedTextPage);
-            }
-            preservedChapterIndex = -1;
-            preservedTextPage = 0;
-            preservedLearningPage = 0;
-
-        } else {
-            menu.closeChapter();
-        }
-
-        playPageTurnSound();
-        return true;
-    }
-
 
     private int computeLearningPageCount(List<LearningChapter> list) {
         return (list == null || list.isEmpty()) ? 1 : (list.size() + CHAPTERS_PER_PAGE - 1) / CHAPTERS_PER_PAGE;

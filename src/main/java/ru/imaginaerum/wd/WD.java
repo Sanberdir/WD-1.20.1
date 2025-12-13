@@ -58,6 +58,7 @@ import ru.imaginaerum.wd.common.particles.ModParticles;
 import ru.imaginaerum.wd.common.sounds.CustomSoundEvents;
 import ru.imaginaerum.wd.common.tab.TabWD;
 import ru.imaginaerum.wd.server.CommonProxy;
+import vectorwing.farmersdelight.common.registry.ModItems;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -113,6 +114,9 @@ public class WD {
     private void commonSetup(final FMLCommonSetupEvent event) {
 
         event.enqueueWork(() -> {
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createItemStack(ItemsWD.COCKTAIL_MOLOKOV.get())), Ingredient.of(Items.WITHER_ROSE), createItemStack(ItemsWD.WITHERING_COCKTAIL_MOLOKOV.get())));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createItemStack(ItemsWD.COCKTAIL_MOLOKOV.get())), Ingredient.of(Items.PRISMARINE_SHARD), createItemStack(ItemsWD.SPICY_COCKTAIL_MOLOKOV.get())));
+            BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createItemStack(ItemsWD.COCKTAIL_MOLOKOV.get())), Ingredient.of(Items.ENDER_PEARL), createItemStack(ItemsWD.DISORIENTING_COCKTAIL_MOLOKOV.get())));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createPotion(Potions.WATER)), Ingredient.of(ItemsWD.WARPED_WART.get()), createPotion(Potions.AWKWARD)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createSplashPotion(Potions.WATER)), Ingredient.of(ItemsWD.WARPED_WART.get()), createSplashPotion(Potions.AWKWARD)));
             BrewingRecipeRegistry.addRecipe(new ProperBrewingRecipe(Ingredient.of(createLingeringPotion(Potions.WATER)), Ingredient.of(ItemsWD.WARPED_WART.get()), createLingeringPotion(Potions.AWKWARD)));

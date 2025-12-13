@@ -34,7 +34,8 @@ public class ArsMelimaScreen extends Screen {
         // 1) Загружаем главы
         var chapters = ChapterLoader.loadChapters();
         menu.setChapters(chapters);
-
+        var baseChapters = BaseChapterLoader.loadBaseChapters();
+        menu.setBaseChapters(baseChapters);
         // Тест: создаем тестовые TreeLinks если их нет
         if (chapters != null && !chapters.isEmpty()) {
             String firstChapterId = chapters.get(0).getId();

@@ -35,9 +35,57 @@ public class ArsMelimaMenu {
     // Новые поля для управления деревьями прогрессии
     private String currentProgressTreeId = null;
     private final Map<String, List<ProgressNode>> progressTreesCache = new HashMap<>();
-
+    private final List<Chapter> baseChapters = new ArrayList<>();
+    private int currentBaseIndex = -1;
+    private int currentBasePage = 0;
+    private final Map<String, List<TreeLink>> baseTreeLinksCache = new HashMap<>();
     public ArsMelimaMenu() { }
+    public void setBaseChapters(List<Chapter> list) {
+        baseChapters.clear();
+        if (list != null) baseChapters.addAll(list);
+        System.out.println("[ArsMelima] setBaseChapters() loaded " + baseChapters.size() + " base chapters.");
+    }
 
+    public List<Chapter> getBaseChapters() { return baseChapters; }
+
+    public void openBaseChapter(int idx) {
+        if (idx >= 0 && idx < baseChapters.size()) {
+            this.currentBaseIndex = idx;
+        }
+    }
+
+    public void closeBaseChapter() {
+        this.currentBaseIndex = -1;
+    }
+
+    public boolean isBaseChapterOpen() {
+        return this.currentBaseIndex != -1 && this.currentBaseIndex < baseChapters.size();
+    }
+
+    public Chapter getCurrentBaseChapter() {
+        if (currentBaseIndex >= 0 && currentBaseIndex < baseChapters.size()) {
+            return baseChapters.get(currentBaseIndex);
+        }
+        return null;
+    }
+
+    public int getCurrentBaseIndex() { return currentBaseIndex; }
+    public void setCurrentBaseIndex(int idx) { this.currentBaseIndex = idx; }
+
+    public int getCurrentBasePage() { return currentBasePage; }
+    public void setCurrentBasePage(int page) { this.currentBasePage = page; }
+
+    // --- Base TreeLinks ---
+    public List<TreeLink> getBaseTreeLinks(String chapterId) {
+        if (chapterId == null || chapterId.isEmpty()) return Collections.emptyList();
+        return baseTreeLinksCache.computeIfAbsent(chapterId, TreeLinkLoader::loadTreeLinks);
+    }
+
+    public List<TreeLink> getCurrentBaseTreeLinks() {
+        Chapter ch = getCurrentBaseChapter();
+        if (ch == null) return Collections.emptyList();
+        return getBaseTreeLinks(ch.getId());
+    }
     // --- Page refresh ---
     public void refreshPage() { updatePage(); }
     public void updatePage() { System.out.println("[ArsMelima] Page updated: currentPage=" + currentPage); }
