@@ -67,25 +67,25 @@ public class TabWD extends CreativeModeTab {
 
                         // ---------- Food: meats / cooked / dishes / baked ----------
                         output.accept(ItemsWD.RAW_BEAR_MEAT.get());
-                        output.accept(ItemsWD.COCKED_BEAR_MEAT.get());
+                        output.accept(ItemsWD.COOKED_BEAR_MEAT.get());
                         output.accept(ItemsWD.RAW_HORSE.get());
-                        output.accept(ItemsWD.COCKED_HORSE.get());
+                        output.accept(ItemsWD.COOKED_HORSE.get());
                         output.accept(ItemsWD.RAW_GOATS_MEAT.get());
                         output.accept(ItemsWD.GOAT_MEAT_KEBAB.get());
-                        output.accept(ItemsWD.COCKED_GOAT_MEAT_KEBAB.get());
-                        output.accept(ItemsWD.COCKED_GOATS_MEAT.get());
+                        output.accept(ItemsWD.COOKED_GOAT_MEAT_KEBAB.get());
+                        output.accept(ItemsWD.COOKED_GOATS_MEAT.get());
                         output.accept(ItemsWD.RAW_SLICING_GOATS_MEAT.get());
-                        output.accept(ItemsWD.COCKED_SLICING_GOATS_MEAT.get());
+                        output.accept(ItemsWD.COOKED_SLICING_GOATS_MEAT.get());
                         output.accept(ItemsWD.CAMEL_MEAT_KEBAB.get());
-                        output.accept(ItemsWD.COCKED_CAMEL_MEAT_KEBAB.get());
+                        output.accept(ItemsWD.COOKED_CAMEL_MEAT_KEBAB.get());
                         output.accept(ItemsWD.RAW_CAMEL_MEAT.get());
-                        output.accept(ItemsWD.COCKED_CAMEL_MEAT.get());
+                        output.accept(ItemsWD.COOKED_CAMEL_MEAT.get());
                         output.accept(ItemsWD.RAW_SLICING_CAMEL_MEAT.get());
-                        output.accept(ItemsWD.COCKED_SLICING_CAMEL_MEAT.get());
+                        output.accept(ItemsWD.COOKED_SLICING_CAMEL_MEAT.get());
                         output.accept(ItemsWD.FROG_BODY.get());
-                        output.accept(ItemsWD.COCKED_FROG.get());
+                        output.accept(ItemsWD.COOKED_FROG.get());
                         output.accept(ItemsWD.FROG_LEGS.get());
-                        output.accept(ItemsWD.COCKED_FROG_LEGS.get());
+                        output.accept(ItemsWD.COOKED_FROG_LEGS.get());
                         output.accept(ItemsWD.GOATS_MEAT_PILAF.get());
                         output.accept(ItemsWD.SPAGETTI_IN_THE_NORTH.get());
                         output.accept(ItemsWD.SWEET_ROLL.get());
@@ -97,9 +97,9 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.PICKLED_TURTLE_NECK.get());
                         output.accept(ItemsWD.TURTLE_NECK.get());
                         output.accept(ItemsWD.MUSHROOM_ON_STICK.get());
-                        output.accept(ItemsWD.COCKED_MUSHROOM_ON_STICK.get());
+                        output.accept(ItemsWD.COOKED_MUSHROOM_ON_STICK.get());
                         output.accept(ItemsWD.SHPIKACHKI.get());
-                        output.accept(ItemsWD.COCKED_SHPIKACHKI.get());
+                        output.accept(ItemsWD.COOKED_SHPIKACHKI.get());
                         output.accept(ItemsWD.DUNGEON_MASTER_CHEESE.get());
                         output.accept(ItemsWD.KRUTNEVY_BREAD.get());
                         output.accept(ItemsWD.MEDICAL_POTATO.get());

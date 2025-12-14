@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "wd:item/slicing_from_cocked_bear_meat"
-  }
-}

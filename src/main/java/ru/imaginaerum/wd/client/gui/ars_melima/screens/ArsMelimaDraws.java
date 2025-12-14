@@ -100,15 +100,6 @@ public class ArsMelimaDraws {
         poseStack.popPose();
     }
 
-    public static void drawScaledText(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, int color, float scale) {
-        PoseStack poseStack = graphics.pose();
-        poseStack.pushPose();
-        poseStack.translate(x, y, 0);
-        poseStack.scale(scale, scale, 1.0f);
-        graphics.drawString(font, text, 0, 0, color, false);
-        poseStack.popPose();
-    }
-
     public static void renderItem(GuiGraphics graphics, ItemStack stack, int x, int y) {
         graphics.renderItem(stack, x, y);
 

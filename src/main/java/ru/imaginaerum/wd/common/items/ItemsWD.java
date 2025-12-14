@@ -195,40 +195,40 @@ public class ItemsWD {
     public static final RegistryObject<Item> GOAT_MEAT_KEBAB = ITEMS.register("goat_meat_kebab",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(2).saturationMod(0.2f)
                     .build())));
-    public static final RegistryObject<Item> COCKED_GOAT_MEAT_KEBAB = ITEMS.register("cocked_goat_meat_kebab",
+    public static final RegistryObject<Item> COOKED_GOAT_MEAT_KEBAB = ITEMS.register("cooked_goat_meat_kebab",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(6).saturationMod(0.7f)
                     .build())));
     public static final RegistryObject<Item> CAMEL_MEAT_KEBAB = ITEMS.register("camel_meat_kebab",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(2).saturationMod(0.2f)
                     .build())));
-    public static final RegistryObject<Item> COCKED_CAMEL_MEAT_KEBAB = ITEMS.register("cocked_camel_meat_kebab",
+    public static final RegistryObject<Item> COOKED_CAMEL_MEAT_KEBAB = ITEMS.register("cooked_camel_meat_kebab",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(6).saturationMod(0.7f)
                     .build())));
     public static final RegistryObject<Item> RAW_HORSE = ITEMS.register("raw_horse",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(3).saturationMod(0.09f)
                     .build())));
-    public static final RegistryObject<Item> COCKED_HORSE = ITEMS.register("cocked_horse",
+    public static final RegistryObject<Item> COOKED_HORSE = ITEMS.register("cooked_horse",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(7).saturationMod(0.6f)
                     .build())));
     public static final RegistryObject<Item> RAW_CAMEL_MEAT = ITEMS.register("raw_camel_meat",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(3).saturationMod(0.09f)
                     .build())));
-    public static final RegistryObject<Item> COCKED_CAMEL_MEAT = ITEMS.register("cocked_camel_meat",
+    public static final RegistryObject<Item> COOKED_CAMEL_MEAT = ITEMS.register("cooked_camel_meat",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(7).saturationMod(0.6f)
                     .build())));
     public static final RegistryObject<Item> RAW_SLICING_CAMEL_MEAT = ITEMS.register("raw_slicing_camel_meat",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(3).saturationMod(0.09f)
                     .build())));
-    public static final RegistryObject<Item> COCKED_SLICING_CAMEL_MEAT = ITEMS.register("cocked_slicing_camel_meat",
+    public static final RegistryObject<Item> COOKED_SLICING_CAMEL_MEAT = ITEMS.register("cooked_slicing_camel_meat",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(7).saturationMod(0.6f)
                     .build())));
-    public static final RegistryObject<Item> COCKED_SLICING_GOATS_MEAT = ITEMS.register("cocked_slicing_goats_meat",
+    public static final RegistryObject<Item> COOKED_SLICING_GOATS_MEAT = ITEMS.register("cooked_slicing_goats_meat",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(5).saturationMod(0.6f)
                     .build())));
-    public static final RegistryObject<Item> COCKED_BEAR_MEAT = ITEMS.register("cocked_bear_meat",
+    public static final RegistryObject<Item> COOKED_BEAR_MEAT = ITEMS.register("cooked_bear_meat",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(7).saturationMod(0.6f)
                     .build())));
-    public static final RegistryObject<Item> COCKED_GOATS_MEAT = ITEMS.register("cocked_goats_meat",
+    public static final RegistryObject<Item> COOKED_GOATS_MEAT = ITEMS.register("cooked_goats_meat",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(8).saturationMod(0.4f)
                     .build())));
     public static final RegistryObject<Item> GOATS_MEAT_PILAF = ITEMS.register("goats_meat_pilaf",
@@ -250,13 +250,13 @@ public class ItemsWD {
                     .effect(new MobEffectInstance(MobEffects.POISON, 40, 0), 0.6F)
                     .effect(new MobEffectInstance(MobEffects.CONFUSION, 120, 0), 0.9F)
                     .build())));
-    public static final RegistryObject<Item> COCKED_FROG = ITEMS.register("cocked_frog",
+    public static final RegistryObject<Item> COOKED_FROG = ITEMS.register("cooked_frog",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(6).saturationMod(0.6f)
                     .build())));
     public static final RegistryObject<Item> FROG_LEGS = ITEMS.register("frog_legs",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(1).saturationMod(0.1f)
                     .build())));
-    public static final RegistryObject<Item> COCKED_FROG_LEGS = ITEMS.register("cocked_frog_legs",
+    public static final RegistryObject<Item> COOKED_FROG_LEGS = ITEMS.register("cooked_frog_legs",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(3).saturationMod(0.3f)
                     .build())));
     // Блюда
@@ -319,10 +319,10 @@ public class ItemsWD {
                     .effect(new MobEffectInstance(MobEffects.POISON, 120, 0), 0.6F)
                     .alwaysEat()
                     .build())));
-    public static final RegistryObject<Item> COCKED_MUSHROOM_ON_STICK = ITEMS.register("cocked_mushroom_on_stick",
+    public static final RegistryObject<Item> COOKED_MUSHROOM_ON_STICK = ITEMS.register("cooked_mushroom_on_stick",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationMod(0.6f).alwaysEat()
                     .build())));
-    public static final RegistryObject<Item> COCKED_SHPIKACHKI = ITEMS.register("cocked_shpikachki",
+    public static final RegistryObject<Item> COOKED_SHPIKACHKI = ITEMS.register("cooked_shpikachki",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(7).saturationMod(0.6f)
                     .build())));
     public static final RegistryObject<Item> SHPIKACHKI = ITEMS.register("shpikachki",

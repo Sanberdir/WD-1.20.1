@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "ars_melima",
+  "ingredients": [
+    {
+      "item": "wd:coastal_steep_flower"
+    },
+    {
+      "item": "minecraft:book"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "wd:ars_melima"
+  }
+}

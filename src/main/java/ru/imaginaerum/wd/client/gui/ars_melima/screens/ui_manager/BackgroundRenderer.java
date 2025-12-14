@@ -10,7 +10,7 @@ public class BackgroundRenderer {
 
         RenderSystem.setShaderTexture(0, ArsMelimaConstants.TEXTURE);
         // Только фон (обложка)
-        graphics.blit(ArsMelimaConstants.TEXTURE, bgLeft, bgTop, 4, 273,
+        graphics.blit(ArsMelimaConstants.TEXTURE, bgLeft, bgTop + 3, 4, 273,
                 ArsMelimaConstants.BG_W, ArsMelimaConstants.BG_H, 512, 512);
     }
 }

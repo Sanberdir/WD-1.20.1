@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "wd:item/slicing_from_cooked_bear_meat"
+  }
+}

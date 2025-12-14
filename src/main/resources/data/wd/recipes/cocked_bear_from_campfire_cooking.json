@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:campfire_cooking",
-  "cookingtime": 600,
-  "experience": 0.35,
-  "ingredient": {
-    "item": "wd:raw_bear_meat"
-  },
-  "result": "wd:cocked_bear_meat"
-}

@@ -115,8 +115,8 @@ public class ArsMelimaUIManager {
         // 3. Белые страницы поверх закладок
         PagesRenderer.renderPages(graphics, guiLeft, guiTop);
 
-        // 4. Остальное как было...
-        ContentAreasRenderer.renderContentAreas(graphics, guiLeft, guiTop);
+        // 4. Чёрная рамка
+//        ContentAreasRenderer.renderContentAreas(graphics, guiLeft, guiTop);
 
         // Прогресс-бар только в основной вкладке при открытой прогрессии
         if (currentSection == 1 && menu != null && menu.isProgressionOpen()) {
@@ -218,7 +218,11 @@ public class ArsMelimaUIManager {
                     }
                 };
 
-                // Рендерим список базовых глав
+                // ОТРИСОВЫВАЕМ ЗАГОЛОВОК НАД КОНТЕНТОМ (не сдвигая его)
+                renderSectionHeader(graphics, font, contentLeft, contentTop, contentWidth,
+                        "wd.section.base_chapters", 0xFFA42E2E);
+
+                // Рендерим список базовых глав (координаты БЕЗ изменений)
                 ArsMelimaRenders.renderChapterList(graphics, mouseX, mouseY,
                         contentLeft, contentTop, contentWidth, contentHeight,
                         rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
@@ -337,45 +341,6 @@ public class ArsMelimaUIManager {
         );
     }
 
-    private void renderBaseChapterContent(GuiGraphics graphics, int mouseX, int mouseY,
-                                          ArsMelimaMenu menu, Font font) {
-        Chapter chapter = menu.getCurrentBaseChapter();
-        if (chapter == null) return;
-
-        int contentLeft = guiLeft + ArsMelimaConstants.CONTENT_X1;
-        int contentTop = guiTop + ArsMelimaConstants.CONTENT_Y1;
-        int contentWidth = ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1;
-        int contentHeight = ArsMelimaConstants.CONTENT_Y2 - ArsMelimaConstants.CONTENT_Y1;
-
-        int rightContentLeft = guiLeft + ArsMelimaConstants.RIGHT_CONTENT_X1;
-        int rightContentTop = guiTop + ArsMelimaConstants.RIGHT_CONTENT_Y1;
-        int rightContentWidth = ArsMelimaConstants.RIGHT_CONTENT_X2 - ArsMelimaConstants.RIGHT_CONTENT_X1;
-        int rightContentHeight = ArsMelimaConstants.RIGHT_CONTENT_Y2 - ArsMelimaConstants.RIGHT_CONTENT_Y1;
-
-        // Обработка первой страницы (LearningChapters и TreeLinks)
-        if (currentBaseTextPage == 0) {
-            // Слева: LearningChapters для базовых глав
-            List<LearningChapter> learningChapters = menu.getLearningChapters(chapter.getId());
-            renderLearningChaptersList(graphics, mouseX, mouseY,
-                    contentLeft, contentTop, contentWidth, contentHeight,
-                    rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
-                    font, learningChapters, 0.85f, currentBaseLearningPage);
-
-            // Справа: TreeLinks для базовых глав
-            List<TreeLink> treeLinks = menu.getBaseTreeLinks(chapter.getId());
-            renderTreeLinksList(graphics, mouseX, mouseY,
-                    contentLeft, contentTop, contentWidth, contentHeight,
-                    rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
-                    font, treeLinks, 0.85f, 0);
-        } else {
-            // Последующие страницы: только TreeLinks
-            List<TreeLink> treeLinks = menu.getBaseTreeLinks(chapter.getId());
-            renderTreeLinksList(graphics, mouseX, mouseY,
-                    contentLeft, contentTop, contentWidth, contentHeight,
-                    rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
-                    font, treeLinks, 0.85f, currentBaseTextPage);
-        }
-    }
 
     // ===================== СИНЯЯ ВКЛАДКА - ОСНОВНЫЕ ГЛАВЫ =====================
 
@@ -406,7 +371,11 @@ public class ArsMelimaUIManager {
         }
 
         if (menu.getCurrentIndex() == -1) {
-            // Рендерим список ОСНОВНЫХ глав (menu.getChapters())
+            // ОТРИСОВЫВАЕМ ЗАГОЛОВОК НАД КОНТЕНТОМ (не сдвигая его)
+            renderSectionHeader(graphics, font, contentLeft, contentTop, contentWidth,
+                    "wd.section.main_chapters", 0xFF2E6DA4);
+
+            // Рендерим список ОСНОВНЫХ глав (координаты БЕЗ изменений)
             ArsMelimaRenders.renderChapterList(graphics, mouseX, mouseY,
                     contentLeft, contentTop, contentWidth, contentHeight,
                     rightContentLeft, rightContentTop, rightContentWidth, rightContentHeight,
@@ -440,6 +409,39 @@ public class ArsMelimaUIManager {
             }
         }
     }
+    private void renderSectionHeader(GuiGraphics graphics, Font font,
+                                     int contentLeft, int contentTop, int contentWidth,
+                                     String localizationKey, int titleColor) {
+        // Получаем локализованный текст
+        Component titleComponent = Component.translatable(localizationKey);
+        String titleText = titleComponent.getString();
+
+        // Fallback если локализация не найдена
+        if (titleText.equals(localizationKey)) {
+            switch(localizationKey) {
+                case "wd.section.base_chapters":
+                    titleText = "Базовые главы";
+                    break;
+                case "wd.section.main_chapters":
+                    titleText = "Основные главы";
+                    break;
+                default:
+                    titleText = "Оглавление";
+            }
+        }
+
+        // Рассчитываем позицию заголовка (над контентом)
+        int titleWidth = font.width(titleText);
+        int titleX = contentLeft + (contentWidth - titleWidth) / 2;
+        int titleY = contentTop - 10; // Рисуем НАД контентом
+
+        // Рисуем заголовок с тем же стилем, что и в renderStyledText
+        renderStyledText(graphics, font, titleText, titleX, titleY, 1.0f);
+
+        // Рисуем декоративную линию под заголовком (над контентом)
+        int lineY = titleY + font.lineHeight;
+        renderTitleLineUnderText(graphics, contentLeft, lineY, contentWidth);
+    }
 
     // ===================== ДРУГИЕ ВКЛАДКИ =====================
 
@@ -452,7 +454,7 @@ public class ArsMelimaUIManager {
         String message = "";
         switch (currentSection) {
             case 2: // Зелёная закладка
-                message = "Зелёный раздел - в разработке";
+                message = "WIP";
                 break;
             default:
                 message = "Раздел в разработке";

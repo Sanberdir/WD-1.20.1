@@ -20,14 +20,14 @@ public class BookmarkRenderer {
 
     // Цвет каждой закладки (R,G,B,A)
     private static final float[][] BOOKMARK_COLORS = {
-            {1.0F, 0.0F, 0.0F, 1.0F}, // Красная
-            {0.0F, 0.4F, 1.0F, 1.0F}, // Синяя
+            {0.72F, 0.53F, 0.35F, 1.0F}, // СВ кор
+            {1.0F, 0.85F, 0.0F, 1.0F}, // Жёлтый
             {0.0F, 1.0F, 0.0F, 1.0F}  // Зелёная
     };
 
     // Иконки для закладок
     private static final ItemStack[] BOOKMARK_ICONS = {
-            new ItemStack(Items.APPLE),
+            new ItemStack(Items.BOOK),
             new ItemStack(Items.EMERALD),
             new ItemStack(Items.NETHER_STAR)
     };
