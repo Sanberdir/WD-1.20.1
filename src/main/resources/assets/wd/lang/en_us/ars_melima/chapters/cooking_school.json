@@ -1,4 +1,5 @@
 {
-  "title": "Cooking School",
-  "status": "open"
+  "title": "Cooking",
+  "status": "open",
+  "icon": "farmersdelight:cooking_pot"
 }

@@ -2,29 +2,171 @@ package ru.imaginaerum.wd.client.gui.ars_melima;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.network.chat.Component;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.tree_progress.ProgressTreeLoader;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.tree_progress.ProgressTreeTitlesCache;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ArsMelimaMenu {
-    public static final int PROGRESSION_INDEX = -2; // новый "индекс" для режима дерева прогресса
+    public static final int PROGRESSION_INDEX = -2;
+    public static final int LEARNING_CHAPTERS_INDEX = -3;
+    public static final int TASKS_INDEX = -4;
 
     private final List<Chapter> chapters = new ArrayList<>();
     private final List<ProgressNode> progressNodes = new ArrayList<>();
-    private int currentIndex = -1; // -1 = список глав
+    private int currentIndex = -1;
+    private final Map<String, String> progressTreeTitles = new HashMap<>();
 
-    // кэш для быстрого поиска главы по нормализованному id / title
     private final Map<String, Integer> normalizedChapterIndex = new HashMap<>();
-
-    // НОВОЕ: мапа progression-id -> индекс главы (строится по содержимому главы)
     private final Map<String, Integer> progressionIdIndex = new HashMap<>();
 
-    public ArsMelimaMenu() { }
+    private final Map<String, List<LearningChapter>> learningChaptersCache = new HashMap<>();
+    private String currentLearningChapterId = null;
 
+    private final Map<String, List<Task>> tasksCache = new HashMap<>();
+    private String currentTaskChapterId = null;
+    private int currentPage = 0;
+
+    private final Map<String, List<TreeLink>> treeLinksCache = new HashMap<>();
+    private Chapter dynamicChapter = null;
+
+    // Новые поля для управления деревьями прогрессии
+    private String currentProgressTreeId = null;
+    private final Map<String, List<ProgressNode>> progressTreesCache = new HashMap<>();
+    private final List<Chapter> baseChapters = new ArrayList<>();
+    private int currentBaseIndex = -1;
+    private int currentBasePage = 0;
+    private final Map<String, List<TreeLink>> baseTreeLinksCache = new HashMap<>();
+    public ArsMelimaMenu() { }
+    public void setBaseChapters(List<Chapter> list) {
+        baseChapters.clear();
+        if (list != null) baseChapters.addAll(list);
+        System.out.println("[ArsMelima] setBaseChapters() loaded " + baseChapters.size() + " base chapters.");
+    }
+
+    public List<Chapter> getBaseChapters() { return baseChapters; }
+
+    public void openBaseChapter(int idx) {
+        if (idx >= 0 && idx < baseChapters.size()) {
+            this.currentBaseIndex = idx;
+        }
+    }
+
+    public void closeBaseChapter() {
+        this.currentBaseIndex = -1;
+    }
+
+    public boolean isBaseChapterOpen() {
+        return this.currentBaseIndex != -1 && this.currentBaseIndex < baseChapters.size();
+    }
+
+    public Chapter getCurrentBaseChapter() {
+        if (currentBaseIndex >= 0 && currentBaseIndex < baseChapters.size()) {
+            return baseChapters.get(currentBaseIndex);
+        }
+        return null;
+    }
+
+    public int getCurrentBaseIndex() { return currentBaseIndex; }
+    public void setCurrentBaseIndex(int idx) { this.currentBaseIndex = idx; }
+
+    public int getCurrentBasePage() { return currentBasePage; }
+    public void setCurrentBasePage(int page) { this.currentBasePage = page; }
+
+    // --- Base TreeLinks ---
+    public List<TreeLink> getBaseTreeLinks(String chapterId) {
+        if (chapterId == null || chapterId.isEmpty()) return Collections.emptyList();
+        return baseTreeLinksCache.computeIfAbsent(chapterId, TreeLinkLoader::loadTreeLinks);
+    }
+
+    public List<TreeLink> getCurrentBaseTreeLinks() {
+        Chapter ch = getCurrentBaseChapter();
+        if (ch == null) return Collections.emptyList();
+        return getBaseTreeLinks(ch.getId());
+    }
+    // --- Page refresh ---
+    public void refreshPage() { updatePage(); }
+    public void updatePage() { System.out.println("[ArsMelima] Page updated: currentPage=" + currentPage); }
+
+    // --- Tasks ---
+    public void openTasks(String learningChapterId) {
+        this.currentTaskChapterId = learningChapterId;
+        this.currentIndex = TASKS_INDEX;
+    }
+    public void closeTasks() {
+        this.currentTaskChapterId = null;
+        this.currentIndex = LEARNING_CHAPTERS_INDEX;
+    }
+    public boolean isChapterOpen() {
+        return currentIndex >= 0 && currentIndex < chapters.size();
+    }
+    public boolean isTasksOpen() { return this.currentIndex == TASKS_INDEX; }
+    public String getCurrentTaskChapterId() { return currentTaskChapterId; }
+    public List<Task> getCurrentTasks() { return currentTaskChapterId != null ? getTasks(currentTaskChapterId) : Collections.emptyList(); }
+    public List<Task> getTasks(String learningChapterId) {
+        return tasksCache.computeIfAbsent(learningChapterId, id -> {
+            List<Task> loaded = TaskLoader.loadTasks(id);
+            if (loaded == null) return Collections.emptyList();
+            System.out.println("[ArsMelima] Loaded " + loaded.size() + " tasks for chapter: " + id);
+            return loaded;
+        });
+    }
+
+    // --- Learning chapters ---
+    public List<LearningChapter> getLearningChapters(String chapterId) {
+        return learningChaptersCache.computeIfAbsent(chapterId, LearningChapterLoader::loadLearningChapters);
+    }
+    public void openLearningChapters(String chapterId) {
+        this.currentLearningChapterId = chapterId;
+        this.currentIndex = LEARNING_CHAPTERS_INDEX;
+        refreshLearningChaptersStatus();
+    }
+    public void closeLearningChapters() {
+        this.currentLearningChapterId = null;
+        this.currentIndex = -1;
+    }
+    public boolean isLearningChaptersOpen() { return this.currentIndex == LEARNING_CHAPTERS_INDEX; }
+    public String getCurrentLearningChapterId() { return currentLearningChapterId; }
+    public List<LearningChapter> getCurrentLearningChapters() {
+        if (currentLearningChapterId == null) return Collections.emptyList();
+        List<LearningChapter> chapters = getLearningChapters(currentLearningChapterId);
+        refreshLearningChaptersStatus(chapters);
+        return chapters;
+    }
+    private void refreshLearningChaptersStatus() {
+        if (currentLearningChapterId != null) {
+            List<LearningChapter> chapters = learningChaptersCache.get(currentLearningChapterId);
+            if (chapters != null) refreshLearningChaptersStatus(chapters);
+        }
+    }
+    private void refreshLearningChaptersStatus(List<LearningChapter> learningChapters) {
+        if (learningChapters == null) return;
+        boolean changed = false;
+        for (LearningChapter lc : learningChapters) {
+            if (lc != null && lc.isLocked()) {
+                String parentId = lc.getParent();
+                if (parentId != null && isLearningChapterCompleted(parentId)) {
+                    lc.unlock();
+                    changed = true;
+                    System.out.println("[ArsMelima] Auto-unlocked chapter: " + lc.getId());
+                }
+            }
+        }
+        if (changed) markLearningChaptersDirty();
+    }
+    private boolean isLearningChapterCompleted(String chapterId) {
+        if (chapterId == null || chapterId.isEmpty()) return false;
+        List<Task> tasks = TaskLoader.loadTasks(chapterId);
+        if (tasks == null || tasks.isEmpty()) return true;
+        for (Task t : tasks) {
+            if (ClientTaskData.getTaskProgress(chapterId, t.getId()) < t.getRequiredCount()) return false;
+        }
+        return true;
+    }
+
+    // --- Chapters ---
     public void setChapters(List<Chapter> list) {
         chapters.clear();
         normalizedChapterIndex.clear();
@@ -35,33 +177,25 @@ public class ArsMelimaMenu {
             Chapter c = chapters.get(i);
             if (c == null) continue;
 
-            // --- нормализованные ключи по главе ---
             String rawId = c.getId();
             if (rawId != null && !rawId.isEmpty()) {
                 String normFull = normalizeKey(rawId);
                 normalizedChapterIndex.putIfAbsent(normFull, i);
-
                 int colon = rawId.indexOf(':');
                 if (colon >= 0 && colon + 1 < rawId.length()) {
-                    String noNs = normalizeKey(rawId.substring(colon + 1));
-                    normalizedChapterIndex.putIfAbsent(noNs, i);
+                    normalizedChapterIndex.putIfAbsent(normalizeKey(rawId.substring(colon + 1)), i);
                 }
             }
 
             String title = c.getTitle();
-            if (title != null && !title.isEmpty()) {
-                String tnorm = normalizeKey(title);
-                normalizedChapterIndex.putIfAbsent(tnorm, i);
-            }
+            if (title != null && !title.isEmpty()) normalizedChapterIndex.putIfAbsent(normalizeKey(title), i);
 
-            // --- progression-id из элементов ---
             List<ChapterElement> elems = c.getElements();
             if (elems != null) {
                 for (ChapterElement el : elems) {
                     if (el == null) continue;
                     String data = el.getData() != null ? el.getData().toString() : null;
                     if (data == null || data.isEmpty()) continue;
-
                     try {
                         JsonObject obj = JsonParser.parseString(data).getAsJsonObject();
                         if (obj.has("id")) {
@@ -72,98 +206,15 @@ public class ArsMelimaMenu {
                 }
             }
         }
-
-        System.out.println("[ArsMelima] setChapters() loaded " + chapters.size() +
-                " chapters. normalizedKeys=" + normalizedChapterIndex.keySet() +
-                " progressionKeys=" + progressionIdIndex.keySet());
+        System.out.println("[ArsMelima] setChapters() loaded " + chapters.size() + " chapters.");
     }
 
-
-    /**
-     * Основной поиск главы по "ключу" (используется старым кодом).
-     * Оставлен без изменений — сначала проверяет normalizedChapterIndex и т.д.
-     */
     public int getChapterIndexByNormalizedKey(String key) {
-        if (key == null || key.isEmpty()) return -1;
-        String k = normalizeKey(key);
-
-        // 1) быстрый прямой поиск в мапе
-        Integer v = normalizedChapterIndex.get(k);
-        if (v != null) return v;
-
-        // 2) попробуем без namespace (если в ключе он есть)
-        int colon = key.indexOf(':');
-        if (colon >= 0 && colon + 1 < key.length()) {
-            String withoutNs = normalizeKey(key.substring(colon + 1));
-            v = normalizedChapterIndex.get(withoutNs);
-            if (v != null) return v;
-        }
-
-        // 3) попробуем перебор по всем сохранённым ключам (на случай разных нормализаций)
-        for (Map.Entry<String, Integer> e : normalizedChapterIndex.entrySet()) {
-            String mapKey = e.getKey();
-            if (mapKey.equals(k) || mapKey.equalsIgnoreCase(k) || mapKey.startsWith(k) || k.startsWith(mapKey)) {
-                return e.getValue();
-            }
-        }
-
-        // 4) дополнительный перебор по исходным данным (id/title) - более надёжно, но медленнее
-        for (int i = 0; i < chapters.size(); i++) {
-            Chapter c = chapters.get(i);
-            if (c == null) continue;
-            String rawId = c.getId() != null ? c.getId() : "";
-            String title  = c.getTitle() != null ? c.getTitle() : "";
-
-            if (rawId.equalsIgnoreCase(key) || rawId.equalsIgnoreCase(k) ||
-                    title.equalsIgnoreCase(key) || title.equalsIgnoreCase(k)) {
-                return i;
-            }
-
-            if (normalizeKey(rawId).equals(k) || normalizeKey(title).equals(k)) {
-                return i;
-            }
-
-            int cidx = rawId.indexOf(':');
-            if (cidx >= 0 && cidx + 1 < rawId.length()) {
-                String noNs = normalizeKey(rawId.substring(cidx + 1));
-                if (noNs.equals(k)) return i;
-            }
-        }
-
-        System.out.println("[ArsMelima] getChapterIndexByNormalizedKey FAILED for key='" + key + "' normalized='" + k + "'. MapKeys=" + normalizedChapterIndex.keySet());
-
-        return -1;
+        return normalizedChapterIndex.getOrDefault(normalizeKey(key), -1);
     }
 
-    /**
-     * НОВЫЙ метод: поиск главы по id из progression (сначала по построенной мапе progressionIdIndex,
-     * затем fallback на обычный поиск по normalizedChapterIndex).
-     */
     public int getChapterIndexByProgressionId(String progressionId) {
-        if (progressionId == null || progressionId.isEmpty()) return -1;
-        String k = normalizeKey(progressionId);
-
-        Integer v = progressionIdIndex.get(k);
-        if (v != null) return v;
-
-        // попробуем без namespace
-        int colon = progressionId.indexOf(':');
-        if (colon >= 0 && colon + 1 < progressionId.length()) {
-            String withoutNs = normalizeKey(progressionId.substring(colon + 1));
-            v = progressionIdIndex.get(withoutNs);
-            if (v != null) return v;
-        }
-
-        // токены из ключа
-        String[] parts = k.split("_");
-        for (String p : parts) {
-            if (p.length() <= 1) continue;
-            v = progressionIdIndex.get(p);
-            if (v != null) return v;
-        }
-
-        // fallback на старый поиск по нормализованным id/title
-        return getChapterIndexByNormalizedKey(progressionId);
+        return progressionIdIndex.getOrDefault(normalizeKey(progressionId), getChapterIndexByNormalizedKey(progressionId));
     }
 
     public List<Chapter> getChapters() { return chapters; }
@@ -172,70 +223,163 @@ public class ArsMelimaMenu {
         progressNodes.clear();
         if (nodes != null) progressNodes.addAll(nodes);
     }
+
     public List<ProgressNode> getProgressNodes() { return progressNodes; }
 
     public int getCurrentIndex() { return currentIndex; }
     public void setCurrentIndex(int idx) { this.currentIndex = idx; }
+
     public void openChapter(int idx) {
-        if (idx >= 0 && idx < chapters.size()) this.currentIndex = idx;
+        if (idx >= 0 && idx < chapters.size()) {
+            this.currentIndex = idx;
+            this.currentProgressTreeId = null; // Сбрасываем ID дерева при открытии главы
+        }
     }
 
-    private Chapter dynamicChapter = null;
-
-    /**
-     * Открывает динамическую главу (не добавляя её в основной список chapters)
-     * @param id идентификатор главы
-     * @param elements контент главы
-     */
-    public void openDynamicChapter(String id, List<ChapterElement> elements) {
-        if (id == null || elements == null || elements.isEmpty()) return;
-
-        // Создаём временную главу с флагом open=true
-        dynamicChapter = new Chapter(id, id, elements, true);
-
-        // Устанавливаем currentIndex в специальное значение для динамической главы
-        this.currentIndex = PROGRESSION_INDEX - 1; // любое уникальное отрицательное значение, отличное от PROGRESSION_INDEX
-    }
-
-    /**
-     * Получение текущей главы с учётом динамической
-     */
     public Chapter getCurrentChapter() {
         if (currentIndex >= 0 && currentIndex < chapters.size()) {
             return chapters.get(currentIndex);
-        }
-        if (currentIndex == PROGRESSION_INDEX - 1 && dynamicChapter != null) {
-            return dynamicChapter;
+        } else if (dynamicChapter != null && currentIndex >= chapters.size()) {
+            return dynamicChapter; // Динамические главы
         }
         return null;
     }
+    public void closeChapter() {
+        this.currentIndex = -1;
+        this.currentProgressTreeId = null;
+    }
+    public void openDynamicChapter(String id, List<ChapterElement> elements) {
+        dynamicChapter = new Chapter(id, id, elements, true, null);
+        currentIndex = chapters.size(); // Уникальный индекс для динамических глав
+        this.currentProgressTreeId = null;
+        refreshPage();
+    }
+
+    public boolean isDynamicChapterOpen() {
+        return dynamicChapter != null && currentIndex >= chapters.size();
+    }
+
+    // --- TreeLinks ---
+    public List<TreeLink> getTreeLinks(String chapterId) {
+        if (chapterId == null || chapterId.isEmpty()) return Collections.emptyList();
+        return treeLinksCache.computeIfAbsent(chapterId, TreeLinkLoader::loadTreeLinks);
+    }
+
+    public List<TreeLink> getCurrentTreeLinks() {
+        Chapter ch = getCurrentChapter();
+        if (ch == null) return Collections.emptyList();
+        return getTreeLinks(ch.getId());
+    }
+
+    public void unlockLearningChapter(String id) {
+        if (id == null || id.isEmpty()) return;
+        boolean changed = false;
+        for (List<LearningChapter> list : learningChaptersCache.values()) {
+            if (list == null) continue;
+            for (LearningChapter lc : list) {
+                if (lc != null && id.equals(lc.getId()) && lc.isLocked()) {
+                    lc.unlock();
+                    changed = true;
+                    System.out.println("[ArsMelima] Learning chapter unlocked: " + id);
+                }
+            }
+        }
+        if (changed) markLearningChaptersDirty();
+    }
+
+    private void markLearningChaptersDirty() {
+        System.out.println("[ArsMelima] markLearningChaptersDirty() — cache marked for refresh.");
+    }
+
+    // --- Progression Trees ---
 
     /**
-     * Закрывает динамическую главу
+     * Открывает дерево прогрессии по умолчанию (все узлы)
      */
-    public void closeDynamicChapter() {
-        dynamicChapter = null;
-        this.currentIndex = -1;
+    public void openProgression() {
+        this.currentIndex = PROGRESSION_INDEX;
+        this.currentProgressTreeId = "default";
+        // Используем уже загруженные узлы
+        System.out.println("[ArsMelima] Opened default progression with " + progressNodes.size() + " nodes");
     }
-    public void closeChapter() { this.currentIndex = -1; }
+
+    /**
+     * Открывает конкретное дерево прогрессии по ID
+     */
+    public void openProgression(String treeId) {
+        this.currentIndex = PROGRESSION_INDEX;
+        this.currentProgressTreeId = treeId;
+        loadProgressTree(treeId);
+    }
+
+    /**
+     * Загружает дерево прогрессии по ID
+     */
+    public Component getProgressTreeTitle(String treeId) {
+        if (treeId == null || treeId.isEmpty()) {
+            return Component.literal("Progression Tree");
+        }
+
+        // Создаем ключ локализации на основе имени файла
+        String localizationKey = "wd.progression." + treeId + ".title";
+        return Component.translatable(localizationKey);
+    }
+
+    // В методе loadProgressTree добавляем:
+    private void loadProgressTree(String treeId) {
+        if (treeId == null || treeId.isEmpty()) {
+            System.err.println("[ArsMelima] Cannot load progress tree: treeId is null or empty");
+            return;
+        }
+
+        List<ProgressNode> nodes = progressTreesCache.computeIfAbsent(treeId, ProgressTreeLoader::loadProgressTree);
+
+        if (nodes != null && !nodes.isEmpty()) {
+            setProgressNodes(nodes);
+            System.out.println("[ArsMelima] Loaded progress tree: " + treeId + " with " + nodes.size() + " nodes");
+        } else {
+            System.err.println("[ArsMelima] Failed to load progress tree: " + treeId);
+            System.out.println("[ArsMelima] Using existing progress nodes: " + progressNodes.size() + " nodes");
+        }
+    }
 
 
-    // --- progression helpers ---
-    public void openProgression() { this.currentIndex = PROGRESSION_INDEX; }
-    public void closeProgression() { this.currentIndex = -1; }
-    public boolean isProgressionOpen() { return this.currentIndex == PROGRESSION_INDEX; }
+    /**
+     * Проверяет, существует ли дерево прогрессии с указанным ID
+     */
+    public boolean progressTreeExists(String treeId) {
+        if (treeId == null || treeId.isEmpty()) return false;
 
+        // Проверяем кэш
+        if (progressTreesCache.containsKey(treeId)) {
+            List<ProgressNode> nodes = progressTreesCache.get(treeId);
+            return nodes != null && !nodes.isEmpty();
+        }
 
+        // Проверяем существование файла
+        return ProgressTreeLoader.progressTreeExists(treeId);
+    }
 
-    // Нормализация: lower, убрать namespace перед двоеточием, заменить дефисы/пробелы на '_',
-    // оставить только a-z0-9_ для стабильного сравнения.
+    /**
+     * Возвращает ID текущего открытого дерева прогрессии
+     */
+    public String getCurrentProgressTreeId() {
+        return currentProgressTreeId;
+    }
+
+    public void closeProgression() {
+        this.currentIndex = -1;
+        this.currentProgressTreeId = null;
+    }
+
+    public boolean isProgressionOpen() {
+        return this.currentIndex == PROGRESSION_INDEX;
+    }
+
     private static String normalizeKey(String raw) {
         if (raw == null) return "";
         String s = raw.trim().toLowerCase(Locale.ROOT);
-        if (s.contains(":")) {
-            // сохраняем и вариант с модулем, но при ключе убираем модуль
-            s = s.substring(s.indexOf(':') + 1);
-        }
+        if (s.contains(":")) s = s.substring(s.indexOf(':') + 1);
         s = s.replace('-', '_').replace(' ', '_');
         s = s.replaceAll("[^a-z0-9_]", "");
         return s;

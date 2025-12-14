@@ -12,7 +12,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import ru.imaginaerum.wd.WD;
-import ru.imaginaerum.wd.common.ModWoodType;
+import ru.imaginaerum.wd.common.level.ModWoodType;
 import ru.imaginaerum.wd.common.blocks.custom.*;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 import ru.imaginaerum.wd.common.trees.AppleTreeGrower;

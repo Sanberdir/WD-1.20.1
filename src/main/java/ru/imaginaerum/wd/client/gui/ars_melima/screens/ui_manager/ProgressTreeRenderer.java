@@ -15,7 +15,10 @@ import ru.imaginaerum.wd.client.gui.ars_melima.screens.ArsMelimaUIManager;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ClientCookingData;
 import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.tree_progress.DrawNodesLinks;
 
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ArsMelimaConstants.ICONS_TEXTURE;
 
@@ -35,19 +38,60 @@ public class ProgressTreeRenderer {
 
     public static void renderProgressTree(ArsMelimaUIManager manager, GuiGraphics graphics,
                                           int mouseX, int mouseY,
-                                          ArsMelimaMenu menu,
-                                          Font font) {
+                                          ArsMelimaMenu menu, Font font) {
         List<ProgressNode> nodes = menu.getProgressNodes();
         if (nodes == null || nodes.isEmpty()) return;
 
-        int startX = manager.getGuiLeft() + 7;
-        int startY = manager.getGuiTop() + 25;
+        // === РЕНДЕР ЗАГОЛОВКА ДЕРЕВА ПО ЦЕНТРУ ЛЕВОЙ СТРАНИЦЫ ===
+        String currentTreeId = menu.getCurrentProgressTreeId();
+        if (currentTreeId != null) {
+            Component title = menu.getProgressTreeTitle(currentTreeId);
 
-        Map<String, Point> positions = DrawNodesLinks.computePositions(nodes, startX, startY);
-        manager.getNodePositionsStore().setPositions(positions);
+            // Координаты левой контентной области
+            int contentLeft = manager.getGuiLeft() + ArsMelimaConstants.CONTENT_X1;
+            int contentRight = manager.getGuiLeft() + ArsMelimaConstants.CONTENT_X2;
+            int contentWidth = contentRight - contentLeft;
 
-        drawNodes(manager, graphics, positions, nodes, mouseX, mouseY, font);
-        DrawNodesLinks.drawLinks(graphics, positions, nodes);
+            // Центрируем заголовок в левой контентной области
+            int titleWidth = font.width(title);
+            int titleX = contentLeft + (contentWidth - titleWidth) / 2;
+            int titleY = manager.getGuiTop() + 11; // Отступ сверху от всего GUI
+
+            graphics.drawString(font, title, titleX, titleY, 0xFF5D4037, false);
+
+            // === ДОБАВЛЕНО: ЛИНИЯ ПОД ЗАГОЛОВКОМ ===
+            renderTitleLineUnderText(graphics, contentLeft, titleY + font.lineHeight - 1, contentWidth);
+
+            // Корректируем стартовую позицию дерева
+            int startX = manager.getGuiLeft() + 10;
+            int startY = titleY + font.lineHeight + 12; // Больший отступ после линии
+
+            Map<String, Point> positions = DrawNodesLinks.computePositions(nodes, startX, startY);
+            manager.getNodePositionsStore().setPositions(positions);
+
+            drawNodes(manager, graphics, positions, nodes, mouseX, mouseY, font);
+            DrawNodesLinks.drawLinks(graphics, positions, nodes);
+        }
+    }
+
+    // НОВЫЙ МЕТОД: рендер линии под заголовком
+    private static void renderTitleLineUnderText(GuiGraphics graphics, int x, int y, int width) {
+        // Координаты линии в текстуре: X0 Y82 до X107 Y87 (ширина 107px, высота 5px)
+        int textureX = 0;
+        int textureY = 82;
+        int textureWidth = 107;
+        int textureHeight = 5;
+
+        // Центрируем линию по ширине контента
+        int lineX = x + (width - textureWidth) / 2;
+        int lineY = y;
+
+        // Рисуем линию фиксированной длины
+        graphics.blit(ArsMelimaConstants.ICONS_TEXTURE,
+                lineX, lineY,
+                textureX, textureY,
+                textureWidth, textureHeight,
+                512, 512);
     }
 
     private static void drawNodes(ArsMelimaUIManager manager, GuiGraphics graphics,
@@ -84,11 +128,76 @@ public class ProgressTreeRenderer {
 
             if (UIUtils.isPointInRect(drawX, drawY, frameSize, frameSize, mouseX, mouseY)) {
                 graphics.fill(drawX, drawY, drawX + frameSize, drawY + frameSize, 0x80FFFFFF);
-                Component tooltip = Component.literal(node.getDescription() != null ? node.getDescription() : "");
-                graphics.renderTooltip(font, tooltip, mouseX, mouseY);
+
+                // ← ОБНОВЛЕННЫЙ ТУЛТИП
+                List<Component> tooltipLines = new ArrayList<>();
+
+                // Первая строка: "Level X" (локализованно)
+                tooltipLines.add(Component.translatable("screen.wd.ars_melima.level", node.getLevel()));
+
+                // Вторая строка: локализованное описание ноды
+                String descriptionKey = "node.wd.ars_melima." + node.getId() + ".description";
+                tooltipLines.add(Component.translatable(descriptionKey));
+
+                graphics.renderTooltip(font, tooltipLines, Optional.empty(), mouseX, mouseY);
             }
         }
     }
+    private static Component computeLockedTooltip(ProgressNode node, List<ProgressNode> allNodes) {
+        // 1) если родитель существует и он закрыт — подсказка про родителя
+        String parentId = null;
+        try {
+            parentId = node.getParentId();
+        } catch (Exception ignored) {}
+        if (parentId != null && !parentId.isEmpty()) {
+            for (ProgressNode p : allNodes) {
+                if (p == null) continue;
+                if (parentId.equals(p.getId())) {
+                    boolean parentUnlocked = !p.isLocked() || ClientCookingData.isProgressUnlocked(p.getId());
+                    if (!parentUnlocked) return Component.translatable("screen.wd.ars_melima.open_parent");
+                    break;
+                }
+            }
+        }
+
+        // 2) пробуем получить требование уровня через reflection (разные имена методов на случай различий в модели)
+        String[] tryMethods = {"getRequiredLevel", "getLevelRequirement", "getRequiredLvl", "requiredLevel", "getLevel", "getMinLevel"};
+        for (String mName : tryMethods) {
+            try {
+                Method m = node.getClass().getMethod(mName);
+                Object v = m.invoke(node);
+                if (v instanceof Number) {
+                    int req = ((Number) v).intValue();
+                    if (req > ClientCookingData.clientLevel) return Component.translatable("screen.wd.ars_melima.need_level", req);
+                } else if (v instanceof String) {
+                    try {
+                        int req = Integer.parseInt((String) v);
+                        if (req > ClientCookingData.clientLevel) return Component.translatable("screen.wd.ars_melima.need_level", req);
+                    } catch (NumberFormatException ignored) {}
+                }
+            } catch (NoSuchMethodException ignored) {
+                // метод не найден — пробуем следующий
+            } catch (Exception ignored) {
+                // любые другие ошибки — пропускаем
+            }
+        }
+
+        // 3) fallback: попытаемся найти число в описании ноды (если есть)
+        try {
+            String desc = node.getDescription();
+            if (desc != null && !desc.isEmpty()) {
+                Matcher m = Pattern.compile("(\\d+)").matcher(desc);
+                if (m.find()) {
+                    int val = Integer.parseInt(m.group(1));
+                    if (val > ClientCookingData.clientLevel) return Component.translatable("screen.wd.ars_melima.need_level", val);
+                }
+            }
+        } catch (Exception ignored) {}
+
+        // 4) общий фоллбек
+        return Component.translatable("screen.wd.ars_melima.requires_unlock");
+    }
+
     // Новая вертикальная линия (4x17), TEXTURE region X4 Y0
     public static void drawLineVertical17(GuiGraphics g, int x, int y) {
         RenderSystem.setShaderTexture(0, ICONS_TEXTURE);

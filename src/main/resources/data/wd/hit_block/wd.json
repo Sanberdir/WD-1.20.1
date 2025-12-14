@@ -40,12 +40,28 @@
         "chance": 1.0
       },
       {
-        "item": "wd:pepper",
+        "item": "wd:bright_pepper",
         "min_count": 1,
         "max_count": 2,
         "chance": 0.35
       }
     ],"experience": 5
+  },
+  "wd:bright_pepper_seeds": {
+    "drops": [
+      {
+        "item": "wd:hunting_twister",
+        "min_count": 1,
+        "max_count": 3,
+        "chance": 1.0
+      },
+      {
+        "item": "wd:nether_grog",
+        "min_count": 1,
+        "max_count": 2,
+        "chance": 0.05
+      }
+    ],"experience": 20
   },
   "wd:charming_berries_block": {
     "drops": [

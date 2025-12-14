@@ -10,15 +10,43 @@ import ru.imaginaerum.wd.client.gui.ars_melima.screens.ArsMelimaUIManager;
 
 public class NavigationRenderer {
     public static void renderNavigation(ArsMelimaUIManager manager, GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
+        int currentSection = manager.getCurrentSection();
+
+        if (currentSection == 0) { // Красная вкладка - базовые главы
+            renderNavigationForBaseSection(manager, graphics, mouseX, mouseY, menu, font);
+        } else if (currentSection == 1) { // Синяя вкладка - основные главы
+            renderNavigationForMainSection(manager, graphics, mouseX, mouseY, menu, font);
+        }
+        // Для других вкладок (зеленая и т.д.) навигация не рендерится
+    }
+
+    private static void renderNavigationForBaseSection(ArsMelimaUIManager manager, GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
+        if (menu.isBaseChapterOpen() || menu.isTasksOpen()) {
+            // Показываем кнопку "назад" при открытой базовой главе или задачах
+            renderBackArrow(manager.getGuiLeft(), manager.getGuiTop(), graphics, mouseX, mouseY);
+
+            // Для открытой базовой главы показываем стрелки страниц текста
+            if (menu.isBaseChapterOpen()) {
+                renderBaseTextPageArrows(manager, graphics, mouseX, mouseY, menu, font);
+            }
+        } else {
+            // Показываем стрелки для списка базовых глав
+            renderBaseChapterPageArrows(manager, graphics, mouseX, mouseY, menu);
+        }
+    }
+
+    private static void renderNavigationForMainSection(ArsMelimaUIManager manager, GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
         if (menu.isProgressionOpen()) {
             renderBackArrow(manager.getGuiLeft(), manager.getGuiTop(), graphics, mouseX, mouseY);
             renderProgressPageArrows(manager, graphics, mouseX, mouseY, menu);
             return;
         }
 
-        if (menu.getCurrentIndex() != -1) {
+        if (menu.getCurrentIndex() != -1 || menu.isLearningChaptersOpen() || menu.isTasksOpen()) {
             renderBackArrow(manager.getGuiLeft(), manager.getGuiTop(), graphics, mouseX, mouseY);
-            renderTextPageArrows(manager, graphics, mouseX, mouseY, menu, font);
+            if (menu.getCurrentIndex() != -1) {
+                renderTextPageArrows(manager, graphics, mouseX, mouseY, menu, font);
+            }
         } else {
             renderChapterPageArrows(manager, graphics, mouseX, mouseY, menu);
         }
@@ -46,6 +74,20 @@ public class NavigationRenderer {
         return (nodes.size() + ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenderer.CHAPTERS_PER_PAGE - 1) / ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenderer.CHAPTERS_PER_PAGE;
     }
 
+    private static void renderBaseTextPageArrows(ArsMelimaUIManager manager, GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
+        ru.imaginaerum.wd.client.gui.ars_melima.Chapter current = menu.getCurrentBaseChapter();
+        if (current == null) return;
+
+        // Используем тот же метод для расчета страниц, что и для обычных глав
+        int pageCount = ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.computeChapterPageCount(current, font, 0.85f,
+                getContentWidth(), getContentHeight()).size();
+
+        if (pageCount > 1) {
+            renderLeftArrow(manager.getGuiLeft(), manager.getGuiTop(), graphics, mouseX, mouseY, manager.getCurrentBaseTextPage() > 0);
+            renderRightArrow(manager.getGuiLeft(), manager.getGuiTop(), graphics, mouseX, mouseY, manager.getCurrentBaseTextPage() < pageCount - 1);
+        }
+    }
+
     private static void renderTextPageArrows(ArsMelimaUIManager manager, GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu, Font font) {
         ru.imaginaerum.wd.client.gui.ars_melima.Chapter current = menu.getCurrentChapter();
         if (current == null) return;
@@ -56,6 +98,14 @@ public class NavigationRenderer {
         if (pageCount > 1) {
             renderLeftArrow(manager.getGuiLeft(), manager.getGuiTop(), graphics, mouseX, mouseY, manager.getCurrentTextPage() > 0);
             renderRightArrow(manager.getGuiLeft(), manager.getGuiTop(), graphics, mouseX, mouseY, manager.getCurrentTextPage() < pageCount - 1);
+        }
+    }
+
+    private static void renderBaseChapterPageArrows(ArsMelimaUIManager manager, GuiGraphics graphics, int mouseX, int mouseY, ArsMelimaMenu menu) {
+        int totalPages = ru.imaginaerum.wd.client.gui.ars_melima.ArsMelimaRenders.computeChapterPageCount(menu.getBaseChapters());
+        if (totalPages > 1) {
+            renderLeftArrow(manager.getGuiLeft(), manager.getGuiTop(), graphics, mouseX, mouseY, manager.getCurrentBaseChapterPage() > 0);
+            renderRightArrow(manager.getGuiLeft(), manager.getGuiTop(), graphics, mouseX, mouseY, manager.getCurrentBaseChapterPage() < totalPages - 1);
         }
     }
 
@@ -91,6 +141,11 @@ public class NavigationRenderer {
         }
     }
 
-    private static int getContentWidth() { return (ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1) - 8; }
-    private static int getContentHeight() { return (ArsMelimaConstants.CONTENT_Y2 - ArsMelimaConstants.CONTENT_Y1) - 8; }
+    private static int getContentWidth() {
+        return (ArsMelimaConstants.CONTENT_X2 - ArsMelimaConstants.CONTENT_X1) - 8;
+    }
+
+    private static int getContentHeight() {
+        return (ArsMelimaConstants.CONTENT_Y2 - ArsMelimaConstants.CONTENT_Y1) - 8;
+    }
 }

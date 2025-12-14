@@ -1,6 +1,8 @@
 package ru.imaginaerum.wd.client.gui.ars_melima;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -12,7 +14,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class ChapterLoader {
-    private static final Gson GSON = new Gson();
     private static final String CHAPTERS_META_DIR = "ars_melima/chapters"; // папка для метаданных глав
     private static final String CHAPTERS_CONTENT_DIR = "ars_melima/content"; // папка для содержимого глав
 
@@ -22,7 +23,7 @@ public class ChapterLoader {
 
         for (ChapterMetadata meta : metadataList) {
             List<ChapterElement> elements = loadChapterContent(meta.getId());
-            chapters.add(new Chapter(meta.getId(), meta.getTitle(), elements, meta.isOpen()));
+            chapters.add(new Chapter(meta.getId(), meta.getTitle(), elements, meta.isOpen(), meta.getIcon()));
         }
 
         return chapters;
@@ -52,8 +53,9 @@ public class ChapterLoader {
 
                         String title = jo.has("title") ? jo.get("title").getAsString() : id;
                         boolean open = jo.has("status") && "open".equals(jo.get("status").getAsString());
+                        String icon = jo.has("icon") ? jo.get("icon").getAsString() : "";
 
-                        metadataList.add(new ChapterMetadata(id, title, open));
+                        metadataList.add(new ChapterMetadata(id, title, open, icon));
                     } catch (Exception e) {
                         System.err.println("[ArsMelima] Failed to load chapter metadata " + rl + " : " + e.getMessage());
                     }
@@ -87,29 +89,26 @@ public class ChapterLoader {
                     JsonObject jo = JsonParser.parseReader(reader).getAsJsonObject();
 
                     if (jo.has("elements") && jo.get("elements").isJsonArray()) {
-                        JsonArray arr = jo.getAsJsonArray("elements");
-                        for (JsonElement el : arr) {
+                        var arr = jo.getAsJsonArray("elements");
+                        for (var el : arr) {
+                            if (!el.isJsonObject()) continue;
                             JsonObject obj = el.getAsJsonObject();
-                            if (!obj.has("type") || !obj.has("data")) continue;
 
-                            try {
-                                ChapterElement.Type type = ChapterElement.Type.valueOf(
-                                        obj.get("type").getAsString().toUpperCase(Locale.ROOT)
-                                );
-                                elements.add(new ChapterElement(type, obj.get("data").getAsString()));
-                            } catch (IllegalArgumentException e) {
-                                continue;
+                            // Новый формат (text/image)
+                            if (obj.has("text")) {
+                                elements.add(new ChapterElement(ChapterElement.Type.TEXT, obj.get("text").getAsString()));
+                            } else if (obj.has("image")) {
+                                elements.add(new ChapterElement(ChapterElement.Type.IMAGE, obj.get("image").getAsString()));
                             }
-                        }
-                    }
-
-                    // Fallback для обратной совместимости
-                    if (elements.isEmpty()) {
-                        if (jo.has("content")) {
-                            elements.add(new ChapterElement(ChapterElement.Type.TEXT, jo.get("content").getAsString()));
-                        }
-                        if (jo.has("image")) {
-                            elements.add(new ChapterElement(ChapterElement.Type.IMAGE, jo.get("image").getAsString()));
+                            // Старый формат (type/data) для совместимости
+                            else if (obj.has("type") && obj.has("data")) {
+                                try {
+                                    ChapterElement.Type type = ChapterElement.Type.valueOf(
+                                            obj.get("type").getAsString().toUpperCase(Locale.ROOT)
+                                    );
+                                    elements.add(new ChapterElement(type, obj.get("data").getAsString()));
+                                } catch (IllegalArgumentException ignored) {}
+                            }
                         }
                     }
 
@@ -117,15 +116,16 @@ public class ChapterLoader {
                     System.err.println("[ArsMelima] Failed to load chapter content " + rl + " : " + e.getMessage());
                 }
 
-                if (!elements.isEmpty()) break; // используем первую найденную локализацию
+                if (!elements.isEmpty()) break; // нашли содержимое, прекращаем поиск по локалям
 
             } catch (Exception e) {
-                // Файл не найден - пробуем следующую локализацию
+                // Файл не найден — пробуем следующую локализацию
             }
         }
 
         return elements;
     }
+
 
     // getLanguageCandidates() и normalizeLangCode() остаются без изменений
     private static List<String> getLanguageCandidates() {

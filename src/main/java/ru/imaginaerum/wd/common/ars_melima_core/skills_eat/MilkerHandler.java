@@ -1,0 +1,175 @@
+package ru.imaginaerum.wd.common.ars_melima_core.skills_eat;
+
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import ru.imaginaerum.wd.client.gui.ars_melima.screens.ui_manager.ProgressionUnlockManager;
+import vectorwing.farmersdelight.common.registry.ModItems;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+@Mod.EventBusSubscriber(modid = "wd", bus = Mod.EventBusSubscriber.Bus.FORGE)
+public class MilkerHandler {
+
+    @SubscribeEvent
+    public static void onInteractWithCow(PlayerInteractEvent.EntityInteract event) {
+        if (event.getTarget() == null || event.getEntity() == null) return;
+
+        if (!(event.getTarget() instanceof Cow cow)) return;
+        Player player = event.getEntity();
+        ItemStack stack = event.getItemStack();
+
+        if (!stack.is(Items.GLASS_BOTTLE)) return;
+        // Временно без ! спереди
+        if (ProgressionUnlockManager.isUnlocked(player, "milker")) return;
+        if (cow.isBaby()) return;
+
+        event.setCanceled(true);
+        event.setCancellationResult(InteractionResult.sidedSuccess(player.level().isClientSide));
+
+        // Анимация руки (длинная анимация)
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.swing(event.getHand(), true);
+        } else {
+            player.swing(event.getHand());
+        }
+
+        if (!player.level().isClientSide) {
+            if (!player.getAbilities().instabuild) {
+                stack.shrink(1);
+            }
+
+            ItemStack milkBottle = new ItemStack(ModItems.MILK_BOTTLE.get());
+            if (!player.getInventory().add(milkBottle)) {
+                player.drop(milkBottle, false);
+            }
+
+            // Звук доения
+            player.level().playSound(
+                    null,
+                    player.getX(),
+                    player.getY(),
+                    player.getZ(),
+                    SoundEvents.COW_MILK,
+                    SoundSource.PLAYERS,
+                    1.0F,
+                    1.0F
+            );
+
+            // Дополнительный звук для обратной связи
+            player.level().playSound(
+                    null,
+                    player.getX(),
+                    player.getY(),
+                    player.getZ(),
+                    SoundEvents.ITEM_PICKUP,
+                    SoundSource.PLAYERS,
+                    0.3F,
+                    Mth.randomBetween(player.getRandom(), 1.1F, 1.3F)
+            );
+
+            System.out.println("[CleverMilkman] Cow milked with bottle by " + player.getName().getString());
+        }
+    }
+
+    @SubscribeEvent
+    public static void onItemUseStart(LivingEntityUseItemEvent.Start event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+
+        ItemStack stack = event.getItem();
+
+        if (stack.is(ModItems.MILK_BOTTLE.get())) {
+            if (ProgressionUnlockManager.isUnlocked(player, "milker")) {
+                event.setCanceled(true);
+
+                // Анимация руки при попытке использовать без навыка
+                player.swing(InteractionHand.MAIN_HAND);
+
+                // Звук отказа
+                if (!player.level().isClientSide) {
+                    player.level().playSound(
+                            null,
+                            player.getX(),
+                            player.getY(),
+                            player.getZ(),
+                            SoundEvents.VILLAGER_NO,
+                            SoundSource.PLAYERS,
+                            0.7F,
+                            1.0F
+                    );
+                }
+
+                System.out.println("[CleverMilkman] Player " + player.getName().getString() +
+                        " tried to drink milk without milker skill!");
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onItemUseFinish(LivingEntityUseItemEvent.Finish event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+
+        ItemStack stack = event.getItem();
+
+        if (stack.is(ModItems.MILK_BOTTLE.get())) {
+            if (ProgressionUnlockManager.isUnlocked(player, "milker")) {
+                // Возвращаем предмет и отменяем эффекты
+                event.setResultStack(stack);
+
+                // Дополнительная анимация
+                player.swing(InteractionHand.MAIN_HAND);
+
+                System.out.println("[CleverMilkman] Prevented milk consumption by " +
+                        player.getName().getString());
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        Player player = event.getEntity();
+        ItemStack stack = event.getItemStack();
+
+        if (stack.is(ModItems.MILK_BOTTLE.get())) {
+            if (ProgressionUnlockManager.isUnlocked(player, "milker")) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.FAIL);
+
+                // Анимация руки при попытке выпить
+                player.swing(event.getHand());
+
+                // Звук отказа
+                if (!player.level().isClientSide) {
+                    player.level().playSound(
+                            null,
+                            player.getX(),
+                            player.getY(),
+                            player.getZ(),
+                            SoundEvents.VILLAGER_NO,
+                            SoundSource.PLAYERS,
+                            0.7F,
+                            1.0F
+                    );
+                }
+
+                System.out.println("[CleverMilkman] Blocked milk bottle use by " +
+                        player.getName().getString());
+            }
+        }
+    }
+}

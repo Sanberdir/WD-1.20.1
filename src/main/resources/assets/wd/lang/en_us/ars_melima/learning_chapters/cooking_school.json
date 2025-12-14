@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1st_level",
+    "title": "The first category",
+    "status": "unlocked",
+    "parent": ""
+  },
+  {
+    "id": "2st_level",
+    "title": "The second category",
+    "status": "locked",
+    "parent": "1st_level"
+  }
+]

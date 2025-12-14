@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1st_level",
+    "title": "Первый разряд",
+    "status": "unlocked",
+    "parent": ""
+  },
+  {
+    "id": "2st_level",
+    "title": "Второй разряд",
+    "status": "locked",
+    "parent": "1st_level"
+  }
+]
