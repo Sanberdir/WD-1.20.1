@@ -361,6 +361,14 @@ public class ArsMelimaUIManager {
             ProgressTreeRenderer.renderProgressTree(this, graphics, mouseX, mouseY, menu, font);
             return;
         }
+
+// Показываем прогресс-бар в cooking_school главе
+        if (chapter != null && "cooking_school".equals(chapter.getId()) && !menu.isProgressionOpen()) {
+            ProgressBarModel model = new ProgressBarModel(ClientCookingData.clientLevel,
+                    ClientCookingData.clientXp,
+                    CookingXPManager.getMaxForLevel(ClientCookingData.clientLevel));
+            progressBarRenderer.render(graphics, guiLeft, guiTop, model);
+        }
         if (menu.isTasksOpen()) {
             renderTasks(graphics, mouseX, mouseY, menu, font);
             return;
