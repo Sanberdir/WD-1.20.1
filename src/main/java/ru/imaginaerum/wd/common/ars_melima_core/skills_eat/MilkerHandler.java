@@ -172,22 +172,4 @@ public class MilkerHandler {
             }
         }
     }
-
-    // Опциональный метод для визуальных эффектов
-    private static void spawnParticles(net.minecraft.world.level.Level level, net.minecraft.world.phys.Vec3 pos) {
-        if (level.isClientSide) {
-            for (int i = 0; i < 8; ++i) {
-                double d0 = level.random.nextGaussian() * 0.02;
-                double d1 = level.random.nextGaussian() * 0.02;
-                double d2 = level.random.nextGaussian() * 0.02;
-                level.addParticle(
-                        net.minecraft.core.particles.ParticleTypes.ANGRY_VILLAGER,
-                        pos.x + (double)(level.random.nextFloat() * 0.6F) - 0.3,
-                        pos.y + 1.0 + (double)(level.random.nextFloat() * 0.6F),
-                        pos.z + (double)(level.random.nextFloat() * 0.6F) - 0.3,
-                        d0, d1, d2
-                );
-            }
-        }
-    }
 }
