@@ -1,6 +1,7 @@
 package ru.imaginaerum.wd.client.gui.ars_melima.screens;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import ru.imaginaerum.wd.client.gui.ars_melima.*;
 import ru.imaginaerum.wd.client.gui.ars_melima.progress_tree.ProgressNode;
@@ -467,12 +468,50 @@ public class ArsMelimaInputHandler {
             if (isPointInRect(pos.x, pos.y, size, size, mouseX, mouseY)) {
                 uiManager.setCurrentProgressNode(node);
 
-                // УБРАЛИ сетевой запрос - открываем главу напрямую
-                handleChapterByNode(node.getId(), menu, uiManager);
+                // ПРОВЕРКА УРОВНЯ ГОТОВКИ
+                int currentCookingLevel = ClientCookingData.clientLevel;
+                int requiredLevel = getRequiredLevelForNode(node);
+
+                if (currentCookingLevel >= requiredLevel) {
+                    // Уровень достаточен - открываем главу
+                    handleChapterByNode(node.getId(), menu, uiManager);
+                } else {
+                    // Уровень недостаточен - играем звук и показываем сообщение
+
+                    // Можно показать сообщение игроку (опционально)
+                    Minecraft.getInstance().player.displayClientMessage(
+                            Component.literal("§cТребуется уровень готовки: " + requiredLevel),
+                            true
+                    );
+                }
                 return true;
             }
         }
         return false;
+    }
+
+    private int getRequiredLevelForNode(ProgressNode node) {
+        // Реализуйте логику получения требуемого уровня
+        // Это может быть:
+        // 1. Из поля в ProgressNode
+        // 2. Из внешнего конфига по ID узла
+        // 3. Вычисление на основе ID
+
+        String nodeId = node.getId();
+
+        // Пример: если ID содержит "cooking_5_", то требуется 5 уровень
+        if (nodeId != null && nodeId.startsWith("cooking_")) {
+            try {
+                String[] parts = nodeId.split("_");
+                if (parts.length > 1) {
+                    return Integer.parseInt(parts[1]);
+                }
+            } catch (NumberFormatException e) {
+                // Не удалось извлечь число
+            }
+        }
+
+        return 5; // Дефолтное значение
     }
 
     private void handleChapterByNode(String nodeId, ArsMelimaMenu menu, ArsMelimaUIManager uiManager) {

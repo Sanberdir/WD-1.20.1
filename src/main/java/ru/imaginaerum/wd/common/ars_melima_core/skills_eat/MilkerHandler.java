@@ -26,10 +26,6 @@ import java.util.UUID;
 @Mod.EventBusSubscriber(modid = "wd", bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class MilkerHandler {
 
-    // Хранение времени последнего использования для каждого игрока
-    private static final Map<UUID, Long> lastUseTime = new HashMap<>();
-    private static final int COOLDOWN_TICKS = 20; // 1 секунда задержки (20 тиков = 1 секунда)
-
     @SubscribeEvent
     public static void onInteractWithCow(PlayerInteractEvent.EntityInteract event) {
         if (event.getTarget() == null || event.getEntity() == null) return;
@@ -39,41 +35,9 @@ public class MilkerHandler {
         ItemStack stack = event.getItemStack();
 
         if (!stack.is(Items.GLASS_BOTTLE)) return;
-        if (!ProgressionUnlockManager.isUnlocked(player, "milker")) return;
+        // Временно без ! спереди
+        if (ProgressionUnlockManager.isUnlocked(player, "milker")) return;
         if (cow.isBaby()) return;
-
-        // Проверка кулдауна
-        UUID playerId = player.getUUID();
-        long currentTime = player.level().getGameTime();
-        if (lastUseTime.containsKey(playerId)) {
-            long lastTime = lastUseTime.get(playerId);
-            if (currentTime - lastTime < COOLDOWN_TICKS) {
-                // Игрок слишком быстро пытается использовать
-                event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.FAIL);
-
-                // Анимация отказа
-                player.swing(event.getHand());
-
-                // Звук отказа
-                if (!player.level().isClientSide) {
-                    player.level().playSound(
-                            null,
-                            player.getX(),
-                            player.getY(),
-                            player.getZ(),
-                            SoundEvents.VILLAGER_NO,
-                            SoundSource.PLAYERS,
-                            0.5F,
-                            1.0F
-                    );
-                }
-
-                System.out.println("[CleverMilkman] Player " + player.getName().getString() +
-                        " tried to milk too fast!");
-                return;
-            }
-        }
 
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.sidedSuccess(player.level().isClientSide));
@@ -86,9 +50,6 @@ public class MilkerHandler {
         }
 
         if (!player.level().isClientSide) {
-            // Устанавливаем время последнего использования
-            lastUseTime.put(playerId, currentTime);
-
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
             }
@@ -133,7 +94,7 @@ public class MilkerHandler {
         ItemStack stack = event.getItem();
 
         if (stack.is(ModItems.MILK_BOTTLE.get())) {
-            if (!ProgressionUnlockManager.isUnlocked(player, "milker")) {
+            if (ProgressionUnlockManager.isUnlocked(player, "milker")) {
                 event.setCanceled(true);
 
                 // Анимация руки при попытке использовать без навыка
@@ -166,7 +127,7 @@ public class MilkerHandler {
         ItemStack stack = event.getItem();
 
         if (stack.is(ModItems.MILK_BOTTLE.get())) {
-            if (!ProgressionUnlockManager.isUnlocked(player, "milker")) {
+            if (ProgressionUnlockManager.isUnlocked(player, "milker")) {
                 // Возвращаем предмет и отменяем эффекты
                 event.setResultStack(stack);
 
@@ -185,7 +146,7 @@ public class MilkerHandler {
         ItemStack stack = event.getItemStack();
 
         if (stack.is(ModItems.MILK_BOTTLE.get())) {
-            if (!ProgressionUnlockManager.isUnlocked(player, "milker")) {
+            if (ProgressionUnlockManager.isUnlocked(player, "milker")) {
                 event.setCanceled(true);
                 event.setCancellationResult(InteractionResult.FAIL);
 
@@ -204,26 +165,10 @@ public class MilkerHandler {
                             0.7F,
                             1.0F
                     );
-
-                    // Можно добавить частицы для визуального эффекта
-                    // spawnParticles(player.level(), player.position());
                 }
 
                 System.out.println("[CleverMilkman] Blocked milk bottle use by " +
                         player.getName().getString());
-            }
-        }
-    }
-
-    // Опционально: очистка старых записей из мапы (если нужно)
-    @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            // Каждые 5 минут очищаем старые записи
-            if (event.getServer().overworld().getGameTime() % 6000 == 0) {
-                long currentTime = event.getServer().overworld().getGameTime();
-                lastUseTime.entrySet().removeIf(entry ->
-                        currentTime - entry.getValue() > 6000); // Удаляем записи старше 5 минут
             }
         }
     }

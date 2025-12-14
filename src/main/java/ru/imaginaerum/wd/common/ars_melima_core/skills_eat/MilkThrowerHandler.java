@@ -38,7 +38,8 @@ public class MilkThrowerHandler {
 
         // Проверяем, что в руке бутылка молока и есть навык milk_thrower
         if (!stack.is(ModItems.MILK_BOTTLE.get())) return;
-        if (!ProgressionUnlockManager.isUnlocked(player, "milk_thrower")) return;
+        // Времено без ! спереди
+        if (ProgressionUnlockManager.isUnlocked(player, "milk_thrower")) return;
 
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.sidedSuccess(player.level().isClientSide));
