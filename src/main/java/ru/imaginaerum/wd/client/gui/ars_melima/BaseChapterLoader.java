@@ -10,6 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets; // Добавлен импорт
+import java.nio.charset.Charset; // Для отладки
 import java.util.*;
 
 public class BaseChapterLoader {
@@ -17,12 +19,19 @@ public class BaseChapterLoader {
     private static final String BASE_CHAPTERS_CONTENT_DIR = "ars_melima/base_content"; // папка для содержимого базовых глав
 
     public static List<Chapter> loadBaseChapters() {
+        // Отладочный вывод для проверки кодировки
+        System.out.println("[ArsMelima Base DEBUG] Default Charset: " + Charset.defaultCharset());
+        System.out.println("[ArsMelima Base DEBUG] File encoding: " + System.getProperty("file.encoding"));
+
         List<ChapterMetadata> metadataList = loadBaseChaptersMetadata();
         List<Chapter> chapters = new ArrayList<>();
 
         for (ChapterMetadata meta : metadataList) {
             List<ChapterElement> elements = loadBaseChapterContent(meta.getId());
             chapters.add(new Chapter(meta.getId(), meta.getTitle(), elements, meta.isOpen(), meta.getIcon()));
+
+            // Отладочный вывод
+            System.out.println("[ArsMelima Base DEBUG] Loaded base chapter: " + meta.getId() + ", title: " + meta.getTitle());
         }
 
         return chapters;
@@ -35,15 +44,23 @@ public class BaseChapterLoader {
 
         for (String lang : langs) {
             String basePath = "__BASE__".equals(lang) ? BASE_CHAPTERS_META_DIR : "lang/" + lang + "/" + BASE_CHAPTERS_META_DIR;
+            System.out.println("[ArsMelima Base DEBUG] Looking for metadata in: " + basePath);
 
             try {
                 Map<ResourceLocation, Resource> found = manager.listResources(basePath, rl -> rl.getPath().endsWith(".json"));
-                if (found == null || found.isEmpty()) continue;
+                if (found == null || found.isEmpty()) {
+                    System.out.println("[ArsMelima Base DEBUG] No metadata files found in: " + basePath);
+                    continue;
+                }
+
+                System.out.println("[ArsMelima Base DEBUG] Found " + found.size() + " metadata files in: " + basePath);
 
                 for (Map.Entry<ResourceLocation, Resource> entry : found.entrySet()) {
                     ResourceLocation rl = entry.getKey();
 
-                    try (InputStream is = entry.getValue().open(); InputStreamReader reader = new InputStreamReader(is)) {
+                    // ИСПРАВЛЕНО: добавлено StandardCharsets.UTF_8
+                    try (InputStream is = entry.getValue().open();
+                         InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                         JsonObject jo = JsonParser.parseReader(reader).getAsJsonObject();
 
                         String path = rl.getPath();
@@ -54,18 +71,27 @@ public class BaseChapterLoader {
                         String icon = jo.has("icon") ? jo.get("icon").getAsString() : "";
 
                         metadataList.add(new ChapterMetadata(id, title, open, icon));
+
+                        System.out.println("[ArsMelima Base DEBUG] Metadata loaded - ID: " + id +
+                                ", Title: " + title + ", Lang: " + lang);
                     } catch (Exception e) {
                         System.err.println("[ArsMelima] Failed to load base chapter metadata " + rl + " : " + e.getMessage());
+                        e.printStackTrace();
                     }
                 }
 
-                if (!metadataList.isEmpty()) break;
+                if (!metadataList.isEmpty()) {
+                    System.out.println("[ArsMelima Base DEBUG] Successfully loaded metadata from lang: " + lang);
+                    break;
+                }
 
             } catch (Exception e) {
                 System.err.println("[ArsMelima] Error loading base chapter metadata from " + basePath + " : " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
+        System.out.println("[ArsMelima Base DEBUG] Total metadata loaded: " + metadataList.size());
         return metadataList;
     }
 
@@ -74,28 +100,50 @@ public class BaseChapterLoader {
         ResourceManager manager = Minecraft.getInstance().getResourceManager();
         List<String> langs = getLanguageCandidates();
 
+        System.out.println("[ArsMelima Base DEBUG] Loading content for chapter: " + chapterId);
+
         for (String lang : langs) {
             String basePath = "__BASE__".equals(lang) ? BASE_CHAPTERS_CONTENT_DIR : "lang/" + lang + "/" + BASE_CHAPTERS_CONTENT_DIR;
             String filePath = basePath + "/" + chapterId + ".json";
             ResourceLocation rl = new ResourceLocation("wd", filePath);
 
+            System.out.println("[ArsMelima Base DEBUG] Trying to load from: " + rl);
+
             try {
                 Resource resource = manager.getResource(rl).orElse(null);
-                if (resource == null) continue;
+                if (resource == null) {
+                    System.out.println("[ArsMelima Base DEBUG] Resource not found: " + rl);
+                    continue;
+                }
 
-                try (InputStream is = resource.open(); InputStreamReader reader = new InputStreamReader(is)) {
+                System.out.println("[ArsMelima Base DEBUG] Resource found, loading content...");
+
+                // ИСПРАВЛЕНО: добавлено StandardCharsets.UTF_8
+                try (InputStream is = resource.open();
+                     InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                     JsonObject jo = JsonParser.parseReader(reader).getAsJsonObject();
 
                     if (jo.has("elements") && jo.get("elements").isJsonArray()) {
                         var arr = jo.getAsJsonArray("elements");
+                        System.out.println("[ArsMelima Base DEBUG] Found " + arr.size() + " elements");
+
                         for (var el : arr) {
                             if (!el.isJsonObject()) continue;
                             JsonObject obj = el.getAsJsonObject();
 
                             if (obj.has("text")) {
-                                elements.add(new ChapterElement(ChapterElement.Type.TEXT, obj.get("text").getAsString()));
+                                String text = obj.get("text").getAsString();
+                                elements.add(new ChapterElement(ChapterElement.Type.TEXT, text));
+
+                                // Отладочный вывод первых символов текста
+                                if (text.length() > 0) {
+                                    String preview = text.substring(0, Math.min(30, text.length()));
+                                    System.out.println("[ArsMelima Base DEBUG] Text element: " + preview + "...");
+                                }
                             } else if (obj.has("image")) {
-                                elements.add(new ChapterElement(ChapterElement.Type.IMAGE, obj.get("image").getAsString()));
+                                String image = obj.get("image").getAsString();
+                                elements.add(new ChapterElement(ChapterElement.Type.IMAGE, image));
+                                System.out.println("[ArsMelima Base DEBUG] Image element: " + image);
                             } else if (obj.has("type") && obj.has("data")) {
                                 try {
                                     ChapterElement.Type type = ChapterElement.Type.valueOf(
@@ -109,20 +157,32 @@ public class BaseChapterLoader {
 
                 } catch (Exception e) {
                     System.err.println("[ArsMelima] Failed to load base chapter content " + rl + " : " + e.getMessage());
+                    e.printStackTrace();
                 }
 
-                if (!elements.isEmpty()) break;
+                if (!elements.isEmpty()) {
+                    System.out.println("[ArsMelima Base DEBUG] Successfully loaded " + elements.size() +
+                            " elements from lang: " + lang);
+                    break;
+                }
 
             } catch (Exception e) {
                 // Файл не найден — пробуем следующую локализацию
+                System.out.println("[ArsMelima Base DEBUG] File not found or error: " + rl +
+                        ", trying next language...");
             }
+        }
+
+        if (elements.isEmpty()) {
+            System.out.println("[ArsMelima Base DEBUG] No content found for base chapter: " + chapterId);
+        } else {
+            System.out.println("[ArsMelima Base DEBUG] Total elements loaded for " + chapterId + ": " + elements.size());
         }
 
         return elements;
     }
 
     private static List<String> getLanguageCandidates() {
-        // Та же реализация, что и в ChapterLoader
         List<String> langs = new ArrayList<>();
         try {
             Object sel = null;
@@ -148,6 +208,9 @@ public class BaseChapterLoader {
             langs.add("ru_ru");
             langs.add("__BASE__");
         }
+
+        // Отладочный вывод
+        System.out.println("[ArsMelima Base DEBUG] Language candidates: " + langs);
         return new ArrayList<>(new LinkedHashSet<>(langs));
     }
 

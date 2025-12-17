@@ -11,6 +11,8 @@ import net.minecraft.resources.ResourceLocation;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets; // Импорт для StandardCharsets
+import java.nio.charset.Charset; // Для отладки
 import java.util.*;
 
 public class ChapterLoader {
@@ -18,6 +20,10 @@ public class ChapterLoader {
     private static final String CHAPTERS_CONTENT_DIR = "ars_melima/content"; // папка для содержимого глав
 
     public static List<Chapter> loadChapters() {
+        // Отладочный вывод для проверки кодировки
+        System.out.println("[ArsMelima DEBUG] Default Charset: " + Charset.defaultCharset());
+        System.out.println("[ArsMelima DEBUG] File encoding: " + System.getProperty("file.encoding"));
+
         List<ChapterMetadata> metadataList = loadChaptersMetadata();
         List<Chapter> chapters = new ArrayList<>();
 
@@ -44,7 +50,9 @@ public class ChapterLoader {
                 for (Map.Entry<ResourceLocation, Resource> entry : found.entrySet()) {
                     ResourceLocation rl = entry.getKey();
 
-                    try (InputStream is = entry.getValue().open(); InputStreamReader reader = new InputStreamReader(is)) {
+                    // ИСПРАВЛЕНО: добавлено StandardCharsets.UTF_8
+                    try (InputStream is = entry.getValue().open();
+                         InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                         JsonObject jo = JsonParser.parseReader(reader).getAsJsonObject();
 
                         // Извлекаем ID из имени файла
@@ -55,9 +63,15 @@ public class ChapterLoader {
                         boolean open = jo.has("status") && "open".equals(jo.get("status").getAsString());
                         String icon = jo.has("icon") ? jo.get("icon").getAsString() : "";
 
+                        // Отладочный вывод для проверки
+                        if (lang.equals("ru_ru") || lang.equals("__BASE__")) {
+                            System.out.println("[ArsMelima DEBUG] Loaded chapter: " + id + ", title: " + title);
+                        }
+
                         metadataList.add(new ChapterMetadata(id, title, open, icon));
                     } catch (Exception e) {
                         System.err.println("[ArsMelima] Failed to load chapter metadata " + rl + " : " + e.getMessage());
+                        e.printStackTrace();
                     }
                 }
 
@@ -65,6 +79,7 @@ public class ChapterLoader {
 
             } catch (Exception e) {
                 System.err.println("[ArsMelima] Error loading chapter metadata from " + basePath + " : " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -85,7 +100,9 @@ public class ChapterLoader {
                 Resource resource = manager.getResource(rl).orElse(null);
                 if (resource == null) continue;
 
-                try (InputStream is = resource.open(); InputStreamReader reader = new InputStreamReader(is)) {
+                // ИСПРАВЛЕНО: добавлено StandardCharsets.UTF_8
+                try (InputStream is = resource.open();
+                     InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                     JsonObject jo = JsonParser.parseReader(reader).getAsJsonObject();
 
                     if (jo.has("elements") && jo.get("elements").isJsonArray()) {
@@ -96,7 +113,14 @@ public class ChapterLoader {
 
                             // Новый формат (text/image)
                             if (obj.has("text")) {
-                                elements.add(new ChapterElement(ChapterElement.Type.TEXT, obj.get("text").getAsString()));
+                                String text = obj.get("text").getAsString();
+                                elements.add(new ChapterElement(ChapterElement.Type.TEXT, text));
+
+                                // Отладочный вывод для первых нескольких символов
+                                if (elements.size() <= 3 && text.length() > 0) {
+                                    System.out.println("[ArsMelima DEBUG] Text element loaded, first 20 chars: " +
+                                            text.substring(0, Math.min(20, text.length())));
+                                }
                             } else if (obj.has("image")) {
                                 elements.add(new ChapterElement(ChapterElement.Type.IMAGE, obj.get("image").getAsString()));
                             }
@@ -114,13 +138,22 @@ public class ChapterLoader {
 
                 } catch (Exception e) {
                     System.err.println("[ArsMelima] Failed to load chapter content " + rl + " : " + e.getMessage());
+                    e.printStackTrace();
                 }
 
-                if (!elements.isEmpty()) break; // нашли содержимое, прекращаем поиск по локалям
+                if (!elements.isEmpty()) {
+                    System.out.println("[ArsMelima DEBUG] Chapter " + chapterId + " loaded successfully from lang: " + lang);
+                    break; // нашли содержимое, прекращаем поиск по локалям
+                }
 
             } catch (Exception e) {
                 // Файл не найден — пробуем следующую локализацию
+                System.out.println("[ArsMelima DEBUG] File not found: " + rl + ", trying next language...");
             }
+        }
+
+        if (elements.isEmpty()) {
+            System.out.println("[ArsMelima DEBUG] No content found for chapter: " + chapterId);
         }
 
         return elements;
@@ -154,6 +187,8 @@ public class ChapterLoader {
             langs.add("ru_ru");
             langs.add("__BASE__");
         }
+
+        System.out.println("[ArsMelima DEBUG] Language candidates: " + langs);
         return new ArrayList<>(new LinkedHashSet<>(langs));
     }
 

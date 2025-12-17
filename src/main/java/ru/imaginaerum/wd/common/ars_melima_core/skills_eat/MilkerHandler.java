@@ -36,7 +36,7 @@ public class MilkerHandler {
 
         if (!stack.is(Items.GLASS_BOTTLE)) return;
         // Временно без ! спереди
-        if (ProgressionUnlockManager.isUnlocked(player, "milker")) return;
+        if (!ProgressionUnlockManager.isUnlocked(player, "milker")) return;
         if (cow.isBaby()) return;
 
         event.setCanceled(true);
@@ -94,7 +94,7 @@ public class MilkerHandler {
         ItemStack stack = event.getItem();
 
         if (stack.is(ModItems.MILK_BOTTLE.get())) {
-            if (ProgressionUnlockManager.isUnlocked(player, "milker")) {
+            if (!ProgressionUnlockManager.isUnlocked(player, "milker")) {
                 event.setCanceled(true);
 
                 // Анимация руки при попытке использовать без навыка
@@ -127,7 +127,7 @@ public class MilkerHandler {
         ItemStack stack = event.getItem();
 
         if (stack.is(ModItems.MILK_BOTTLE.get())) {
-            if (ProgressionUnlockManager.isUnlocked(player, "milker")) {
+            if (!ProgressionUnlockManager.isUnlocked(player, "milker")) {
                 // Возвращаем предмет и отменяем эффекты
                 event.setResultStack(stack);
 
@@ -146,7 +146,7 @@ public class MilkerHandler {
         ItemStack stack = event.getItemStack();
 
         if (stack.is(ModItems.MILK_BOTTLE.get())) {
-            if (ProgressionUnlockManager.isUnlocked(player, "milker")) {
+            if (!ProgressionUnlockManager.isUnlocked(player, "milker")) {
                 event.setCanceled(true);
                 event.setCancellationResult(InteractionResult.FAIL);
 

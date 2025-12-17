@@ -45,9 +45,9 @@ public class CocktailMolokovHandler {
         boolean isDisorientingCocktail = stack.is(ItemsWD.DISORIENTING_COCKTAIL_MOLOKOV.get());
 
         if (!isCocktail && !isSpicyCocktail && !isDesiccateCocktail && !isDisorientingCocktail) return;
-        // Времено без ! спереди
+
         // Только один навык для всех типов
-        if (ProgressionUnlockManager.isUnlocked(player, "cocktail_molokov")) {
+        if (!ProgressionUnlockManager.isUnlocked(player, "cocktail_molokov")) {
             // Анимация руки при отказе (нет навыка)
             player.swing(event.getHand());
 
