@@ -1,0 +1,13 @@
+name: Publish Release
+on: workflow_dispatch
+
+jobs:
+  build:
+    uses: ./.github/workflows/java-build.yml
+    with:
+      java-version: 17
+      is-release: true
+      release-task: publishMods
+    secrets:
+      modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+      curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}

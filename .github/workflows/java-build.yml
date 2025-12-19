@@ -1,0 +1,82 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        required: true
+        type: number
+      run-gametests:
+        required: false
+        type: boolean
+        default: false
+      uses-loom:
+        required: false
+        type: boolean
+        default: false
+      publish-to-maven:
+        required: false
+        type: boolean
+        default: false
+      is-release:
+        required: false
+        type: boolean
+        default: false
+      release-task:
+        required: false
+        type: string
+    secrets:
+      modrinth-token:
+        required: false
+      curseforge-token:
+        required: false
+      maven-token:
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java ${{ inputs.java-version }}
+        run: echo "JAVA_HOME=$JAVA_HOME_${{ inputs.java-version }}_X64" >> "$GITHUB_ENV"
+
+      - name: Loom Cache
+        if: ${{ inputs.uses-loom }}
+        uses: actions/cache@v4
+        with:
+          path: "**/.gradle/loom-cache"
+          key: "${{ runner.os }}-gradle-${{ hashFiles('**/libs.versions.*', '**/*.gradle*', '**/gradle-wrapper.properties') }}"
+          restore-keys: "${{ runner.os }}-gradle-"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: ${{ inputs.is-release }}
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Run Gametests
+        if: ${{ inputs.run-gametests }}
+        run: ./gradlew runGameTestServer
+
+      - name: Publish to Maven
+        if: ${{ inputs.publish-to-maven }}
+        env:
+          MAVEN_TOKEN: ${{ secrets.maven-token }}
+        run: ./gradlew publish
+
+      - name: Publish
+        if: ${{ inputs.is-release }}
+        env:
+          MODRINTH_TOKEN: ${{ secrets.modrinth-token }}
+          CURSEFORGE_TOKEN: ${{ secrets.curseforge-token }}
+          MAVEN_TOKEN: ${{ secrets.maven-token }}
+        run: ./gradlew ${{ inputs.release-task }}

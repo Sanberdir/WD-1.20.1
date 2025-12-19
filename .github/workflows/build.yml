@@ -1,0 +1,8 @@
+name: Build
+on: [ workflow_dispatch, push, pull_request ]
+
+jobs:
+  build:
+    uses: ./.github/workflows/java-build.yml
+    with:
+      java-version: 17
