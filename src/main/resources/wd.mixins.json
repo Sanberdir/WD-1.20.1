@@ -7,8 +7,6 @@
   "mixins": [
     "LivingEntityMixin",
     "HoglinMixin",
-    "CookingPotMenuMixin",
-    "CuttingBoardBlockEntityMixin",
     "ZombieMixin",
     "AbstractPiglinMixin"
   ],

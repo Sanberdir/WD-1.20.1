@@ -16,7 +16,6 @@ import net.minecraftforge.fml.common.Mod;
 
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import ru.imaginaerum.wd.WD;
-import ru.imaginaerum.wd.client.gui.ars_melima.NetworkCookingXp;
 import ru.imaginaerum.wd.common.blocks.entity.ModBlockEntities;
 import ru.imaginaerum.wd.common.blocks.entity.renderer.DragoliteCageEntityRenderer;
 import ru.imaginaerum.wd.common.blocks.entity.renderer.EchotronRenderer;

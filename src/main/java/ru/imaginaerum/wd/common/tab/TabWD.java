@@ -32,10 +32,10 @@ public class TabWD extends CreativeModeTab {
                         output.accept(ItemsWD.MAGIC_HAT_JAM.get());
                         output.accept(ItemsWD.MAGIC_HAT.get());
                         output.accept(ItemsWD.CLEANSING_DECOCTION.get());
-                        output.accept(ItemsWD.COCKTAIL_MOLOKOV.get());
-                        output.accept(ItemsWD.SPICY_COCKTAIL_MOLOKOV.get());
-                        output.accept(ItemsWD.WITHERING_COCKTAIL_MOLOKOV.get());
-                        output.accept(ItemsWD.DISORIENTING_COCKTAIL_MOLOKOV.get());
+//                        output.accept(ItemsWD.COCKTAIL_MOLOKOV.get());
+//                        output.accept(ItemsWD.SPICY_COCKTAIL_MOLOKOV.get());
+//                        output.accept(ItemsWD.WITHERING_COCKTAIL_MOLOKOV.get());
+//                        output.accept(ItemsWD.DISORIENTING_COCKTAIL_MOLOKOV.get());
                         output.accept(BlocksWD.DRAGOLIT_GRID.get());
                         output.accept(BlocksWD.DRAGOLIT_BLOCK.get());
                         output.accept(BlocksWD.STRANGE_CHIP.get());
@@ -152,7 +152,6 @@ public class TabWD extends CreativeModeTab {
                         output.accept(BlocksWD.FREEZE_BERRIES.get());
                         output.accept(ItemsWD.CHARMING_BERRIES.get());
                         output.accept(BlocksWD.WARPED_WART.get());
-                        output.accept(ItemsWD.ARS_MELIMA.get());
                         output.accept(ItemsWD.BRIGHT_PEPPER.get());
                         output.accept(ItemsWD.BRIGHT_PEPPER_SEEDS.get());
 

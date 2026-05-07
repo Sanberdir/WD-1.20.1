@@ -38,7 +38,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import ru.imaginaerum.wd.client.ClientProxy;
-import ru.imaginaerum.wd.client.gui.ars_melima.NetworkCookingXp;
 import ru.imaginaerum.wd.common.armor.elytra.DragoliteElytraArmorStandLayer;
 import ru.imaginaerum.wd.common.armor.elytra.DragoliteElytraLayer;
 import ru.imaginaerum.wd.common.blocks.BlocksWD;
@@ -89,7 +88,6 @@ public class WD {
         CustomSoundEvents.SOUND_EVENTS.register(modEventBus);
         EffectsWD.MOB_EFFECTS.register(modEventBus);
         ModEntitiesItem.ENTITIES.register(modEventBus);
-        NetworkCookingXp.register();
         modEventBus.addListener(this::addCreative);
         TabWD.CREATIVE_MODE_TABS.register(modEventBus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
