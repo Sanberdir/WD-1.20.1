@@ -184,7 +184,7 @@ public class ItemsWD {
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(2).saturationMod(0.6f)
                     .build())));
     public static final RegistryObject<Item> RAW_SLICING_GOATS_MEAT = ITEMS.register("raw_slicing_goats_meat",
-            () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(1).saturationMod(0.04f)
+            () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(1).saturationMod(0.04f)
                     .build())));
     public static final RegistryObject<Item> RAW_GOATS_MEAT = ITEMS.register("raw_goats_meat",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(3).saturationMod(0.09f)
@@ -238,9 +238,9 @@ public class ItemsWD {
                     .build())));
 
     public static final RegistryObject<Item> ROTTEN_PIE_SLICE = ITEMS.register("rotten_pie_slice",
-            () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationMod(0.1F).fast().effect(() -> {
-                return new MobEffectInstance(EffectsWD.FLIES.get(), 160, 0, true, true);
-            }, 1.0F).build())));
+            () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationMod(0.1F).fast()
+                    .effect(new MobEffectInstance(MobEffects.HUNGER, 100, 0), 1)
+                    .build())));
 
     public static final RegistryObject<Item> FROG_BODY = ITEMS.register("frog_body",
             () -> new Item(new Item.Properties().food(new FoodProperties.Builder().meat().nutrition(1).saturationMod(0.5f)

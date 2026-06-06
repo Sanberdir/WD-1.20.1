@@ -27,8 +27,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.common.IPlantable;
 
-public class SoulRose extends Block implements net.minecraftforge.common.IPlantable {
+public class SoulRose extends Block implements IPlantable {
 
 
     public SoulRose(Properties p_49795_) {

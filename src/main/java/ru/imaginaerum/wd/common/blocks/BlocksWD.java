@@ -234,6 +234,7 @@ public class BlocksWD {
                     .sound(SoundType.CROP)));
     public static final RegistryObject<Block> MAGIC_SOIL_FARMLAND = registerBlock("magic_soil_farmland",
             () -> new MagicSoilFarmland(BlockBehaviour.Properties.copy(Blocks.FARMLAND)));
+
     public static final RegistryObject<Block> APPLE_SIGN = BLOCKS.register("apple_sign",
             () -> new ModStandingSignBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD).noCollission().strength(1.0F).sound(SoundType.CHERRY_WOOD), ModWoodType.APPLE_WOOD));
@@ -253,7 +254,7 @@ public class BlocksWD {
             () -> new AppleLeavesStages(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES).randomTicks()));
 
     public static final RegistryObject<Block> APPLE_SAPLING = BLOCKS.register("apple_sapling",
-            () -> new SaplingBlock(new AppleTreeGrower() ,BlockBehaviour.Properties.of()
+            () -> new SaplingBlock(new AppleTreeGrower(),BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT).noCollission()
                     .randomTicks().instabreak().sound(SoundType.GRASS)));
 

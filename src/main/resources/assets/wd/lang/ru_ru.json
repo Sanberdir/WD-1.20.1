@@ -5,8 +5,8 @@
   "wd.advancements.adventures.a_drop_of_love.title": "Секретный ингредиент",
   "wd.advancements.adventures.charming_berries.description": "О да, вы нашли чарнику! А что если применить эту ягоду для зачарования чего-либо? Да не, бред какой-то...Или не бред?",
   "wd.advancements.adventures.charming_berries.title": "Узри, волшебство!",
-  "wd.advancements.adventures.cheese.description": "Найдите сыр и спрячьте его желательно не в клюв, и да, запомните одно- поддаваться обольщению запрещено!",
-  "wd.advancements.adventures.cheese.title": "Сыыыыр!",
+  "wd.advancements.adventures.dungeon_master_cheese.description": "Найдите сыр и спрячьте его желательно не в клюв, и да, запомните одно- поддаваться обольщению запрещено!",
+  "wd.advancements.adventures.dungeon_master_cheese.title": "Сыыыыр!",
   "wd.advancements.adventures.fire_stem.description": "Рискните пройти сквозь заросли пылающего стебля",
   "wd.advancements.adventures.fire_stem.title": "ТЫ НЕ ПРОЙДЕЕШЬ!!",
   "wd.advancements.adventures.golden_chest_king_pillager.description": "Нанесите сильный удар по самолюбию короля разбойников украв у него золотой сундук",
@@ -316,31 +316,5 @@
   "wd.charming_waffles.description": "В чарничном варенье.",
   "wd.poison_waffles.description": "В джеме из ядоги.",
   "wd.glow_berries_waffles.description": "В варенье из светящихся ягод.",
-  "wd.progression.linkoncer.title": "Едок зелени",
-
-  "wd.tree_links.linkoncer": "Линконсер",
-  "wd.tree_links.milkman": "Дояр",
-
-  "wd.chapter.fish_diet": "Рыбная диета",
-  "wd.chapter.appreciate_greenery": "Ценитель зелени",
-  "wd.chapter.clever_milkman": "Ловкий дояр",
-  "wd.chapter.healthy_eating": "Здоровое питание",
-  "wd.chapter.lover_lean": "Любитель постного",
-  "wd.chapter.sweet_tooth": "Сладкоежка",
-  "wd.chapter.immune_system": "Крепкий иммунитет",
-
-  "screen.wd.ars_melima.level": "Уровень %s",
-
-  "node.wd.ars_melima.appreciate_greenery.description": "Дополнительно 0.5 сытости за 1 уровень навыка при поедании пищи.",
-  "node.wd.ars_melima.clever_milkman.description": "Позволяет наполнить молоком бутылочку доя корову.",
-  "node.wd.ars_melima.immune_system.description": "Снижает урон от иссушения, отравления, обморожения.",
-  "node.wd.ars_melima.lover_dough.description": "Просто любит тесто?",
-  "node.wd.ars_melima.honey_chef.description": "Медовый шеф?",
-  "node.wd.ars_melima.fish_diet.description": "При поедании рыбы 20% шанс получить дельфинью грацию.",
-  "node.wd.ars_melima.healthy_eating.description": "При употреблении здоровой пищи есть шанс получить хороший эффект.",
-  "node.wd.ars_melima.unarmed_master.description": "Безоружный мастер?",
-  "node.wd.ars_melima.stunning_blow.description": "Ошеломляющий удар?",
-  "node.wd.ars_melima.beater.description": "Отбиватель?",
-  "node.wd.ars_melima.lover_lean.description": "Увеличивает скорость съедания пищи, приготовленной без кровопролития на 2% за каждый уровень. Максимально 5 уровней.",
-  "node.wd.ars_melima.sweet_tooth.description": "Даёт эффект скорости на 15 секунд, + 1 уровень за уровень навыка."
+  "wd.progression.linkoncer.title": "Едок зелени"
 }

@@ -1,12 +1,12 @@
 {
   "parent": "wd:sweet_advance/magic_adventures",
   "criteria": {
-    "cheese": {
+    "dungeon_master_cheese": {
       "conditions": {
         "items": [
           {
             "items": [
-              "wd:cheese"
+              "wd:dungeon_master_cheese"
             ]
           }
         ]
@@ -17,21 +17,21 @@
   "display": {
     "announce_to_chat": true,
     "description": {
-      "translate": "wd.advancements.adventures.cheese.description"
+      "translate": "wd.advancements.adventures.dungeon_master_cheese.description"
     },
     "frame": "challenge",
     "hidden": true,
     "icon": {
-      "item": "wd:cheese"
+      "item": "wd:dungeon_master_cheese"
     },
     "show_toast": true,
     "title": {
-      "translate": "wd.advancements.adventures.cheese.title"
+      "translate": "wd.advancements.adventures.dungeon_master_cheese.title"
     }
   },
   "requirements": [
     [
-      "cheese"
+      "dungeon_master_cheese"
     ]
   ],
   "rewards": {
