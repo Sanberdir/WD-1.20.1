@@ -7,12 +7,16 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.vehicle.MinecartTNT;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.network.PlayMessages;
+import ru.imaginaerum.wd.common.blocks.custom.CandleWizardPie;
+import ru.imaginaerum.wd.common.blocks.custom.WizardPie;
 import ru.imaginaerum.wd.common.items.ItemsWD;
 
 public class FlameArrow extends AbstractArrow {
@@ -49,28 +53,117 @@ public class FlameArrow extends AbstractArrow {
 
 
 
-    protected void onHitBlock(BlockHitResult p_37384_) {
-        super.onHitBlock(p_37384_);
-        if (!this.level().isClientSide) {
-            Entity entity = this.getOwner();
-            if (!(entity instanceof Mob) || net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(this.level(), entity)) {
-                BlockPos blockpos = p_37384_.getBlockPos().relative(p_37384_.getDirection());
-                if (this.level().isEmptyBlock(blockpos)) {
-                    this.level().setBlockAndUpdate(blockpos, BaseFireBlock.getState(this.level(), blockpos));
-                }
-            }
+    @Override
+    protected void onHitBlock(BlockHitResult hit) {
+        super.onHitBlock(hit);
 
+        if (this.level().isClientSide) return;
+
+        BlockPos pos = hit.getBlockPos();
+        var state = this.level().getBlockState(pos);
+
+// 🕯 Свечи
+        if (state.getBlock() instanceof CandleBlock) {
+            if (!state.getValue(BlockStateProperties.LIT)) {
+                this.level().setBlock(pos,
+                        state.setValue(BlockStateProperties.LIT, true),
+                        3
+                );
+            }
+            return;
+        }
+
+// 🧁 Торт со свечой
+        if (state.getBlock() instanceof CandleCakeBlock) {
+            if (!state.getValue(BlockStateProperties.LIT)) {
+                this.level().setBlock(pos,
+                        state.setValue(BlockStateProperties.LIT, true),
+                        3
+                );
+            }
+            return;
+        }
+        if (state.getBlock() instanceof CandleWizardPie) {
+            if (!state.getValue(BlockStateProperties.LIT)) {
+                this.level().setBlock(pos,
+                        state.setValue(BlockStateProperties.LIT, true),
+                        3
+                );
+            }
+            return;
+        }
+
+// 🔥 Костёр
+        if (state.getBlock() instanceof CampfireBlock) {
+            if (!state.getValue(CampfireBlock.LIT)) {
+                this.level().setBlock(pos,
+                        state.setValue(CampfireBlock.LIT, true),
+                        3
+                );
+            }
+            return;
+        }
+        // Проверяем TNT
+        if (state.is(Blocks.TNT)) {
+            this.discard();
+            // Удаляем блок
+            this.level().removeBlock(pos, false);
+
+            // Взрыв в точке TNT
+            this.level().explode(
+                    this.getOwner(),
+                    pos.getX() + 0.5,
+                    pos.getY() + 0.5,
+                    pos.getZ() + 0.5,
+                    4.0F,
+                    Level.ExplosionInteraction.BLOCK
+            );
+
+            return;
+        }
+
+        // обычное поведение с огнём
+        Entity entity = this.getOwner();
+        if (!(entity instanceof Mob) || net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(this.level(), entity)) {
+            BlockPos firePos = pos.relative(hit.getDirection());
+            if (this.level().isEmptyBlock(firePos)) {
+                this.level().setBlockAndUpdate(firePos, BaseFireBlock.getState(this.level(), firePos));
+            }
         }
     }
     @Override
     protected void onHitEntity(EntityHitResult result) {
         super.onHitEntity(result);
-        Entity targetEntity = result.getEntity();
 
-        if (targetEntity instanceof LivingEntity) {
-            LivingEntity livingTarget = (LivingEntity) targetEntity;
-            livingTarget.setSecondsOnFire(10); // Поджигаем цель на 5 секунд
+        Entity target = result.getEntity();
 
+        // 💥 TNT вагонетка
+        if (target instanceof MinecartTNT tntCart) {
+
+            if (!this.level().isClientSide) {
+
+                double x = tntCart.getX();
+                double y = tntCart.getY();
+                double z = tntCart.getZ();
+                this.discard();
+                // удаляем вагонетку
+                tntCart.discard();
+
+                // взрыв
+                this.level().explode(
+                        this.getOwner(),
+                        x, y, z,
+                        4.0F,
+                        Level.ExplosionInteraction.TNT
+                );
+            }
+
+            return;
+        }
+
+        // 🔥 обычные живые существа
+        if (target instanceof LivingEntity livingTarget) {
+            livingTarget.setSecondsOnFire(10);
         }
     }
 }

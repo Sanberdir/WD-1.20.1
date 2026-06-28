@@ -1,0 +1,14 @@
+﻿{
+  "structures": [
+    {
+      "structure": "wd:snow_monument",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "salt": 891472635,
+    "spacing": 60,
+    "separation": 15,
+    "type": "minecraft:random_spread"
+  }
+}

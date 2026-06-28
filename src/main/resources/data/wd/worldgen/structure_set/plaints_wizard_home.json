@@ -1,0 +1,14 @@
+﻿{
+  "structures": [
+    {
+      "structure": "wd:plaints_wizard_home",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "salt": 1642136474,
+    "spacing": 60,
+    "separation": 15,
+    "type": "minecraft:random_spread"
+  }
+}

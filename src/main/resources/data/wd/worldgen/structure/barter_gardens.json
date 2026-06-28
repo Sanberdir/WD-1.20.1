@@ -1,0 +1,13 @@
+﻿{
+  "type": "minecraft:jigsaw",
+  "start_pool": "wd:barter_gardens/start_pool",
+  "size": 7,
+  "max_distance_from_center": 80,
+  "biomes": "#wd:has_structure/barter_gardens",
+  "step": "surface_structures",
+  "start_height": {
+    "absolute": 33
+  },
+  "use_expansion_hack": false,
+  "spawn_overrides": {}
+}

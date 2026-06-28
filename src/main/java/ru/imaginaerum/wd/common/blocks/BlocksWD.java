@@ -145,7 +145,8 @@ public class BlocksWD {
                     .noOcclusion().strength(4F).explosionResistance(12000F).randomTicks().requiresCorrectToolForDrops()));
 
     public static final RegistryObject<Block> ECHOTRON = registerBlock("echotron",
-            () -> new EchotronBlock(BlockBehaviour.Properties.of().sound(SoundType.STONE).strength(4f,20f).noOcclusion()));
+            () -> new EchotronBlock(BlockBehaviour.Properties.of().sound(SoundType.STONE)
+                    .strength(4f,20f).noOcclusion()));
 
     //Торты со свечами wizard
     public static final RegistryObject<Block> CANDLE_WIZARD_PIE = registerBlock("candle_wizard_pie",

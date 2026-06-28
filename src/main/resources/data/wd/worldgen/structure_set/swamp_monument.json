@@ -1,0 +1,14 @@
+﻿{
+  "structures": [
+    {
+      "structure": "wd:swamp_monument",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "salt": 1837462951,
+    "spacing": 60,
+    "separation": 15,
+    "type": "minecraft:random_spread"
+  }
+}
