@@ -2,9 +2,14 @@ package ru.imaginaerum.wd.common.events;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.imaginaerum.wd.WD;
@@ -34,7 +39,34 @@ public class ForgeEventBusEvents {
         }
         lastDayTime = timeOfDay;
     }
+    @SubscribeEvent
+    public static void onLivingDropsFlameArrow(LivingDropsEvent event) {
+        LivingEntity entity = event.getEntity();
 
+        if (!entity.getPersistentData().getBoolean("FlameArrowKill")) return;
+        entity.getPersistentData().remove("FlameArrowKill");
+
+        for (ItemEntity itemEntity : event.getDrops()) {
+            ItemStack stack = itemEntity.getItem();
+            ItemStack smelted = getSmeltedResult(entity.level(), stack);
+            if (!smelted.isEmpty()) {
+                smelted.setCount(stack.getCount());
+                itemEntity.setItem(smelted);
+            }
+        }
+    }
+
+    private static ItemStack getSmeltedResult(Level level, ItemStack input) {
+        if (level instanceof ServerLevel serverLevel) {
+            var recipeManager = serverLevel.getRecipeManager();
+            var container = new net.minecraft.world.SimpleContainer(input);
+            return recipeManager
+                    .getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING, container, serverLevel)
+                    .map(r -> r.assemble(container, serverLevel.registryAccess()))
+                    .orElse(ItemStack.EMPTY);
+        }
+        return ItemStack.EMPTY;
+    }
     @SubscribeEvent
     public static void tickMoistSoil(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;

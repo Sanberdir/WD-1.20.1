@@ -6,6 +6,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.vehicle.MinecartTNT;
 import net.minecraft.world.item.ItemStack;
@@ -106,18 +107,23 @@ public class FlameArrow extends AbstractArrow {
         // Проверяем TNT
         if (state.is(Blocks.TNT)) {
             this.discard();
-            // Удаляем блок
+
+            // Удаляем блок TNT
             this.level().removeBlock(pos, false);
 
-            // Взрыв в точке TNT
-            this.level().explode(
-                    this.getOwner(),
-                    pos.getX() + 0.5,
-                    pos.getY() + 0.5,
-                    pos.getZ() + 0.5,
-                    4.0F,
-                    Level.ExplosionInteraction.BLOCK
+            // Создаем зажженный TNT
+            PrimedTnt primedTnt = new PrimedTnt(
+                    this.level(),
+                    pos.getX() + 0.5D,
+                    pos.getY(),
+                    pos.getZ() + 0.5D,
+                    this.getOwner() instanceof LivingEntity living ? living : null
             );
+
+            // Мгновенный взрыв
+            primedTnt.setFuse(0);
+
+            this.level().addFreshEntity(primedTnt);
 
             return;
         }
@@ -133,35 +139,34 @@ public class FlameArrow extends AbstractArrow {
     }
     @Override
     protected void onHitEntity(EntityHitResult result) {
-        super.onHitEntity(result);
-
         Entity target = result.getEntity();
 
-        // 💥 TNT вагонетка
+        // 🔥 Ставим флаг ДО нанесения урона
+        if (target instanceof LivingEntity livingTarget) {
+            livingTarget.getPersistentData().putBoolean("FlameArrowKill", true);
+        }
+
+        super.onHitEntity(result); // урон наносится здесь
+
+        // TNT вагонетка
         if (target instanceof MinecartTNT tntCart) {
-
             if (!this.level().isClientSide) {
-
                 double x = tntCart.getX();
                 double y = tntCart.getY();
                 double z = tntCart.getZ();
                 this.discard();
-                // удаляем вагонетку
                 tntCart.discard();
-
-                // взрыв
                 this.level().explode(
-                        this.getOwner(),
+                        null,  // null — урон получают все включая стрелявшего
                         x, y, z,
                         4.0F,
                         Level.ExplosionInteraction.TNT
                 );
             }
-
             return;
         }
 
-        // 🔥 обычные живые существа
+        // 🔥 Поджигаем после удара
         if (target instanceof LivingEntity livingTarget) {
             livingTarget.setSecondsOnFire(10);
         }
